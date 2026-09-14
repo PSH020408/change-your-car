@@ -49,8 +49,19 @@ d=json.load(open('data/bronze/manifest.json'));t=d['totals'];\
 print(f\"sessions {t['sessions']}  laps {t['laps']:,}  samples {t['telemetry_rows']:,}  {t['bytes']/1e9:.2f} GB\")" \
 	2>/dev/null || echo "no bronze manifest yet — run 'make ingest'"
 
+# --- P2 Segmentation ---------------------------------------------------------
 segment:
 	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml
+
+segment-one:
+	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --limit 1 --force --verbose
+
+track-status:
+	@python3 -c "import json,glob;\
+fs=sorted(glob.glob('data/silver/**/track.json',recursive=True));\
+print(f'{len(fs)} circuit(s) segmented');\
+[print(f\"  {d['season']} {d['event']:<30s} {d['counts']['corners']:>3} corners  {d['geometry']['lap_length_m']:>7.0f} m\") for d in (json.load(open(f)) for f in fs)]" \
+	2>/dev/null || echo "no silver tracks yet — run 'make segment'"
 
 features:
 	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml

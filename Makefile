@@ -31,9 +31,23 @@ warm:
 warm-status:
 	@tail -n 20 data/cache/warm.log 2>/dev/null || echo "no warm.log yet"
 
-# --- P1-P4 pipeline ----------------------------------------------------------
+# --- P1 Ingestion ------------------------------------------------------------
+# Reads only what warm_cache has already downloaded, so it makes ZERO network
+# calls and can run while the background download is still going.
 ingest:
 	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml
+
+ingest-pilot:
+	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --pilot --verbose
+
+ingest-one:
+	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --limit 1 --verbose
+
+bronze-status:
+	@python3 -c "import json,sys;\
+d=json.load(open('data/bronze/manifest.json'));t=d['totals'];\
+print(f\"sessions {t['sessions']}  laps {t['laps']:,}  samples {t['telemetry_rows']:,}  {t['bytes']/1e9:.2f} GB\")" \
+	2>/dev/null || echo "no bronze manifest yet — run 'make ingest'"
 
 segment:
 	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml

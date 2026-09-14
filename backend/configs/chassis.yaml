@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------------------
+# P1-5 — chassis and power-unit map, ground-effect era.
+#
+# FastF1 gives the TEAM per lap but never the chassis, and the chassis is what
+# the simulator's docking screen selects. Team entries are renamed between
+# seasons (Alfa Romeo -> Kick Sauber, AlphaTauri -> RB -> Racing Bulls), so
+# every season carries its own block and each entry lists the aliases FastF1
+# has actually used.
+#
+# This is DATA, not code: validate_coverage() in pipeline/ingest/metadata.py
+# fails the run if a (season, team) pair appears in the laps and not here,
+# rather than silently writing a null chassis into bronze.
+# ---------------------------------------------------------------------------
+
+2022:
+  Red Bull Racing: {chassis: RB18,   pu: Red Bull Powertrains, aliases: [Red Bull, Oracle Red Bull Racing]}
+  Ferrari:         {chassis: F1-75,  pu: Ferrari,              aliases: [Scuderia Ferrari]}
+  Mercedes:        {chassis: W13,    pu: Mercedes,             aliases: [Mercedes-AMG Petronas]}
+  Alpine:          {chassis: A522,   pu: Renault,              aliases: [Alpine F1 Team, BWT Alpine]}
+  McLaren:         {chassis: MCL36,  pu: Mercedes,             aliases: []}
+  Alfa Romeo:      {chassis: C42,    pu: Ferrari,              aliases: [Alfa Romeo Racing, Alfa Romeo F1 Team ORLEN]}
+  AlphaTauri:      {chassis: AT03,   pu: Red Bull Powertrains, aliases: [Scuderia AlphaTauri]}
+  Aston Martin:    {chassis: AMR22,  pu: Mercedes,             aliases: [Aston Martin Aramco]}
+  Williams:        {chassis: FW44,   pu: Mercedes,             aliases: [Williams Racing]}
+  Haas F1 Team:    {chassis: VF-22,  pu: Ferrari,              aliases: [Haas, MoneyGram Haas F1 Team]}
+
+2023:
+  Red Bull Racing: {chassis: RB19,   pu: Honda RBPT,           aliases: [Red Bull, Oracle Red Bull Racing]}
+  Ferrari:         {chassis: SF-23,  pu: Ferrari,              aliases: [Scuderia Ferrari]}
+  Mercedes:        {chassis: W14,    pu: Mercedes,             aliases: [Mercedes-AMG Petronas]}
+  Alpine:          {chassis: A523,   pu: Renault,              aliases: [Alpine F1 Team, BWT Alpine]}
+  McLaren:         {chassis: MCL60,  pu: Mercedes,             aliases: []}
+  Alfa Romeo:      {chassis: C43,    pu: Ferrari,              aliases: [Alfa Romeo Racing, Alfa Romeo F1 Team Stake]}
+  AlphaTauri:      {chassis: AT04,   pu: Honda RBPT,           aliases: [Scuderia AlphaTauri]}
+  Aston Martin:    {chassis: AMR23,  pu: Mercedes,             aliases: [Aston Martin Aramco]}
+  Williams:        {chassis: FW45,   pu: Mercedes,             aliases: [Williams Racing]}
+  Haas F1 Team:    {chassis: VF-23,  pu: Ferrari,              aliases: [Haas, MoneyGram Haas F1 Team]}
+
+2024:
+  Red Bull Racing: {chassis: RB20,      pu: Honda RBPT,        aliases: [Red Bull, Oracle Red Bull Racing]}
+  Ferrari:         {chassis: SF-24,     pu: Ferrari,           aliases: [Scuderia Ferrari]}
+  Mercedes:        {chassis: W15,       pu: Mercedes,          aliases: [Mercedes-AMG Petronas]}
+  Alpine:          {chassis: A524,      pu: Renault,           aliases: [Alpine F1 Team, BWT Alpine]}
+  McLaren:         {chassis: MCL38,     pu: Mercedes,          aliases: []}
+  Kick Sauber:     {chassis: C44,       pu: Ferrari,           aliases: [Sauber, Stake F1 Team, Stake F1 Team Kick Sauber]}
+  RB:              {chassis: VCARB 01,  pu: Honda RBPT,        aliases: [Visa Cash App RB, RB F1 Team, AlphaTauri]}
+  Aston Martin:    {chassis: AMR24,     pu: Mercedes,          aliases: [Aston Martin Aramco]}
+  Williams:        {chassis: FW46,      pu: Mercedes,          aliases: [Williams Racing]}
+  Haas F1 Team:    {chassis: VF-24,     pu: Ferrari,           aliases: [Haas, MoneyGram Haas F1 Team]}
+
+2025:
+  Red Bull Racing: {chassis: RB21,      pu: Honda RBPT,        aliases: [Red Bull, Oracle Red Bull Racing]}
+  Ferrari:         {chassis: SF-25,     pu: Ferrari,           aliases: [Scuderia Ferrari]}
+  Mercedes:        {chassis: W16,       pu: Mercedes,          aliases: [Mercedes-AMG Petronas]}
+  Alpine:          {chassis: A525,      pu: Renault,           aliases: [Alpine F1 Team, BWT Alpine]}
+  McLaren:         {chassis: MCL39,     pu: Mercedes,          aliases: []}
+  Kick Sauber:     {chassis: C45,       pu: Ferrari,           aliases: [Sauber, Stake F1 Team, Stake F1 Team Kick Sauber]}
+  Racing Bulls:    {chassis: VCARB 02,  pu: Honda RBPT,        aliases: [RB, Visa Cash App RB, VCARB]}
+  Aston Martin:    {chassis: AMR25,     pu: Mercedes,          aliases: [Aston Martin Aramco]}
+  Williams:        {chassis: FW47,      pu: Mercedes,          aliases: [Williams Racing]}
+  Haas F1 Team:    {chassis: VF-25,     pu: Ferrari,           aliases: [Haas, MoneyGram Haas F1 Team]}

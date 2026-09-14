@@ -109,9 +109,11 @@ FastF1은 raw GET 응답을 캐시에 저장하고, **캐시 히트는 rate limi
 | P1-3 | 조건정합 페이스 게이트 + 40 m 갭 필터 | D2·D3 — 균일 리샘플링은 하지 않음. 세그먼트 raw 적분 |
 | P1-4 | Weather / track status 병합 | 트랙·에어 온도, 강수, 트랙 상태 플래그 |
 | P1-5 | 메타데이터 테이블 (드라이버·팀·섀시·PU 매핑) | 2021–25 섀시 코드 사전 |
-| P1-6 | Bronze parquet 파티셔닝 + 매니페스트 | `{season}/{event}/{session}/` |
+| P1-6 | Bronze parquet + 매니페스트        | `writer.py` — laps/telemetry parquet + session.json + manifest.json |
 
-**Gate:** 파일럿 10개 세션 수집 성공 · 랩 수 공식 기록 대비 ±1 · 재실행 시 네트워크 호출 0.
+**Gate:** 파일럿 세션 ingest 성공 · 재실행 시 네트워크 호출 0 (`offline_mode`) ·
+**D4 판정 완료** (track status 필터가 실제로 랩을 제거하는지, 또는 제거 0이 정당한지) ·
+필터 단계별 제거 수가 전부 기록됨.
 
 ---
 

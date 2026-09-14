@@ -96,11 +96,25 @@ lap_filters:
     - max_telemetry_gap      # new (D2)
     - pace_gate              # conditions-relative (D3)
 
-  exclude_track_status: ["4", "6", "7"]   # SC, VSC, VSC ending
+  # 4 SafetyCar, 5 RedFlag, 6 VSC, 7 VSC ending. Code 5 was missing from the
+  # first version. Yellow (2) is deliberately NOT here - it is tagged instead
+  # (`track_status_flag`), because dropping every yellow-sector lap costs ~20%
+  # of a qualifying session and the lap is still real data.
+  exclude_track_status: ["4", "5", "6", "7"]
 
-  # D2 - a gap this large is a transmission dropout, not sampling. Measured
-  # max spacing reached 98 m (2025 Silverstone R) = 4-5 missing samples.
-  max_telemetry_gap_m: 40.0
+  # D2 REVISED - measured, after the first threshold removed 88% of a session.
+  #
+  # The original gate was 40 m of distance. The measured distribution of each
+  # lap's worst spacing had a MEDIAN of 67 m, so the threshold sat below the
+  # middle of the data. The mistake was the axis, not just the number:
+  # distance conflates "the feed dropped a sample" with "the car was fast",
+  # since one skipped sample already spans 20 m at 300 km/h.
+  #
+  # Time is the honest axis - the feed's period is a fixed 240 ms, so this
+  # threshold reads directly as "allow up to ~3 consecutive dropped samples".
+  # `ingest.run` prints a sweep of candidate thresholds against the real
+  # distribution; set this from that table, not from an argument.
+  max_telemetry_gap_s: 1.0
 
   # D3 - 107% of the SESSION BEST is invalid when grip changes mid-session
   # (2025 Silverstone R yielded 14.4% because of exactly this). Compare each

@@ -68,6 +68,7 @@ LAP_COLUMNS: dict[str, str] = {
     "FreshTyre": "fresh_tyre",
     "condition": "condition",
     "TrackStatus": "track_status",
+    "track_status_flag": "track_status_flag",
     # pace gate provenance
     "pace_reference_s": "pace_reference_s",
     "pace_ratio": "pace_ratio",
@@ -77,6 +78,10 @@ LAP_COLUMNS: dict[str, str] = {
     "max_gap_m": "telemetry_max_gap_m",
     "median_gap_m": "telemetry_median_gap_m",
     "p95_gap_m": "telemetry_p95_gap_m",
+    "max_gap_s": "telemetry_max_gap_s",
+    "median_gap_s": "telemetry_median_gap_s",
+    "missed_samples_worst": "telemetry_missed_samples",
+    "worst_gap_at_frac": "telemetry_worst_gap_at_frac",
     # weather
     "air_temp_c": "air_temp_c",
     "track_temp_c": "track_temp_c",

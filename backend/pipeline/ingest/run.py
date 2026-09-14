@@ -75,6 +75,10 @@ class LazyTelemetry:
                 "max_gap_m": t.max_gap_m if t else 0.0,
                 "median_gap_m": t.median_gap_m if t else 0.0,
                 "p95_gap_m": t.p95_gap_m if t else 0.0,
+                "max_gap_s": t.max_gap_s if t else 0.0,
+                "median_gap_s": t.median_gap_s if t else 0.0,
+                "missed_samples_worst": t.missed_samples_worst if t else 0,
+                "worst_gap_at_frac": t.worst_gap_at_frac if t else 0.0,
             })
         return pd.DataFrame(rows)
 
@@ -86,7 +90,7 @@ def _secs(col) -> pd.Series:
 
 def prepare_laps(laps: pd.DataFrame, sess: loader.LoadedSession,
                  event_slug: str, cmap: metadata.ChassisMap,
-                 cond_cfg: dict) -> pd.DataFrame:
+                 cond_cfg: dict, excluded_status: list[str] | None = None) -> pd.DataFrame:
     """Derive the columns the filters and the bronze schema need."""
     df = laps.reset_index(drop=True).copy()
 
@@ -117,6 +121,8 @@ def prepare_laps(laps: pd.DataFrame, sess: loader.LoadedSession,
         df[flag] = df[trap].isna() if trap in df else True
 
     df["condition"] = filters.tag_conditions(df, cond_cfg)
+    df["track_status_flag"] = filters.tag_track_status(
+        df, excluded_status or ["4", "5", "6", "7"])
     return metadata.annotate(df, sess.season, cmap)
 
 
@@ -180,7 +186,8 @@ def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
             f"Add them to configs/chassis.yaml — an unmapped team writes a null "
             f"chassis into bronze and becomes a missing one-hot at training time.")
 
-    df = prepare_laps(sess.laps, sess, event_slug, cmap, scope.get("conditions", {}))
+    df = prepare_laps(sess.laps, sess, event_slug, cmap, scope.get("conditions", {}),
+                      scope["lap_filters"].get("exclude_track_status"))
     tel = LazyTelemetry(df)
 
     kept, report = filters.apply_chain(
@@ -295,21 +302,49 @@ def run(scope_path: Path, pilot: bool, all_sessions: bool,
             note = "   <-- removed nothing" if a["removed"] == 0 else ""
             print(f"{name:<18}{a['kept']:>8}{a['removed']:>9}{pct:>9.1f}%{note}")
 
-    # D4: did the track-status filter actually do anything, anywhere?
+    # ---- telemetry gap: what would each threshold have cost? -------------
+    sweeps = [m["filter_report"]["diagnostics"].get("telemetry_gap", {})
+              for m in entries]
+    sweeps = [d for d in sweeps if d.get("threshold_sweep_laps_kept")]
+    if sweeps:
+        total_eval = sum(d["laps_evaluated"] for d in sweeps)
+        print()
+        print("TELEMETRY GAP — threshold sweep (set the config from this table)")
+        print(f"  laps evaluated: {total_eval}")
+        keys = list(sweeps[0]["threshold_sweep_laps_kept"])
+        print(f"  {'threshold':<12}{'kept':>8}{'% kept':>9}")
+        for k in keys:
+            kept = sum(d["threshold_sweep_laps_kept"].get(k, 0) for d in sweeps)
+            pct = 100.0 * kept / total_eval if total_eval else 0
+            mark = "  <-- current" if k == f"{scope['lap_filters'].get('max_telemetry_gap_s', 1.0)}s" else ""
+            print(f"  {k:<12}{kept:>8}{pct:>8.1f}%{mark}")
+        p50 = [d.get("max_gap_s_p50") for d in sweeps if d.get("max_gap_s_p50") is not None]
+        p95 = [d.get("max_gap_s_p95") for d in sweeps if d.get("max_gap_s_p95") is not None]
+        if p50:
+            print(f"  worst-gap per lap: p50 {min(p50):.2f}-{max(p50):.2f} s, "
+                  f"p95 {min(p95):.2f}-{max(p95):.2f} s  (nominal period 0.24 s)")
+
+    # ---- D4: is the track-status filter working? --------------------------
     ts_removed = agg.get("track status", {}).get("removed", 0)
-    ts_verdicts = [m["filter_report"]["diagnostics"].get("track_status", {})
-                   for m in entries]
-    disagreements = [v for v in ts_verdicts if v.get("agrees_with_fastf1") is False]
+    ts = [m["filter_report"]["diagnostics"].get("track_status", {}) for m in entries]
+    broken = [v for v in ts if v.get("broken")]
+    disagree = [v for v in ts if v.get("agrees_with_fastf1") is False]
     print()
     print("D4 — track status filter")
     print(f"  laps removed across all sessions : {ts_removed}")
-    print(f"  sessions where ours != FastF1's  : {len(disagreements)}")
-    if ts_removed == 0 and entries:
-        stuck = [v for v in ts_verdicts if v.get("laps_with_any_non_green_code", 0) > 0]
-        print("  VERDICT: still zero. " + (
-            f"{len(stuck)} session(s) DO contain non-green laps — the filter is broken."
-            if stuck else
-            "No session contained a non-green lap; removing nothing is correct."))
+    print(f"  sessions carrying an excluded code but removing nothing : {len(broken)}")
+    print(f"  sessions where ours != FastF1's  : {len(disagree)}")
+    if broken:
+        print("  VERDICT: BROKEN — " + "; ".join(v["verdict"] for v in broken[:3]))
+    elif ts_removed == 0:
+        others: dict[str, int] = {}
+        for v in ts:
+            for k, n in (v.get("codes_present_but_not_excluded") or {}).items():
+                others[k] = others.get(k, 0) + n
+        print("  VERDICT: correct — no lap ran under an excluded code."
+              + (f" Present but intentionally kept: {others}" if others else ""))
+    else:
+        print(f"  VERDICT: working — removed {ts_removed} lap(s).")
 
     report_path = bronze / "ingest_report.json"
     bronze.mkdir(parents=True, exist_ok=True)

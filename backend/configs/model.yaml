@@ -6,6 +6,7 @@ split:
   strategy: grouped                  # never leak a lap across folds
   group_by: [season, event, driver]
   holdout_events: [Monza]            # unseen-track generalisation check
+  era_seasons: [2022, 2023, 2024, 2025]   # ground-effect only; 2021 excluded
   n_folds: 5
 
 model:

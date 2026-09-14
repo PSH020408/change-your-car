@@ -1,6 +1,6 @@
 # F1 Virtual Sim
 
-2021–2025 Ground Effect ERA 실제 F1 텔레메트리 기반의 **2D 엔지니어링
+2022–2025 Ground Effect ERA 실제 F1 텔레메트리 기반의 **2D 엔지니어링
 텔레메트리 & 셋업 시뮬레이터**.
 
 드라이버·섀시를 고르고, 윙 각도와 차고·서스펜션을 조절하고, 트랙 온도와
@@ -8,12 +8,15 @@
 **재구성된 텔레메트리**를 돌려줍니다.
 
 ```
-FastF1 ──► ingest ──► segment ──► features ──► XGBoost ──► FastAPI ──► 2D HUD
-           bronze     silver       gold         artifacts
-                                      ▲
-                              physics modifiers
-                          (sliders → ΔCl/ΔCd/Δgrip)
+FastF1 ──► recon ──► ingest ──► segment ──► features ──► XGBoost ──► FastAPI ──► 2D HUD
+    │      (report)   bronze     silver       gold         artifacts
+    └── warm_cache (백그라운드, resumable)        ▲
+                                          physics modifiers
+                                      (sliders → ΔCl/ΔCd/Δgrip)
 ```
+
+> **Scope: 2022–2025.** 그라운드 이펙트 플로어는 2022년 규정과 함께 도입되어
+> 2026년 규정으로 교체되었습니다. 2021년 차량은 다른 에어로 시대입니다.
 
 ## Quick start
 
@@ -27,6 +30,9 @@ make dev-fe         # Next.js  :3000
 ## Pipeline
 
 ```bash
+make warm-bg        # [먼저] 2022–25 전 세션 raw 다운로드 (백그라운드, 재개 가능)
+make warm-status    # 진행 상황 확인
+make recon          # 정찰 리포트 → docs/recon/recon_report.md
 make ingest         # FastF1 → data/bronze
 make segment        # 코너/직선 분할 → data/silver
 make features       # 피처 스토어 → data/gold
@@ -44,7 +50,8 @@ make test           # 물리 단조성 + 계약 테스트
 | `backend/app/` | FastAPI 엔진 API |
 | `frontend/src/` | Next.js 2D HUD |
 | `data/` | 메달리온 레이크 (bronze/silver/gold) + 모델 아티팩트 |
-| `configs/` | 파일럿 스코프, 모델 설정, 합격 기준 |
+| `backend/pipeline/recon/` | 데이터 정찰 서베이 (설계 이전 단계) |
+| `backend/configs/scope.yaml` | era · 수집 · 정찰 · 파일럿 스코프 |
 
 ## 설계 원칙
 

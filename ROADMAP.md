@@ -1,8 +1,13 @@
 # F1 Virtual Sim — Build Pipeline
 
-> 9 stages · 55 tasks. Each stage has a **gate**: until the gate passes, the
+> 10 stages · 61 tasks. Each stage has a **gate**: until the gate passes, the
 > next stage is not started. Task IDs (`P3-2`) are stable and match the
 > progress dashboard.
+>
+> **Scope: 2022–2025 only.** The ground-effect floor arrived with the 2022
+> regulations and was replaced again in 2026. 2021 cars are a different aero
+> era — including them would teach the model to average across two
+> philosophies, so they are excluded by decision, not by oversight.
 
 ## Dependency flow
 
@@ -10,7 +15,10 @@
 P0 Foundation
       │
       ▼
-P1 Data Ingestion ──────────────┐
+R  Data Reconnaissance ─────────┐   ◄── 설계보다 먼저. "무엇을 갖고 있는가"에 답한다
+      │  (캐시 워밍은 여기서 시작해 P8까지 백그라운드로 계속 돈다)
+      ▼                         │
+P1 Data Ingestion ──────────────┤
       │                         │
       ▼                         │
 P2 Segmentation & Features      │
@@ -30,7 +38,7 @@ P6 Backend API ◄──── (contract published early: P7 can start in parall
       └────────► P8 Integration & Optimization ◄──── P7 Frontend HUD
 ```
 
-**Critical path:** P0 → P1 → P2 → P4 → P5 → P6 → P8.
+**Critical path:** P0 → R → P1 → P2 → P4 → P5 → P6 → P8.
 P3 runs parallel to P2 (it only needs the scope config).
 P7 starts as soon as the P6 contract stub is published — it develops against
 the OpenAPI schema, not a working model.
@@ -46,9 +54,41 @@ the OpenAPI schema, not a working model.
 | P0-2 | Python 환경 + 의존성 고정 | `backend/requirements.txt`, `.venv` |
 | P0-3 | Next.js + Tailwind + 디자인 토큰 초기화 | `frontend/tailwind.config.ts` |
 | P0-4 | FastF1 캐시 · 데이터 레이크 경로 설정 | `.env`, `app/config.py` |
-| P0-5 | 파일럿 스코프 고정 (2023–24 / 5 트랙) | `configs/pilot_scope.yaml` |
+| P0-5 | 스코프 고정 (era 2022–25 / 파일럿 2023–24) | `configs/scope.yaml` |
 
 **Gate:** `make setup && make dev-be && make dev-fe` — `/health` 200, 프론트 렌더.
+
+---
+
+## R — Data Reconnaissance
+*Goal: know what the data actually contains before a single feature is designed.*
+
+두 트랙이 **동시에** 돕니다. 다운로드는 느리고 rate limit이 걸리지만 설계와 무관하고,
+설계는 정찰 리포트 한 장만 있으면 시작할 수 있습니다.
+
+**Track A — 백그라운드 수집 (지금 시작, P8까지 계속)**
+FastF1은 raw GET 응답을 캐시에 저장하고, **캐시 히트는 rate limit에 포함되지 않습니다.**
+즉 "일단 캐시를 채우는 일"은 설계를 기다릴 이유가 전혀 없습니다.
+
+**Track B — 정찰 (앞단, 세션 10개면 충분)**
+전량이 아니라 표본으로 답하는 질문들입니다.
+
+| ID | Task | Track | Note |
+|----|------|-------|------|
+| R-1 | 캐시 워밍 잡 구현 (resumable · 백오프 · 용량 실측) | A | `pipeline/ingest/warm_cache.py` |
+| R-2 | 2022–2025 전 세션 다운로드 착수 + 용량 실측 | A | `make warm-bg` → 원장(ledger)에 세션당 용량 기록 |
+| R-3 | 정찰 서베이 스크립트 구현 | B | `pipeline/recon/survey.py` |
+| R-4 | 정찰 리포트 생성 | B | 채널 사전 · 커버리지 매트릭스 · 랩 수율 · 샘플레이트 |
+| R-5 | **10 m 리샘플 그리드 타당성 판정** | B | 실측 샘플 간격 p95 > 10 m면 그리드가 없는 디테일을 만들어냄 |
+| R-6 | 셋업 프록시 후보 채널 확정 | B | P2 피처 설계의 입력 — 여기서 확정되어야 P2 착수 |
+
+**Gate:** 정찰 리포트의 "Decisions this report should settle" 체크리스트 전부 해소 ·
+전 시즌 다운로드 용량 예측치 확보 · 디스크 예산 판정 완료.
+
+> 왜 "전량 수집 후 설계"가 아닌가: 스키마를 모르는 채로 전량을 수집하면, 스키마가
+> 바뀌는 순간 전량을 다시 받아야 합니다. FastF1은 rate limit이 있어 재수집이 싸지
+> 않습니다. 반대로 raw 캐시는 스키마와 무관하므로, **원본은 지금 받고 해석은 나중에**
+> 하는 편이 순서상 옳습니다.
 
 ---
 
@@ -180,7 +220,7 @@ the OpenAPI schema, not a working model.
 | P8-3 | 추론 레이턴시 최적화 + 캐싱 | p95 < 400 ms |
 | P8-4 | 반응형 · 접근성 점검 | 대비비, 키보드 조작 |
 | P8-5 | 배포 (프론트 Vercel / 백엔드 컨테이너) | 모델 아티팩트 동봉 |
-| P8-6 | **데이터 스코프 전체 확장 (2021–2025)** | 파일럿 파이프라인 그대로 재실행 |
+| P8-6 | **데이터 스코프 전체 확장 (2022–2025)** | 파일럿 파이프라인 그대로 재실행 |
 
 **Gate:** 성능 예산 전부 충족 · 전체 시즌 재학습 후 P4 게이트 재통과.
 

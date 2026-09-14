@@ -174,9 +174,26 @@ setup_proxies:
     - traction: low_speed_corner_exit_accel
     - braking_stability: decel_zone_length / entry_speed_squared
 
+# ---------------------------------------------------------------------------
+# P2 segmentation.
+#
+# Geometry is the ONE place resampling is legitimate: the racing line is a
+# continuous spatial curve sampled unevenly only because speed varied, so
+# interpolating it onto a uniform arc-length grid recovers the curve rather
+# than inventing driving (contrast D1, which governs telemetry channels).
+#
+# curvature_threshold_1pm is NOT a constant to trust - 0.0035 means "a corner
+# is anything tighter than a 286 m radius", which is a guess. `segment.run`
+# prints a sweep of candidate thresholds against the resulting corner count;
+# set this per circuit family by comparing with published corner counts, the
+# same way the telemetry-gap threshold was settled.
+# ---------------------------------------------------------------------------
 segmentation:
+  geometry_step_m: 10.0        # uniform arc-length grid for geometry only
+  smooth_window_m: 60.0        # Savitzky-Golay window, in metres not samples
   curvature_threshold_1pm: 0.0035
-  min_segment_len_m: 40.0
+  min_gap_m: 30.0              # close gaps this short (double-apex corners)
+  min_segment_len_m: 40.0      # drop runs this short (curvature noise)
   corner_speed_bins:
     low: [0, 120]
     medium: [120, 200]

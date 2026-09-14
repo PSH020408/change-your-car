@@ -51,6 +51,14 @@ class LapTelemetry:
     p95_gap_s: float = 0.0
     missed_samples_worst: int = 0
     worst_gap_at_frac: float = 0.0     # where in the lap, 0..1
+    # Joint check: the distance covered DURING the worst time gap, and the
+    # speed that implies. Comparing max-of-time against max-of-distance is
+    # meaningless when they occur on different samples; this pairs them on
+    # the same one, so an impossible implied speed exposes a broken distance
+    # axis instead of hiding behind a plausible-looking pair of maxima.
+    dist_at_worst_time_gap_m: float = 0.0
+    implied_speed_kph: float = 0.0
+    negative_distance_steps: int = 0
     error: str = ""
 
     @property
@@ -167,9 +175,12 @@ def extract_lap_telemetry(lap, uid: str) -> LapTelemetry:
             frac = float(dist.iloc[worst_i] / dist.iloc[-1]) if dist.iloc[-1] else 0.0
             # how many samples the feed skipped, at the nominal 240 ms cadence
             missed = max(0, int(round(max_s / max(med_s, 1e-6))) - 1)
+            # distance covered across that same gap, and the speed it implies
+            d_at = float(step.iloc[worst_i]) if 0 <= worst_i < len(step) else 0.0
+            implied = (d_at / max_s) * 3.6 if max_s > 0 else 0.0
         else:
             max_s = med_s = p95_s = 0.0
-            frac, missed = 0.0, 0
+            frac, missed, d_at, implied = 0.0, 0, 0.0, 0.0
 
         frame.insert(0, "lap_uid", uid)
         return LapTelemetry(
@@ -185,6 +196,9 @@ def extract_lap_telemetry(lap, uid: str) -> LapTelemetry:
             p95_gap_s=p95_s,
             missed_samples_worst=missed,
             worst_gap_at_frac=round(frac, 4),
+            dist_at_worst_time_gap_m=round(d_at, 2),
+            implied_speed_kph=round(implied, 1),
+            negative_distance_steps=int((step.dropna() < 0).sum()),
         )
     except Exception as exc:                                # noqa: BLE001
         return LapTelemetry(uid, empty, 0, 0.0, 0.0, 0.0, 0.0,

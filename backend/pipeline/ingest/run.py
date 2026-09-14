@@ -79,6 +79,9 @@ class LazyTelemetry:
                 "median_gap_s": t.median_gap_s if t else 0.0,
                 "missed_samples_worst": t.missed_samples_worst if t else 0,
                 "worst_gap_at_frac": t.worst_gap_at_frac if t else 0.0,
+                "implied_speed_kph": getattr(t, "implied_speed_kph", 0.0) if t else 0.0,
+                "telemetry_quality": (filters.telemetry_quality_band(t.max_gap_s)
+                                      if t and t.ok else "missing"),
             })
         return pd.DataFrame(rows)
 
@@ -190,7 +193,7 @@ def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
                       scope["lap_filters"].get("exclude_track_status"))
     tel = LazyTelemetry(df)
 
-    kept, report = filters.apply_chain(
+    kept, report = filters.apply_chain(  # noqa: E501
         laps=df,
         telemetry=tel,
         uids_for=lambda d: d["lap_uid"],
@@ -323,6 +326,33 @@ def run(scope_path: Path, pilot: bool, all_sessions: bool,
         if p50:
             print(f"  worst-gap per lap: p50 {min(p50):.2f}-{max(p50):.2f} s, "
                   f"p95 {min(p95):.2f}-{max(p95):.2f} s  (nominal period 0.24 s)")
+        bands: dict[str, int] = {}
+        for d in sweeps:
+            for k, v in (d.get("quality_bands") or {}).items():
+                bands[k] = bands.get(k, 0) + v
+        if bands:
+            tot = sum(bands.values())
+            print("  quality tag: " + "  ".join(
+                f"{k}={v} ({100.0*v/tot:.0f}%)"
+                for k, v in sorted(bands.items(), key=lambda kv: -kv[1])))
+
+        # Distance axis has to be physically possible — everything downstream
+        # of P2 integrates along it.
+        bad = sum(d.get("laps_with_impossible_implied_speed", 0) for d in sweeps)
+        neg = sum(d.get("negative_distance_steps_total", 0) for d in sweeps)
+        imax = [d.get("implied_speed_kph_max") for d in sweeps
+                if d.get("implied_speed_kph_max") is not None]
+        print()
+        print("DISTANCE AXIS integrity")
+        print(f"  implied speed across worst gap, max : "
+              f"{max(imax) if imax else 'n/a'} km/h   (F1 record is ~372 km/h)")
+        print(f"  laps implying >400 km/h             : {bad}")
+        print(f"  negative distance steps             : {neg}")
+        if bad or neg:
+            print("  VERDICT: the distance axis has discontinuities — P2 segmentation "
+                  "integrates along it, so fix before proceeding.")
+        else:
+            print("  VERDICT: distance axis is consistent with the time axis.")
 
     # ---- D4: is the track-status filter working? --------------------------
     ts_removed = agg.get("track status", {}).get("removed", 0)
@@ -330,7 +360,7 @@ def run(scope_path: Path, pilot: bool, all_sessions: bool,
     broken = [v for v in ts if v.get("broken")]
     disagree = [v for v in ts if v.get("agrees_with_fastf1") is False]
     print()
-    print("D4 — track status filter")
+    print("D4 — track status filter  (runs FIRST, on the full session)")
     print(f"  laps removed across all sessions : {ts_removed}")
     print(f"  sessions carrying an excluded code but removing nothing : {len(broken)}")
     print(f"  sessions where ours != FastF1's  : {len(disagree)}")

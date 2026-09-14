@@ -199,6 +199,21 @@ def exclude_track_status(
     return laps[~hit]
 
 
+def tag_telemetry_quality(laps: pd.DataFrame, telemetry, uids) -> pd.Series:
+    """Band each lap by its worst telemetry gap, keeping the lap either way.
+
+    Third time this project has reached the same conclusion — conditions,
+    yellow flags, now feed gaps: destroying rows at ingest throws away the
+    evidence needed to decide whether they should have been destroyed.
+    """
+    out = []
+    for uid in uids:
+        t = telemetry.get(uid)
+        out.append("missing" if (t is None or not t.ok)
+                   else telemetry_quality_band(t.max_gap_s))
+    return pd.Series(out, index=laps.index)
+
+
 def tag_track_status(laps: pd.DataFrame, codes: list[str]) -> pd.Series:
     """Flag laps that ran under a non-excluded, non-green code (yellow).
 
@@ -219,6 +234,21 @@ def tag_track_status(laps: pd.DataFrame, codes: list[str]) -> pd.Series:
 
 # -------------------------------------------------------------- 5. D2 gap
 SWEEP_SECONDS = [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0]
+
+# Measured on 2022 Australian GP R (813 laps): worst-gap per lap has
+# p50 0.88 s, p95 1.24 s, max 1.32 s against a 0.24 s nominal period. A
+# ~3-sample dropout therefore happens on the MEDIAN lap — it is the feed's
+# normal behaviour, not an anomaly, and any threshold inside that range
+# slices a unimodal distribution arbitrarily. So the gate became a safety net
+# and the real signal is carried as a tag.
+QUALITY_BANDS = [("clean", 0.5), ("normal", 1.0), ("gappy", 1.5)]
+
+
+def telemetry_quality_band(max_gap_s: float) -> str:
+    for name, limit in QUALITY_BANDS:
+        if max_gap_s <= limit:
+            return name
+    return "holed"
 
 
 def max_telemetry_gap(
@@ -245,6 +275,7 @@ def max_telemetry_gap(
     """
     keep, reasons = [], {"no_telemetry": 0, "gap": 0, "ok": 0}
     gaps_s, gaps_m, missed, where = [], [], [], []
+    implied, neg_steps, bands = [], 0, {}
 
     for idx, uid in zip(laps.index, uids):
         t = telemetry.get(uid)
@@ -255,6 +286,10 @@ def max_telemetry_gap(
         gaps_m.append(t.max_gap_m)
         missed.append(t.missed_samples_worst)
         where.append(t.worst_gap_at_frac)
+        implied.append(getattr(t, "implied_speed_kph", 0.0))
+        neg_steps += int(getattr(t, "negative_distance_steps", 0))
+        b = telemetry_quality_band(t.max_gap_s)
+        bands[b] = bands.get(b, 0) + 1
         if t.max_gap_s > max_gap_s:
             reasons["gap"] += 1
             continue
@@ -285,6 +320,14 @@ def max_telemetry_gap(
         "max_gap_m_p95": q(gaps_m, 0.95),
         "threshold_sweep_laps_kept": sweep,
         "threshold_sweep_pct_kept": sweep_pct,
+        "quality_bands": bands,
+        # Distance-axis integrity. The speed implied by (distance covered /
+        # time elapsed) across each lap's worst gap must be physically
+        # possible; an F1 car has never exceeded ~380 km/h.
+        "implied_speed_kph_p50": q(implied, 0.50),
+        "implied_speed_kph_max": q(implied, 1.0),
+        "laps_with_impossible_implied_speed": int(sum(1 for v in implied if v > 400)),
+        "negative_distance_steps_total": neg_steps,
     }
     return laps.loc[keep]
 
@@ -401,8 +444,8 @@ def apply_chain(
     cur = laps
 
     order = cfg.get("order") or [
-        "drop_pit_laps", "drop_deleted", "require_accurate",
-        "exclude_track_status", "max_telemetry_gap", "pace_gate",
+        "exclude_track_status", "drop_pit_laps", "drop_deleted",
+        "require_accurate", "max_telemetry_gap", "pace_gate",
     ]
 
     for step in order:

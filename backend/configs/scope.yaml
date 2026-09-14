@@ -88,12 +88,23 @@ telemetry:
 # ---------------------------------------------------------------------------
 lap_filters:
   log_each_step: true
+  # REVISED AGAIN (D4, revision 2). Track status now runs FIRST.
+  #
+  # Running it fourth made it unanswerable: the 2022 Australian GP had three
+  # caution periods (SC lap 2, SC lap 23, VSC lap 39) and the filter still
+  # removed zero laps, because `require_accurate` had already taken 189 laps
+  # ahead of it. Whether FastF1's IsAccurate reliably excludes caution laps in
+  # EVERY session is not something to depend on silently.
+  #
+  # Track status is a pure property of the lap - it needs no telemetry and no
+  # timing validity - so it belongs at the front, where its count is measured
+  # against the whole session and means what it says.
   order:
+    - exclude_track_status   # FIRST: operates on the full population
     - drop_pit_laps          # in / out laps
     - drop_deleted
     - require_accurate
-    - exclude_track_status   # moved ahead of the pace gate (D4)
-    - max_telemetry_gap      # new (D2)
+    - max_telemetry_gap      # safety net only - see below
     - pace_gate              # conditions-relative (D3)
 
   # 4 SafetyCar, 5 RedFlag, 6 VSC, 7 VSC ending. Code 5 was missing from the
@@ -110,11 +121,22 @@ lap_filters:
   # distance conflates "the feed dropped a sample" with "the car was fast",
   # since one skipped sample already spans 20 m at 300 km/h.
   #
-  # Time is the honest axis - the feed's period is a fixed 240 ms, so this
-  # threshold reads directly as "allow up to ~3 consecutive dropped samples".
-  # `ingest.run` prints a sweep of candidate thresholds against the real
-  # distribution; set this from that table, not from an argument.
-  max_telemetry_gap_s: 1.0
+  # MEASURED (2022 Australian GP R, 813 laps), worst gap per lap:
+  #   p50 0.88 s   p90 1.20 s   p95 1.24 s   max 1.32 s   (nominal 0.24 s)
+  #
+  # The distribution is unimodal and tight: a ~3-sample dropout happens on the
+  # MEDIAN lap. There is no clean-vs-broken split to threshold between, so any
+  # value inside that range just discards a third of the session arbitrarily -
+  # 1.0 s removed 294 of 813 laps. A filter that fires on the median lap is
+  # not detecting a defect.
+  #
+  # So this is now a SAFETY NET, set outside the observed distribution to catch
+  # genuinely broken laps in other sessions. The real signal is carried as the
+  # `telemetry_quality` tag (clean / normal / gappy / holed) into bronze, and
+  # P2 and P4 decide what they need - same principle as wet conditions and
+  # yellow flags.
+  max_telemetry_gap_s: 2.0
+  quality_bands_s: {clean: 0.5, normal: 1.0, gappy: 1.5}
 
   # D3 - 107% of the SESSION BEST is invalid when grip changes mid-session
   # (2025 Silverstone R yielded 14.4% because of exactly this). Compare each

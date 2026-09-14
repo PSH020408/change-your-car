@@ -144,11 +144,14 @@ def test_track_status_flag_tags_yellow_without_dropping_it():
 class _Tel:
     """Stand-in for LapTelemetry carrying only the gap metrics."""
 
-    def __init__(self, gap_s, gap_m=0.0, ok=True, n=300, frac=0.5):
+    def __init__(self, gap_s, gap_m=0.0, ok=True, n=300, frac=0.5, neg=0):
         self.max_gap_s = gap_s
         self.max_gap_m = gap_m or gap_s * 80.0
         self.missed_samples_worst = max(0, int(round(gap_s / 0.24)) - 1)
         self.worst_gap_at_frac = frac
+        self.dist_at_worst_time_gap_m = self.max_gap_m
+        self.implied_speed_kph = (self.max_gap_m / gap_s * 3.6) if gap_s else 0.0
+        self.negative_distance_steps = neg
         self.n_samples, self._ok = n, ok
 
     @property
@@ -288,3 +291,83 @@ def test_speed_traps_are_stored_with_missing_flags():
     for t in ("i1", "i2", "fl", "st"):
         assert f"speed_{t}_missing" in writer.LAP_COLUMNS.values()
         assert f"speed_{t}_kph" in writer.LAP_COLUMNS.values()
+
+
+# ------------------------------------------------- quality bands (rev 2)
+def test_quality_bands_match_the_measured_distribution():
+    """Measured on 813 race laps: p50 0.88 s, p95 1.24 s, max 1.32 s."""
+    assert filters.telemetry_quality_band(0.24) == "clean"
+    assert filters.telemetry_quality_band(0.88) == "normal"   # the median lap
+    assert filters.telemetry_quality_band(1.24) == "gappy"    # p95
+    assert filters.telemetry_quality_band(3.0) == "holed"
+
+
+def test_safety_net_keeps_the_whole_measured_distribution():
+    """A gate that fires on the median lap is not detecting a defect.
+
+    Every worst-gap value observed across 813 laps (max 1.32 s) must pass the
+    2.0 s safety net; only a genuinely broken lap should be removed.
+    """
+    observed = [0.24, 0.48, 0.72, 0.88, 1.0, 1.2, 1.24, 1.32]
+    broken = [4.5]
+    uids = [f"l{i}" for i in range(len(observed) + len(broken))]
+    laps = pd.DataFrame({"lap_uid": uids}, index=range(len(uids)))
+    tel = {u: _Tel(g) for u, g in zip(uids, observed + broken)}
+    rep = filters.FilterReport(key="t", raw=len(laps))
+    kept = filters.max_telemetry_gap(laps, tel, laps["lap_uid"], 2.0, rep)
+    assert len(kept) == len(observed)
+    assert rep.diagnostics["telemetry_gap"]["removed_gap_exceeded"] == 1
+    bands = rep.diagnostics["telemetry_gap"]["quality_bands"]
+    assert bands["normal"] + bands["clean"] + bands["gappy"] == len(observed)
+
+
+def test_quality_tag_keeps_every_lap():
+    uids = ["a", "b", "c"]
+    laps = pd.DataFrame({"lap_uid": uids}, index=[0, 1, 2])
+    tel = {"a": _Tel(0.24), "b": _Tel(1.24), "c": _Tel(0.0, ok=False)}
+    tags = filters.tag_telemetry_quality(laps, tel, laps["lap_uid"])
+    assert list(tags) == ["clean", "gappy", "missing"]
+    assert len(laps) == 3
+
+
+# ------------------------------------------- distance-axis integrity (rev 2)
+def test_impossible_implied_speed_is_surfaced():
+    """Comparing max-of-time with max-of-distance hid this.
+
+    Pair them on the same sample: a 434 m gap spanning 1.3 s implies
+    1200 km/h, which means the distance axis jumped rather than the feed
+    dropping samples. P2 integrates along that axis, so it has to be caught.
+    """
+    laps = pd.DataFrame({"lap_uid": ["sane", "broken"]}, index=[0, 1])
+    tel = {"sane": _Tel(0.88, gap_m=50.9),        # ~208 km/h — plausible
+           "broken": _Tel(1.30, gap_m=434.0)}     # ~1202 km/h — impossible
+    rep = filters.FilterReport(key="t", raw=2)
+    filters.max_telemetry_gap(laps, tel, laps["lap_uid"], 2.0, rep)
+    d = rep.diagnostics["telemetry_gap"]
+    assert d["laps_with_impossible_implied_speed"] == 1
+    assert d["implied_speed_kph_max"] > 1000
+
+
+def test_negative_distance_steps_are_counted():
+    laps = pd.DataFrame({"lap_uid": ["a"]}, index=[0])
+    rep = filters.FilterReport(key="t", raw=1)
+    filters.max_telemetry_gap(laps, {"a": _Tel(0.5, neg=3)}, laps["lap_uid"], 2.0, rep)
+    assert rep.diagnostics["telemetry_gap"]["negative_distance_steps_total"] == 3
+
+
+# ----------------------------------------------------- chain order (rev 2)
+def test_track_status_runs_first_so_its_count_is_meaningful():
+    """The 2022 Australian GP had three caution periods and the filter still
+    removed zero laps, because `require_accurate` ran ahead of it and took 189.
+    Track status needs no telemetry and no timing validity, so it goes first
+    and is measured against the whole session."""
+    import yaml
+    cfg = yaml.safe_load(paths.Path("configs/scope.yaml").read_text())["lap_filters"]
+    assert cfg["order"][0] == "exclude_track_status"
+    assert cfg["order"].index("exclude_track_status") < cfg["order"].index("require_accurate")
+
+
+def test_red_flag_is_in_the_exclusion_set():
+    import yaml
+    cfg = yaml.safe_load(paths.Path("configs/scope.yaml").read_text())["lap_filters"]
+    assert set(cfg["exclude_track_status"]) == {"4", "5", "6", "7"}

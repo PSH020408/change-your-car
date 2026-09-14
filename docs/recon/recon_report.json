@@ -1,0 +1,4803 @@
+{
+ "generated": "2026-09-14T15:05:46+00:00",
+ "scope": {
+  "name": "ground_effect",
+  "seasons": [
+   2022,
+   2023,
+   2024,
+   2025
+  ]
+ },
+ "sessions": [
+  {
+   "season": 2022,
+   "event": "Bahrain Grand Prix",
+   "session": "R",
+   "ok": true,
+   "error": "",
+   "official_name": "Race",
+   "circuit": "Sakhir",
+   "laps_raw": 1125,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1125,
+     "example": "0 days 01:04:15.422000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "VER"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "1"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.4,
+     "cardinality": 1041,
+     "example": "0 days 00:01:37.880000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 57,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 94.84,
+     "cardinality": 58,
+     "example": "0 days 01:26:08.393000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 94.76,
+     "cardinality": 59,
+     "example": "0 days 01:25:43.479000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.96,
+     "cardinality": 884,
+     "example": "0 days 00:00:31.285000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.18,
+     "cardinality": 983,
+     "example": "0 days 00:00:42.325000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.18,
+     "cardinality": 866,
+     "example": "0 days 00:00:24.389000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.13,
+     "cardinality": 1101,
+     "example": "0 days 01:04:46.662000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.18,
+     "cardinality": 1123,
+     "example": "0 days 01:03:51.046000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.18,
+     "cardinality": 1123,
+     "example": "0 days 01:04:15.427000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 20.8,
+     "cardinality": 78,
+     "example": "230.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 0.18,
+     "cardinality": 102,
+     "example": "254.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 5.42,
+     "cardinality": 81,
+     "example": "274.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 13.42,
+     "cardinality": 123,
+     "example": "250.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "object",
+     "null_pct": 0.18,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "SOFT"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 24,
+     "example": "4.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "Red Bull Racing"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1106,
+     "example": "0 days 01:02:34.872000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.18,
+     "cardinality": 1104,
+     "example": "2022-03-20 15:03:34.889000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 9,
+     "example": "1"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 0.18,
+     "cardinality": 20,
+     "example": "2.0"
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.18,
+     "cardinality": 2,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 1125
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 1008
+    },
+    {
+     "step": "drop deleted",
+     "laps": 1004
+    },
+    {
+     "step": "accurate only",
+     "laps": 889
+    },
+    {
+     "step": "within 107%",
+     "laps": 750
+    },
+    {
+     "step": "green flag only",
+     "laps": 750
+    }
+   ],
+   "laps_usable": 750,
+   "yield_pct": 66.7,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 351,
+     "example": "2022-03-20 16:30:01.322000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 326,
+     "example": "11361"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 174,
+     "example": "282"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "7"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 57,
+     "example": "100"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "1"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 351,
+     "example": "0 days 00:00:00.185000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 351,
+     "example": "0 days 02:29:01.305000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 353,
+     "example": "2022-03-20 16:30:01.200000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 341,
+     "example": "-375"
+    },
+    {
+     "column": "Y",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 347,
+     "example": "1379"
+    },
+    {
+     "column": "Z",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 135,
+     "example": "-159"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 353,
+     "example": "0 days 00:00:00.063000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 353,
+     "example": "0 days 02:29:01.183000"
+    }
+   ],
+   "car_samples": 351,
+   "pos_samples": 353,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 260.0,
+   "lap_distance_m": 5341.7,
+   "sample_spacing_m": {
+    "median": 14.11,
+    "p95": 28.08,
+    "max": 56.1
+   },
+   "top_speed_kph": 299.0,
+   "drivers_without_telemetry": [],
+   "weather": {
+    "rows": 163,
+    "dt_ms": 60001.0,
+    "track_temp_c": [
+     26.3,
+     32.3
+    ],
+    "air_temp_c": [
+     22.3,
+     25.7
+    ],
+    "rainfall_any": false
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 163,
+     "example": "0 days 00:01:03.204000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 35,
+     "example": "25.6"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "17.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 5,
+     "example": "1010.2"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 51,
+     "example": "32.3"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 92,
+     "example": "346"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 9,
+     "example": "0.5"
+    }
+   ],
+   "compounds": {
+    "SOFT": 675,
+    "MEDIUM": 345,
+    "HARD": 105
+   }
+  },
+  {
+   "season": 2022,
+   "event": "Monza",
+   "session": "Q",
+   "ok": true,
+   "error": "",
+   "official_name": "Qualifying",
+   "circuit": "Monza",
+   "laps_raw": 260,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 260,
+     "example": "0 days 00:19:59.034000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "VER"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "1"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 34.62,
+     "cardinality": 168,
+     "example": "0 days 00:01:22.023000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 6,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 68.85,
+     "cardinality": 81,
+     "example": "0 days 00:18:25.215000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 70.0,
+     "cardinality": 78,
+     "example": "0 days 00:28:42.827000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 31.15,
+     "cardinality": 174,
+     "example": "0 days 00:00:27.289000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 256,
+     "example": "0 days 00:00:33.484000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 3.08,
+     "cardinality": 246,
+     "example": "0 days 00:00:29.271000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 31.15,
+     "cardinality": 179,
+     "example": "0 days 00:20:26.323000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 260,
+     "example": "0 days 00:19:29.787000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 3.08,
+     "cardinality": 252,
+     "example": "0 days 00:19:59.034000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 89,
+     "example": "306.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 105,
+     "example": "293.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 30.0,
+     "cardinality": 20,
+     "example": "306.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 110,
+     "example": "255.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "SOFT"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 9,
+     "example": "1.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "True"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "Red Bull Racing"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 260,
+     "example": "0 days 00:18:25.215000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 260,
+     "example": "2022-09-10 14:03:27.469000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "1"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 100.0,
+     "cardinality": 0,
+     "example": ""
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 260
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 101
+    },
+    {
+     "step": "drop deleted",
+     "laps": 94
+    },
+    {
+     "step": "accurate only",
+     "laps": 93
+    },
+    {
+     "step": "within 107%",
+     "laps": 78
+    },
+    {
+     "step": "green flag only",
+     "laps": 78
+    }
+   ],
+   "laps_usable": 78,
+   "yield_pct": 30.0,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 306,
+     "example": "2022-09-10 14:58:59.539000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 284,
+     "example": "11272"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 162,
+     "example": "316"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "8"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 42,
+     "example": "100"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "8"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 306,
+     "example": "0 days 00:00:00.232000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 306,
+     "example": "0 days 01:13:57.285000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "2022-09-10 14:58:59.426000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 308,
+     "example": "-1370"
+    },
+    {
+     "column": "Y",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 313,
+     "example": "-634"
+    },
+    {
+     "column": "Z",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 120,
+     "example": "1871"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "0 days 00:00:00.119000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "0 days 01:13:57.172000"
+    }
+   ],
+   "car_samples": 306,
+   "pos_samples": 315,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 240.0,
+   "lap_distance_m": 5755.3,
+   "sample_spacing_m": {
+    "median": 17.83,
+    "p95": 36.1,
+    "max": 45.73
+   },
+   "top_speed_kph": 343.0,
+   "drivers_without_telemetry": [],
+   "weather": {
+    "rows": 78,
+    "dt_ms": 60001.0,
+    "track_temp_c": [
+     37.6,
+     41.2
+    ],
+    "air_temp_c": [
+     26.9,
+     28.0
+    ],
+    "rainfall_any": false
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 78,
+     "example": "0 days 00:00:30.174000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 12,
+     "example": "27.6"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "35.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 5,
+     "example": "991.2"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 22,
+     "example": "40.3"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 67,
+     "example": "202"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 15,
+     "example": "1.0"
+    }
+   ],
+   "compounds": {
+    "SOFT": 260
+   }
+  },
+  {
+   "season": 2023,
+   "event": "Silverstone",
+   "session": "Q",
+   "ok": true,
+   "error": "",
+   "official_name": "Qualifying",
+   "circuit": "Silverstone",
+   "laps_raw": 386,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 386,
+     "example": "0 days 00:17:10.984000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "LEC"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "16"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 29.79,
+     "cardinality": 270,
+     "example": "0 days 00:02:16.370000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 26,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 72.8,
+     "cardinality": 105,
+     "example": "0 days 00:15:26.061000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 72.8,
+     "cardinality": 105,
+     "example": "0 days 00:17:04.951000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 23.32,
+     "cardinality": 292,
+     "example": "0 days 00:01:03.167000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 3.63,
+     "cardinality": 369,
+     "example": "0 days 00:00:43.101000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 6.22,
+     "cardinality": 352,
+     "example": "0 days 00:00:28.100000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 23.32,
+     "cardinality": 296,
+     "example": "0 days 00:18:14.151000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 3.63,
+     "cardinality": 372,
+     "example": "0 days 00:16:42.904000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 6.22,
+     "cardinality": 361,
+     "example": "0 days 00:17:11.154000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 1.04,
+     "cardinality": 126,
+     "example": "266.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 3.63,
+     "cardinality": 94,
+     "example": "232.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 27.2,
+     "cardinality": 44,
+     "example": "232.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 3.63,
+     "cardinality": 123,
+     "example": "280.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "INTERMEDIATE"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 11,
+     "example": "1.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "True"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "Ferrari"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 386,
+     "example": "0 days 00:15:26.061000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 386,
+     "example": "2023-07-08 14:00:26.064000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 5,
+     "example": "1"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 100.0,
+     "cardinality": 0,
+     "example": ""
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 9,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 386
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 186
+    },
+    {
+     "step": "drop deleted",
+     "laps": 174
+    },
+    {
+     "step": "accurate only",
+     "laps": 172
+    },
+    {
+     "step": "within 107%",
+     "laps": 100
+    },
+    {
+     "step": "green flag only",
+     "laps": 100
+    }
+   ],
+   "laps_usable": 100,
+   "yield_pct": 25.9,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 337,
+     "example": "2023-07-08 15:14:14.926000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 307,
+     "example": "10321"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 167,
+     "example": "265"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 6,
+     "example": "7"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 49,
+     "example": "100"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "8"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 337,
+     "example": "0 days 00:00:00.207000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 337,
+     "example": "0 days 01:29:14.923000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 337,
+     "example": "2023-07-08 15:14:14.724000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 332,
+     "example": "-1739"
+    },
+    {
+     "column": "Y",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 333,
+     "example": "1233"
+    },
+    {
+     "column": "Z",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 102,
+     "example": "1963"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 337,
+     "example": "0 days 00:00:00.005000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 337,
+     "example": "0 days 01:29:14.721000"
+    }
+   ],
+   "car_samples": 337,
+   "pos_samples": 337,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 240.0,
+   "lap_distance_m": 5812.6,
+   "sample_spacing_m": {
+    "median": 16.2,
+    "p95": 30.08,
+    "max": 36.54
+   },
+   "top_speed_kph": 328.0,
+   "drivers_without_telemetry": [],
+   "weather": {
+    "rows": 94,
+    "dt_ms": 60000.0,
+    "track_temp_c": [
+     21.3,
+     26.9
+    ],
+    "air_temp_c": [
+     20.7,
+     22.8
+    ],
+    "rainfall_any": true
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 94,
+     "example": "0 days 00:00:07.478000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "20.9"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 14,
+     "example": "79.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "999.7"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "True"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 28,
+     "example": "22.2"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 40,
+     "example": "224"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 18,
+     "example": "2.7"
+    }
+   ],
+   "compounds": {
+    "SOFT": 381,
+    "INTERMEDIATE": 5
+   }
+  },
+  {
+   "season": 2023,
+   "event": "Hungaroring",
+   "session": "R",
+   "ok": true,
+   "error": "",
+   "official_name": "Race",
+   "circuit": "Budapest",
+   "laps_raw": 1252,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1252,
+     "example": "0 days 01:03:34.909000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "HAM"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "44"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.6,
+     "cardinality": 1064,
+     "example": "0 days 00:01:26.052000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 70,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 97.12,
+     "cardinality": 36,
+     "example": "0 days 01:25:16.378000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 96.88,
+     "cardinality": 39,
+     "example": "0 days 01:24:54.425000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.6,
+     "cardinality": 779,
+     "example": "0 days 00:00:30.556000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 967,
+     "example": "0 days 00:00:31.880000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 798,
+     "example": "0 days 00:00:23.746000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.68,
+     "cardinality": 1231,
+     "example": "0 days 01:04:05.465000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1252,
+     "example": "0 days 01:03:11.245000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1252,
+     "example": "0 days 01:03:34.995000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 18.45,
+     "cardinality": 45,
+     "example": "271.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 31,
+     "example": "231.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 3.12,
+     "cardinality": 23,
+     "example": "244.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 27.08,
+     "cardinality": 55,
+     "example": "241.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "MEDIUM"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 43,
+     "example": "4.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "Mercedes"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1233,
+     "example": "0 days 01:02:04.106000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1233,
+     "example": "2023-07-23 13:03:06.134000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "12"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "4.0"
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 17,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 1252
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 1177
+    },
+    {
+     "step": "drop deleted",
+     "laps": 1161
+    },
+    {
+     "step": "accurate only",
+     "laps": 1142
+    },
+    {
+     "step": "within 107%",
+     "laps": 1044
+    },
+    {
+     "step": "green flag only",
+     "laps": 1044
+    }
+   ],
+   "laps_usable": 1044,
+   "yield_pct": 83.4,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 308,
+     "example": "2023-07-23 14:16:38.826000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 289,
+     "example": "11556"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 166,
+     "example": "257"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 6,
+     "example": "6"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 62,
+     "example": "100"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "0"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 308,
+     "example": "0 days 00:00:00.144000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 308,
+     "example": "0 days 02:15:36.798000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "2023-07-23 14:16:38.878000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 308,
+     "example": "-1544"
+    },
+    {
+     "column": "Y",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 309,
+     "example": "-64"
+    },
+    {
+     "column": "Z",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 172,
+     "example": "2388"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "0 days 00:00:00.196000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "0 days 02:15:36.850000"
+    }
+   ],
+   "car_samples": 308,
+   "pos_samples": 315,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 240.0,
+   "lap_distance_m": 4320.7,
+   "sample_spacing_m": {
+    "median": 12.53,
+    "p95": 26.02,
+    "max": 60.9
+   },
+   "top_speed_kph": 301.0,
+   "drivers_without_telemetry": [
+    {
+     "driver": "GAS",
+     "reason": "KeyError"
+    },
+    {
+     "driver": "OCO",
+     "reason": "KeyError"
+    }
+   ],
+   "weather": {
+    "rows": 164,
+    "dt_ms": 59999.0,
+    "track_temp_c": [
+     45.5,
+     51.4
+    ],
+    "air_temp_c": [
+     27.7,
+     29.6
+    ],
+    "rainfall_any": false
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 164,
+     "example": "0 days 00:00:51.421000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "28.0"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 5,
+     "example": "34.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 9,
+     "example": "989.0"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 52,
+     "example": "50.9"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 127,
+     "example": "287"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 16,
+     "example": "1.8"
+    }
+   ],
+   "compounds": {
+    "HARD": 770,
+    "MEDIUM": 448,
+    "SOFT": 34
+   }
+  },
+  {
+   "season": 2024,
+   "event": "Bahrain Grand Prix",
+   "session": "Q",
+   "ok": true,
+   "error": "",
+   "official_name": "Qualifying",
+   "circuit": "Sakhir",
+   "laps_raw": 267,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 267,
+     "example": "0 days 00:15:27.765000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "SAI"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "55"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 36.7,
+     "cardinality": 167,
+     "example": "0 days 00:01:31.208000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 19,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 65.54,
+     "cardinality": 92,
+     "example": "0 days 00:13:35.553000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 65.54,
+     "cardinality": 92,
+     "example": "0 days 00:18:54.679000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 34.46,
+     "cardinality": 170,
+     "example": "0 days 00:00:29.760000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 262,
+     "example": "0 days 00:00:47.556000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.25,
+     "cardinality": 255,
+     "example": "0 days 00:00:25.067000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 34.46,
+     "cardinality": 175,
+     "example": "0 days 00:15:57.525000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 267,
+     "example": "0 days 00:15:02.698000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.25,
+     "cardinality": 261,
+     "example": "0 days 00:15:28.005000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 75,
+     "example": "210.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 90,
+     "example": "231.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 34.46,
+     "cardinality": 15,
+     "example": "284.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 145,
+     "example": "102.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "MEDIUM"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": "1.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "True"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "Ferrari"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 267,
+     "example": "0 days 00:13:35.553000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 267,
+     "example": "2024-03-01 16:00:11.226000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "1"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 100.0,
+     "cardinality": 0,
+     "example": ""
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 267
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 85
+    },
+    {
+     "step": "drop deleted",
+     "laps": 83
+    },
+    {
+     "step": "accurate only",
+     "laps": 83
+    },
+    {
+     "step": "within 107%",
+     "laps": 83
+    },
+    {
+     "step": "green flag only",
+     "laps": 83
+    }
+   ],
+   "laps_usable": 83,
+   "yield_pct": 31.1,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 335,
+     "example": "2024-03-01 16:38:38.925000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 309,
+     "example": "11729"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 177,
+     "example": "292"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "7"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 56,
+     "example": "99"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "12"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 335,
+     "example": "0 days 00:00:00.075000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 335,
+     "example": "0 days 00:52:03.252000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 350,
+     "example": "2024-03-01 16:38:38.875000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 344,
+     "example": "-379"
+    },
+    {
+     "column": "Y",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 345,
+     "example": "1309"
+    },
+    {
+     "column": "Z",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 131,
+     "example": "-159"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 350,
+     "example": "0 days 00:00:00.025000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 350,
+     "example": "0 days 00:52:03.202000"
+    }
+   ],
+   "car_samples": 335,
+   "pos_samples": 350,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 240.0,
+   "lap_distance_m": 5369.5,
+   "sample_spacing_m": {
+    "median": 14.67,
+    "p95": 30.66,
+    "max": 73.49
+   },
+   "top_speed_kph": 319.0,
+   "drivers_without_telemetry": [],
+   "weather": {
+    "rows": 77,
+    "dt_ms": 60003.0,
+    "track_temp_c": [
+     20.8,
+     22.2
+    ],
+    "air_temp_c": [
+     17.9,
+     18.2
+    ],
+    "rainfall_any": false
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 77,
+     "example": "0 days 00:00:15.662000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "18.2"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "48.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "1018.8"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 14,
+     "example": "22.2"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 39,
+     "example": "53"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 21,
+     "example": "2.7"
+    }
+   ],
+   "compounds": {
+    "SOFT": 255,
+    "MEDIUM": 12
+   }
+  },
+  {
+   "season": 2024,
+   "event": "Monaco",
+   "session": "R",
+   "ok": true,
+   "error": "",
+   "official_name": "Race",
+   "circuit": "Monaco",
+   "laps_raw": 1237,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1233,
+     "example": "0 days 01:36:02.379000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "LEC"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "16"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.18,
+     "cardinality": 1118,
+     "example": "0 days 00:01:24.624000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 78,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 98.14,
+     "cardinality": 23,
+     "example": "0 days 01:36:03.182000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 98.14,
+     "cardinality": 23,
+     "example": "0 days 00:56:45.433000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.62,
+     "cardinality": 963,
+     "example": "0 days 00:00:26.854000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.32,
+     "cardinality": 1042,
+     "example": "0 days 00:00:46.389000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.94,
+     "cardinality": 933,
+     "example": "0 days 00:00:22.382000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.7,
+     "cardinality": 1216,
+     "example": "0 days 01:36:29.220000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.32,
+     "cardinality": 1233,
+     "example": "0 days 00:56:17.802000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.94,
+     "cardinality": 1213,
+     "example": "0 days 01:40:24.824000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 8.41,
+     "cardinality": 67,
+     "example": "197.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 0.32,
+     "cardinality": 59,
+     "example": "80.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 2.18,
+     "cardinality": 53,
+     "example": "2.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 0.32,
+     "cardinality": 52,
+     "example": "270.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "MEDIUM"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 78,
+     "example": "1.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "True"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "Ferrari"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1212,
+     "example": "0 days 00:55:05.680000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1212,
+     "example": "2024-05-26 13:03:11.069000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 6,
+     "example": "1254"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 0.32,
+     "cardinality": 20,
+     "example": "1.0"
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 6,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 1237
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 1191
+    },
+    {
+     "step": "drop deleted",
+     "laps": 1187
+    },
+    {
+     "step": "accurate only",
+     "laps": 1183
+    },
+    {
+     "step": "within 107%",
+     "laps": 561
+    },
+    {
+     "step": "green flag only",
+     "laps": 561
+    }
+   ],
+   "laps_usable": 561,
+   "yield_pct": 45.4,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 284,
+     "example": "2024-05-26 15:06:33.941000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 275,
+     "example": "11217"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 169,
+     "example": "271"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": "7"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 67,
+     "example": "100"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "0"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 284,
+     "example": "0 days 00:00:00.367000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 284,
+     "example": "0 days 02:58:28.552000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 299,
+     "example": "2024-05-26 15:06:33.591000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 289,
+     "example": "-7663"
+    },
+    {
+     "column": "Y",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 294,
+     "example": "-6595"
+    },
+    {
+     "column": "Z",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 158,
+     "example": "502"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 299,
+     "example": "0 days 00:00:00.017000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 299,
+     "example": "0 days 02:58:28.202000"
+    }
+   ],
+   "car_samples": 284,
+   "pos_samples": 299,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 240.0,
+   "lap_distance_m": 3280.7,
+   "sample_spacing_m": {
+    "median": 9.92,
+    "p95": 23.63,
+    "max": 31.44
+   },
+   "top_speed_kph": 288.0,
+   "drivers_without_telemetry": [
+    {
+     "driver": "HUL",
+     "reason": "KeyError"
+    },
+    {
+     "driver": "MAG",
+     "reason": "KeyError"
+    },
+    {
+     "driver": "OCO",
+     "reason": "KeyError"
+    },
+    {
+     "driver": "PER",
+     "reason": "KeyError"
+    }
+   ],
+   "weather": {
+    "rows": 200,
+    "dt_ms": 60002.0,
+    "track_temp_c": [
+     40.2,
+     50.0
+    ],
+    "air_temp_c": [
+     20.9,
+     22.3
+    ],
+    "rainfall_any": false
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 200,
+     "example": "0 days 00:00:54.094000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 15,
+     "example": "21.1"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 13,
+     "example": "69.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "1019.1"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 71,
+     "example": "49.4"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 128,
+     "example": "27"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 22,
+     "example": "1.1"
+    }
+   ],
+   "compounds": {
+    "HARD": 791,
+    "MEDIUM": 412,
+    "SOFT": 34
+   }
+  },
+  {
+   "season": 2024,
+   "event": "Spa-Francorchamps",
+   "session": "Q",
+   "ok": true,
+   "error": "",
+   "official_name": "Qualifying",
+   "circuit": "Spa-Francorchamps",
+   "laps_raw": 348,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 348,
+     "example": "0 days 00:18:39.870000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "VER"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "1"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 35.63,
+     "cardinality": 222,
+     "example": "0 days 00:01:56.003000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 24,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 6,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 75.86,
+     "cardinality": 84,
+     "example": "0 days 00:16:36.796000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 75.86,
+     "cardinality": 84,
+     "example": "0 days 00:34:36.451000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 17.24,
+     "cardinality": 282,
+     "example": "0 days 00:00:32.405000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 342,
+     "example": "0 days 00:00:56.729000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.3,
+     "cardinality": 328,
+     "example": "0 days 00:00:35.465000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 17.24,
+     "cardinality": 288,
+     "example": "0 days 00:19:12.275000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 348,
+     "example": "0 days 00:18:04.483000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.3,
+     "cardinality": 340,
+     "example": "0 days 00:18:39.933000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 120,
+     "example": "276.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 64,
+     "example": "179.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 24.14,
+     "cardinality": 24,
+     "example": "217.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 117,
+     "example": "273.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "INTERMEDIATE"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": "1.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "True"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "Red Bull Racing"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 348,
+     "example": "0 days 00:16:36.796000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 348,
+     "example": "2024-07-27 14:02:07.246000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "1"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 100.0,
+     "cardinality": 0,
+     "example": ""
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 348
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 180
+    },
+    {
+     "step": "drop deleted",
+     "laps": 179
+    },
+    {
+     "step": "accurate only",
+     "laps": 152
+    },
+    {
+     "step": "within 107%",
+     "laps": 127
+    },
+    {
+     "step": "green flag only",
+     "laps": 127
+    }
+   ],
+   "laps_usable": 127,
+   "yield_pct": 36.5,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 420,
+     "example": "2024-07-27 14:51:26.325000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 377,
+     "example": "10702"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 194,
+     "example": "235"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "6"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 66,
+     "example": "100"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "9"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 420,
+     "example": "0 days 00:00:00.119000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 420,
+     "example": "0 days 01:05:55.875000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 422,
+     "example": "2024-07-27 14:51:26.271000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 417,
+     "example": "-487"
+    },
+    {
+     "column": "Y",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 416,
+     "example": "1386"
+    },
+    {
+     "column": "Z",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 352,
+     "example": "4139"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 422,
+     "example": "0 days 00:00:00.065000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 422,
+     "example": "0 days 01:05:55.821000"
+    }
+   ],
+   "car_samples": 420,
+   "pos_samples": 422,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 258.0,
+   "lap_distance_m": 6953.4,
+   "sample_spacing_m": {
+    "median": 15.28,
+    "p95": 33.44,
+    "max": 68.93
+   },
+   "top_speed_kph": 319.0,
+   "drivers_without_telemetry": [],
+   "weather": {
+    "rows": 79,
+    "dt_ms": 60003.0,
+    "track_temp_c": [
+     21.3,
+     22.7
+    ],
+    "air_temp_c": [
+     17.9,
+     18.2
+    ],
+    "rainfall_any": true
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 79,
+     "example": "0 days 00:00:16.152000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "18.1"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 5,
+     "example": "93.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 6,
+     "example": "966.4"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 14,
+     "example": "22.7"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 61,
+     "example": "326"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 22,
+     "example": "0.0"
+    }
+   ],
+   "compounds": {
+    "INTERMEDIATE": 348
+   }
+  },
+  {
+   "season": 2025,
+   "event": "Silverstone",
+   "session": "R",
+   "ok": true,
+   "error": "",
+   "official_name": "Race",
+   "circuit": "Silverstone",
+   "laps_raw": 826,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 824,
+     "example": "0 days 00:57:55.107000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "VER"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "1"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 13.32,
+     "cardinality": 709,
+     "example": "0 days 00:02:15.598000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 52,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 95.16,
+     "cardinality": 40,
+     "example": "0 days 01:17:52.088000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 95.64,
+     "cardinality": 36,
+     "example": "0 days 01:17:23.948000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.66,
+     "cardinality": 757,
+     "example": "0 days 00:00:45.755000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.48,
+     "cardinality": 790,
+     "example": "0 days 00:00:41.707000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.48,
+     "cardinality": 788,
+     "example": "0 days 00:00:28.921000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.91,
+     "cardinality": 802,
+     "example": "0 days 00:58:40.862000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.48,
+     "cardinality": 822,
+     "example": "0 days 00:57:26.279000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.48,
+     "cardinality": 822,
+     "example": "0 days 00:57:55.136000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 7.87,
+     "cardinality": 170,
+     "example": "299.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 0.48,
+     "cardinality": 147,
+     "example": "242.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 4.84,
+     "cardinality": 169,
+     "example": "216.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 0.48,
+     "cardinality": 166,
+     "example": "304.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "object",
+     "null_pct": 0.24,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "INTERMEDIATE"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 33,
+     "example": "1.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "True"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "Red Bull Racing"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 807,
+     "example": "0 days 00:56:09.003000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.24,
+     "cardinality": 805,
+     "example": "2025-07-06 14:03:49.616000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 14,
+     "example": "12"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 0.48,
+     "cardinality": 20,
+     "example": "1.0"
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.24,
+     "cardinality": 13,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 826
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 750
+    },
+    {
+     "step": "drop deleted",
+     "laps": 739
+    },
+    {
+     "step": "accurate only",
+     "laps": 489
+    },
+    {
+     "step": "within 107%",
+     "laps": 119
+    },
+    {
+     "step": "green flag only",
+     "laps": 119
+    }
+   ],
+   "laps_usable": 119,
+   "yield_pct": 14.4,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 329,
+     "example": "2025-07-06 15:38:10.994000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 305,
+     "example": "10596"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 163,
+     "example": "263"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 6,
+     "example": "7"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 55,
+     "example": "99"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "0"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 329,
+     "example": "0 days 00:00:00.218000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 329,
+     "example": "0 days 02:30:30.381000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 342,
+     "example": "2025-07-06 15:38:10.947000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 338,
+     "example": "-1655.0"
+    },
+    {
+     "column": "Y",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 340,
+     "example": "1342.0"
+    },
+    {
+     "column": "Z",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 100,
+     "example": "1964.0"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 342,
+     "example": "0 days 00:00:00.171000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 342,
+     "example": "0 days 02:30:30.334000"
+    }
+   ],
+   "car_samples": 329,
+   "pos_samples": 342,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 240.0,
+   "lap_distance_m": 5807.4,
+   "sample_spacing_m": {
+    "median": 16.44,
+    "p95": 32.62,
+    "max": 97.96
+   },
+   "top_speed_kph": 317.0,
+   "drivers_without_telemetry": [
+    {
+     "driver": "COL",
+     "reason": "KeyError"
+    },
+    {
+     "driver": "LAW",
+     "reason": "KeyError"
+    }
+   ],
+   "weather": {
+    "rows": 155,
+    "dt_ms": 60003.0,
+    "track_temp_c": [
+     20.0,
+     29.6
+    ],
+    "air_temp_c": [
+     16.0,
+     19.6
+    ],
+    "rainfall_any": true
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 155,
+     "example": "0 days 00:00:19.723000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 37,
+     "example": "18.0"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 25,
+     "example": "85.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": "988.6"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 55,
+     "example": "24.2"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 116,
+     "example": "174"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 32,
+     "example": "0.7"
+    }
+   ],
+   "compounds": {
+    "INTERMEDIATE": 608,
+    "MEDIUM": 140,
+    "HARD": 42,
+    "SOFT": 36
+   }
+  },
+  {
+   "season": 2025,
+   "event": "Monza",
+   "session": "Q",
+   "ok": true,
+   "error": "",
+   "official_name": "Qualifying",
+   "circuit": "Monza",
+   "laps_raw": 315,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "0 days 00:18:20.043000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "NOR"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "4"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 33.65,
+     "cardinality": 206,
+     "example": "0 days 00:01:19.611000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 22,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 67.3,
+     "cardinality": 103,
+     "example": "0 days 00:16:42.149000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 67.3,
+     "cardinality": 103,
+     "example": "0 days 00:21:26.014000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 30.79,
+     "cardinality": 210,
+     "example": "0 days 00:00:26.573000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 307,
+     "example": "0 days 00:00:33.046000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.22,
+     "cardinality": 300,
+     "example": "0 days 00:00:29.794000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 30.79,
+     "cardinality": 218,
+     "example": "0 days 00:18:46.616000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "0 days 00:17:50.392000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 2.22,
+     "cardinality": 308,
+     "example": "0 days 00:18:20.043000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 100,
+     "example": "278.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 105,
+     "example": "299.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 32.7,
+     "cardinality": 17,
+     "example": "315.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 143,
+     "example": "223.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "SOFT"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "1.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "True"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "McLaren"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "0 days 00:16:42.149000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 315,
+     "example": "2025-09-06 14:04:02.726000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "1"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 100.0,
+     "cardinality": 0,
+     "example": ""
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 315
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 109
+    },
+    {
+     "step": "drop deleted",
+     "laps": 106
+    },
+    {
+     "step": "accurate only",
+     "laps": 106
+    },
+    {
+     "step": "within 107%",
+     "laps": 99
+    },
+    {
+     "step": "green flag only",
+     "laps": 99
+    }
+   ],
+   "laps_usable": 99,
+   "yield_pct": 31.4,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 289,
+     "example": "2025-09-06 15:00:54.253000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 269,
+     "example": "11462"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 158,
+     "example": "323"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "8"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 26,
+     "example": "100"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "14"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 289,
+     "example": "0 days 00:00:00.298000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 289,
+     "example": "0 days 01:13:33.676000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 296,
+     "example": "2025-09-06 15:00:54.242000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 292,
+     "example": "-1346"
+    },
+    {
+     "column": "Y",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 296,
+     "example": "-352"
+    },
+    {
+     "column": "Z",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 119,
+     "example": "1873"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 296,
+     "example": "0 days 00:00:00.287000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 296,
+     "example": "0 days 01:13:33.665000"
+    }
+   ],
+   "car_samples": 289,
+   "pos_samples": 296,
+   "car_dt_ms": 241.0,
+   "pos_dt_ms": 240.0,
+   "lap_distance_m": 5753.1,
+   "sample_spacing_m": {
+    "median": 18.44,
+    "p95": 34.59,
+    "max": 62.09
+   },
+   "top_speed_kph": 348.0,
+   "drivers_without_telemetry": [],
+   "weather": {
+    "rows": 78,
+    "dt_ms": 60003.0,
+    "track_temp_c": [
+     40.9,
+     44.8
+    ],
+    "air_temp_c": [
+     26.2,
+     26.9
+    ],
+    "rainfall_any": false
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 78,
+     "example": "0 days 00:00:37.567000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": "26.4"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 5,
+     "example": "35.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": "998.9"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 31,
+     "example": "44.6"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 56,
+     "example": "141"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 22,
+     "example": "1.7"
+    }
+   ],
+   "compounds": {
+    "SOFT": 302,
+    "MEDIUM": 13
+   }
+  },
+  {
+   "season": 2025,
+   "event": "Bahrain Grand Prix",
+   "session": "R",
+   "ok": true,
+   "error": "",
+   "official_name": "Race",
+   "circuit": "Sakhir",
+   "laps_raw": 1128,
+   "drivers": 20,
+   "lap_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1128,
+     "example": "0 days 00:57:13.882000"
+    },
+    {
+     "column": "Driver",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "PIA"
+    },
+    {
+     "column": "DriverNumber",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "81"
+    },
+    {
+     "column": "LapTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 3.01,
+     "cardinality": 977,
+     "example": "0 days 00:01:37.492000"
+    },
+    {
+     "column": "LapNumber",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 57,
+     "example": "1.0"
+    },
+    {
+     "column": "Stint",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "1.0"
+    },
+    {
+     "column": "PitOutTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 96.28,
+     "cardinality": 42,
+     "example": "0 days 01:18:58.980000"
+    },
+    {
+     "column": "PitInTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 96.19,
+     "cardinality": 43,
+     "example": "0 days 01:18:34.427000"
+    },
+    {
+     "column": "Sector1Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 3.55,
+     "cardinality": 755,
+     "example": "0 days 00:00:31.139000"
+    },
+    {
+     "column": "Sector2Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.77,
+     "cardinality": 883,
+     "example": "0 days 00:00:42.130000"
+    },
+    {
+     "column": "Sector3Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.77,
+     "cardinality": 761,
+     "example": "0 days 00:00:23.956000"
+    },
+    {
+     "column": "Sector1SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 3.9,
+     "cardinality": 1084,
+     "example": "0 days 00:57:45.021000"
+    },
+    {
+     "column": "Sector2SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.77,
+     "cardinality": 1108,
+     "example": "0 days 00:56:50.049000"
+    },
+    {
+     "column": "Sector3SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 1.77,
+     "cardinality": 1108,
+     "example": "0 days 00:57:14.119000"
+    },
+    {
+     "column": "SpeedI1",
+     "dtype": "float64",
+     "null_pct": 20.74,
+     "cardinality": 71,
+     "example": "233.0"
+    },
+    {
+     "column": "SpeedI2",
+     "dtype": "float64",
+     "null_pct": 1.77,
+     "cardinality": 93,
+     "example": "244.0"
+    },
+    {
+     "column": "SpeedFL",
+     "dtype": "float64",
+     "null_pct": 5.67,
+     "cardinality": 61,
+     "example": "274.0"
+    },
+    {
+     "column": "SpeedST",
+     "dtype": "float64",
+     "null_pct": 11.88,
+     "cardinality": 116,
+     "example": "250.0"
+    },
+    {
+     "column": "IsPersonalBest",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Compound",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 3,
+     "example": "SOFT"
+    },
+    {
+     "column": "TyreLife",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 31,
+     "example": "4.0"
+    },
+    {
+     "column": "FreshTyre",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "Team",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 10,
+     "example": "McLaren"
+    },
+    {
+     "column": "LapStartTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1109,
+     "example": "0 days 00:55:34.907000"
+    },
+    {
+     "column": "LapStartDate",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 1109,
+     "example": "2025-04-13 15:03:49.174000"
+    },
+    {
+     "column": "TrackStatus",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 4,
+     "example": "1"
+    },
+    {
+     "column": "Position",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 20,
+     "example": "1.0"
+    },
+    {
+     "column": "Deleted",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DeletedReason",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 27,
+     "example": ""
+    },
+    {
+     "column": "FastF1Generated",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "IsAccurate",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    }
+   ],
+   "lap_yield": [
+    {
+     "step": "raw",
+     "laps": 1128
+    },
+    {
+     "step": "drop pit in/out",
+     "laps": 1044
+    },
+    {
+     "step": "drop deleted",
+     "laps": 1016
+    },
+    {
+     "step": "accurate only",
+     "laps": 923
+    },
+    {
+     "step": "within 107%",
+     "laps": 922
+    },
+    {
+     "step": "green flag only",
+     "laps": 922
+    }
+   ],
+   "laps_usable": 922,
+   "yield_pct": 81.7,
+   "car_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 348,
+     "example": "2025-04-13 16:04:13.769000"
+    },
+    {
+     "column": "RPM",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 324,
+     "example": "11401"
+    },
+    {
+     "column": "Speed",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 173,
+     "example": "285"
+    },
+    {
+     "column": "nGear",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 7,
+     "example": "7"
+    },
+    {
+     "column": "Throttle",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 56,
+     "example": "100"
+    },
+    {
+     "column": "Brake",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 2,
+     "example": "False"
+    },
+    {
+     "column": "DRS",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "1"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "car"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 348,
+     "example": "0 days 00:00:00.074000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 348,
+     "example": "0 days 01:55:59.502000"
+    }
+   ],
+   "pos_columns": [
+    {
+     "column": "Date",
+     "dtype": "datetime64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 360,
+     "example": "2025-04-13 16:04:13.857000"
+    },
+    {
+     "column": "Status",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "OnTrack"
+    },
+    {
+     "column": "X",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 349,
+     "example": "-352.0"
+    },
+    {
+     "column": "Y",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 356,
+     "example": "1434.0"
+    },
+    {
+     "column": "Z",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 133,
+     "example": "-160.0"
+    },
+    {
+     "column": "Source",
+     "dtype": "object",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "pos"
+    },
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 360,
+     "example": "0 days 00:00:00.162000"
+    },
+    {
+     "column": "SessionTime",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 360,
+     "example": "0 days 01:55:59.590000"
+    }
+   ],
+   "car_samples": 348,
+   "pos_samples": 360,
+   "car_dt_ms": 240.0,
+   "pos_dt_ms": 240.0,
+   "lap_distance_m": 5361.9,
+   "sample_spacing_m": {
+    "median": 14.0,
+    "p95": 27.65,
+    "max": 78.06
+   },
+   "top_speed_kph": 298.0,
+   "drivers_without_telemetry": [],
+   "weather": {
+    "rows": 158,
+    "dt_ms": 60004.0,
+    "track_temp_c": [
+     30.2,
+     34.8
+    ],
+    "air_temp_c": [
+     26.6,
+     27.9
+    ],
+    "rainfall_any": false
+   },
+   "weather_columns": [
+    {
+     "column": "Time",
+     "dtype": "timedelta64[ns]",
+     "null_pct": 0.0,
+     "cardinality": 158,
+     "example": "0 days 00:00:14.542000"
+    },
+    {
+     "column": "AirTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 14,
+     "example": "27.9"
+    },
+    {
+     "column": "Humidity",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": "45.0"
+    },
+    {
+     "column": "Pressure",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 8,
+     "example": "1007.9"
+    },
+    {
+     "column": "Rainfall",
+     "dtype": "bool",
+     "null_pct": 0.0,
+     "cardinality": 1,
+     "example": "False"
+    },
+    {
+     "column": "TrackTemp",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 42,
+     "example": "34.5"
+    },
+    {
+     "column": "WindDirection",
+     "dtype": "int64",
+     "null_pct": 0.0,
+     "cardinality": 59,
+     "example": "29"
+    },
+    {
+     "column": "WindSpeed",
+     "dtype": "float64",
+     "null_pct": 0.0,
+     "cardinality": 27,
+     "example": "2.9"
+    }
+   ],
+   "compounds": {
+    "MEDIUM": 517,
+    "HARD": 316,
+    "SOFT": 295
+   }
+  }
+ ]
+}

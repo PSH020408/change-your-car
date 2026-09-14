@@ -36,13 +36,22 @@ export interface Environment {
   fuel_kg: number;
 }
 
+/**
+ * Distance-indexed channels on the 20 m display grid.
+ * Grid size is measured: car telemetry arrives at a fixed 240 ms period,
+ * so raw spacing is ~20 m at 300 km/h. See docs/recon/DECISIONS.md D1.
+ */
 export interface TelemetryTrace {
   distance_m: number[];
   speed_kph: number[];
   throttle_pct: number[];
-  brake_pct: number[];
+  /** FastF1 gives brake as on/off, not pressure — draw a band, not a curve. */
+  brake_on: boolean[];
   gear: number[];
-  drs: number[];
+  /** Derived from the circuit's DRS zones, not from the observed channel. */
+  drs_open: boolean[];
+  /** True where the sample was interpolated — dim these spans in the HUD. */
+  interpolated: boolean[];
 }
 
 export interface SegmentDelta {

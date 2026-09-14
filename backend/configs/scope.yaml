@@ -10,7 +10,11 @@ era:
   name: ground_effect
   seasons: [2022, 2023, 2024, 2025]
 
-# What the background cache-warming job downloads (everything we may ever need)
+# What the background cache-warming job downloads.
+# MEASURED (23-session ledger): FP ~52-74 MB, Q ~99 MB, R ~110 MB per session.
+# Full era = 92 events / 21 sprint weekends = 460 sessions = ~36.9 GB.
+# Decision D8: COLLECT EVERYTHING (re-downloading later costs rate-limited
+# hours; disk is cheap), but TRAIN NARROW - see `train.sessions` below.
 warm:
   seasons: [2022, 2023, 2024, 2025]
   sessions: ["FP1", "FP2", "FP3", "Q", "SQ", "S", "R"]
@@ -34,6 +38,13 @@ recon:
     - { season: 2025, event: "Monza",                session: "Q" }
     - { season: 2025, event: "Bahrain Grand Prix",   session: "R" }
 
+# What actually enters training (D8). Practice is downloaded but excluded:
+# fuel loads are unknown, so fuel-corrected pace is unreliable. FP3 is the
+# closest to qualifying trim and is the first expansion candidate (P8-6).
+train:
+  sessions: ["Q", "SQ", "R", "S"]
+  expansion_candidates: ["FP3"]
+
 # Modelling pilot — the slice P1-P5 are built and validated against
 pilot:
   seasons: [2023, 2024]
@@ -45,18 +56,87 @@ pilot:
     - Monza
   sessions: ["Q", "R"]
 
+# ---------------------------------------------------------------------------
+# Paths. The cache lives under backend/ because that is where the warm job
+# created it; bronze/silver/gold stay at the repo root. Both are explicit so
+# no code has to guess from a relative __file__ walk (see docs/recon/DECISIONS.md D9).
+# ---------------------------------------------------------------------------
+paths:
+  cache_dir: data/cache        # relative to backend/
+  lake_dir: ../data            # bronze / silver / gold / artifacts
+
+# ---------------------------------------------------------------------------
+# Telemetry. MEASURED: car data arrives at a fixed dt = 240 ms, so spatial
+# spacing is purely a function of speed (4 m at 60 km/h, 20 m at 300 km/h).
+# The original 10 m uniform grid would have interpolated on every straight.
+# Decision D1: no uniform grid for features at all - segment-level integration
+# on raw samples - and a 20 m grid ONLY for the HUD overlay, carrying an
+# interpolation mask so the UI never claims resolution we do not have.
+# ---------------------------------------------------------------------------
 telemetry:
-  resample_by: distance
-  step_m: 10.0
+  feature_resampling: none     # integrate raw samples inside each segment
+  display_step_m: 20.0         # HUD overlay grid = raw spacing at 300 km/h
+  emit_interpolation_mask: true
+  sample_dt_ms: 240            # measured, not assumed
   channels: [Speed, Throttle, Brake, nGear, RPM, DRS, X, Y]
 
+# ---------------------------------------------------------------------------
+# Lap filters. Order matters and is deliberate (D3, D4):
+#   track status BEFORE the pace gate, so we can prove the status filter works
+#   instead of assuming the pace gate already removed SC laps.
+# Every step logs how many laps it removed.
+# ---------------------------------------------------------------------------
 lap_filters:
-  drop_in_lap: true
-  drop_out_lap: true
-  drop_deleted: true
-  require_accurate: true
-  max_pct_off_session_best: 1.07
+  log_each_step: true
+  order:
+    - drop_pit_laps          # in / out laps
+    - drop_deleted
+    - require_accurate
+    - exclude_track_status   # moved ahead of the pace gate (D4)
+    - max_telemetry_gap      # new (D2)
+    - pace_gate              # conditions-relative (D3)
+
   exclude_track_status: ["4", "6", "7"]   # SC, VSC, VSC ending
+
+  # D2 - a gap this large is a transmission dropout, not sampling. Measured
+  # max spacing reached 98 m (2025 Silverstone R) = 4-5 missing samples.
+  max_telemetry_gap_m: 40.0
+
+  # D3 - 107% of the SESSION BEST is invalid when grip changes mid-session
+  # (2025 Silverstone R yielded 14.4% because of exactly this). Compare each
+  # lap against a conditions-matched local reference instead.
+  pace_gate:
+    threshold_pct: 1.07
+    reference: rolling_window      # rolling_window | session_best
+    window_laps: 5                 # +/- laps around the lap under test
+    reference_top_n: 3             # median of the N fastest laps in the window
+
+# ---------------------------------------------------------------------------
+# Conditions are TAGGED, never filtered away (D3). The dry model trains on
+# dry only; wet/inter laps are kept for a later conditions model.
+# ---------------------------------------------------------------------------
+conditions:
+  tag_field: condition           # dry | inter | wet
+  inter_compounds: [INTERMEDIATE]
+  wet_compounds: [WET]
+  train_on: [dry]
+
+# ---------------------------------------------------------------------------
+# Setup proxies (D6). Real team setups are never published; these observable
+# channels stand in for them. Null rates are measured, not guessed, so the
+# imputation rule is part of the spec.
+# ---------------------------------------------------------------------------
+setup_proxies:
+  primary_downforce: SpeedI2     # 0.2% null - cleanest channel in the lap table
+  drag: SpeedST                  # 13.4% null
+  drag_traction: SpeedFL         # 5.4% null
+  secondary_downforce: SpeedI1   # 20.8% null
+  impute_from: segment_max_speed # fill nulls from telemetry within that segment
+  impute_flag_field: speed_trap_imputed   # let the model see that it was filled
+  derived:
+    - aero_balance: SpeedST / high_speed_corner_apex_speed
+    - traction: low_speed_corner_exit_accel
+    - braking_stability: decel_zone_length / entry_speed_squared
 
 segmentation:
   curvature_threshold_1pm: 0.0035

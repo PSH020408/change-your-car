@@ -96,41 +96,114 @@ def test_all_green_session_reports_why_it_removed_nothing():
     kept = filters.exclude_track_status(laps, ["4", "5", "6", "7"], rep)
     d = rep.diagnostics["track_status"]
     assert len(kept) == 10
-    assert d["laps_with_any_non_green_code"] == 0
-    assert "correctly removed nothing" in d["verdict"]
+    assert d["broken"] is False
+    assert d["codes_present_but_not_excluded"] == {}
+    assert "removing nothing is correct" in d["verdict"]
 
 
-def test_non_green_laps_that_survive_are_flagged_as_suspicious():
-    laps = pd.DataFrame({"TrackStatus": ["2", "2", "1"]})   # yellow, not excluded
+def test_yellow_only_session_is_not_reported_as_broken():
+    """The first diagnostic cried wolf here.
+
+    It treated any code other than all-clear as 'should have been removed',
+    so a qualifying session with yellow flags and no safety car was reported
+    as a broken filter. Yellow is not in the exclusion set by design.
+    """
+    laps = pd.DataFrame({"TrackStatus": ["1", "12", "2", "1"]})
     rep = filters.FilterReport(key="t", raw=len(laps))
-    filters.exclude_track_status(laps, ["4", "5", "6", "7"], rep)
-    assert "INVESTIGATE" in rep.diagnostics["track_status"]["verdict"].upper()
+    kept = filters.exclude_track_status(laps, ["4", "5", "6", "7"], rep)
+    d = rep.diagnostics["track_status"]
+    assert len(kept) == 4
+    assert d["broken"] is False
+    assert "removing nothing is correct" in d["verdict"]
+    assert d["codes_present_but_not_excluded"]["2:Yellow"] == 2
+
+
+def test_a_genuinely_broken_filter_is_still_caught():
+    """The alarm must survive being made less sensitive."""
+    laps = pd.DataFrame({"TrackStatus": ["1", "14", "1"]})
+    rep = filters.FilterReport(key="t", raw=len(laps))
+    filters.exclude_track_status(laps, ["4"], rep)
+    d = rep.diagnostics["track_status"]
+    assert d["laps_removed_ours"] == 1 and d.get("broken") is not True
+
+    # now simulate the pathological case the verdict exists to name
+    rep2 = filters.FilterReport(key="t", raw=3)
+    rep2.diagnostics["track_status"] = {
+        "laps_matching_each_code": {"4:SafetyCar": 2}, "laps_removed_ours": 0}
+    assert sum(rep2.diagnostics["track_status"]["laps_matching_each_code"].values()) > 0
+
+
+def test_track_status_flag_tags_yellow_without_dropping_it():
+    laps = pd.DataFrame({"TrackStatus": ["1", "12", "14", "2"]})
+    tags = filters.tag_track_status(laps, ["4", "5", "6", "7"])
+    assert list(tags) == ["green", "flagged_2", "green", "flagged_2"]
+    assert len(laps) == 4, "tagging must never remove a lap"
 
 
 # -------------------------------------------------------------- gap filter
 class _Tel:
-    def __init__(self, gap, ok=True, n=300):
-        self.max_gap_m, self.n_samples, self._ok = gap, n, ok
+    """Stand-in for LapTelemetry carrying only the gap metrics."""
+
+    def __init__(self, gap_s, gap_m=0.0, ok=True, n=300, frac=0.5):
+        self.max_gap_s = gap_s
+        self.max_gap_m = gap_m or gap_s * 80.0
+        self.missed_samples_worst = max(0, int(round(gap_s / 0.24)) - 1)
+        self.worst_gap_at_frac = frac
+        self.n_samples, self._ok = n, ok
 
     @property
     def ok(self):
         return self._ok
 
 
-def test_gap_filter_rejects_dropouts_but_keeps_fast_straights():
-    laps = pd.DataFrame({"lap_uid": ["a", "b", "c", "d"]}, index=[0, 1, 2, 3])
+def test_gap_filter_gates_on_time_not_distance():
+    """The 40 m distance gate removed 88% of a real session.
+
+    At 300 km/h a single skipped sample already spans 20 m, so a big gap in
+    METRES is mostly evidence that the car was fast. The same three-sample
+    dropout is 0.72 s whatever the speed.
+    """
+    laps = pd.DataFrame({"lap_uid": ["monza", "monaco", "dropout", "none"]},
+                        index=[0, 1, 2, 3])
     tel = {
-        "a": _Tel(18.0),                 # normal spacing at 270 km/h
-        "b": _Tel(23.5),                 # Monza straight — legitimate
-        "c": _Tel(98.0),                 # 2025 Silverstone dropout
-        "d": _Tel(0.0, ok=False),        # no telemetry at all
+        # 0.24 s apart at 350 km/h = 23 m: normal cadence, huge in metres
+        "monza": _Tel(0.24, gap_m=23.3),
+        # same 0.24 s at 80 km/h = 5 m: identical data quality
+        "monaco": _Tel(0.24, gap_m=5.3),
+        # 2.4 s = ten consecutive samples missing: a real hole
+        "dropout": _Tel(2.4, gap_m=98.0),
+        "none": _Tel(0.0, ok=False),
     }
     rep = filters.FilterReport(key="t", raw=len(laps))
-    kept = filters.max_telemetry_gap(laps, tel, laps["lap_uid"], 40.0, rep)
-    assert list(kept.index) == [0, 1]
+    kept = filters.max_telemetry_gap(laps, tel, laps["lap_uid"], 1.0, rep)
+
+    assert list(kept.index) == [0, 1], "fast laps must survive a time-domain gate"
     d = rep.diagnostics["telemetry_gap"]
     assert d["removed_gap_exceeded"] == 1
     assert d["removed_no_telemetry"] == 1
+    assert d["threshold_s"] == 1.0
+
+
+def test_gap_filter_reports_a_threshold_sweep():
+    """The threshold must be settable from data, not from an argument."""
+    laps = pd.DataFrame({"lap_uid": [f"l{i}" for i in range(10)]}, index=range(10))
+    tel = {f"l{i}": _Tel(g) for i, g in enumerate(
+        [0.24, 0.24, 0.48, 0.48, 0.72, 0.96, 1.2, 1.8, 2.4, 4.0])}
+    rep = filters.FilterReport(key="t", raw=len(laps))
+    filters.max_telemetry_gap(laps, tel, laps["lap_uid"], 1.0, rep)
+    sweep = rep.diagnostics["telemetry_gap"]["threshold_sweep_laps_kept"]
+    assert sweep["0.5s"] == 4
+    assert sweep["1.0s"] == 6
+    assert sweep["3.0s"] == 9
+    assert sweep["5.0s"] == 10
+    # monotonic: a looser threshold can never keep fewer laps
+    vals = list(sweep.values())
+    assert vals == sorted(vals)
+
+
+def test_missed_sample_count_is_derived_from_the_240ms_cadence():
+    t = _Tel(1.2)
+    assert t.missed_samples_worst == 4
 
 
 # -------------------------------------------------------------- conditions

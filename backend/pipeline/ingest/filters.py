@@ -146,70 +146,145 @@ def exclude_track_status(
         per_code[f"{c}:{TRACK_STATUS_MEANING.get(c, '?')}"] = int(m.sum())
         hit |= m
 
+    # Codes that appear in the data but are NOT in the exclusion set. These
+    # are informational: a yellow-flag lap is not a safety-car lap, and
+    # treating "not all-clear" as "should have been removed" is what made the
+    # first version of this diagnostic cry wolf.
+    other_codes: dict[str, int] = {}
+    for val, n in ts.value_counts().items():
+        for ch in str(val):
+            if ch not in codes and ch != "1":
+                other_codes[f"{ch}:{TRACK_STATUS_MEANING.get(ch, '?')}"] = \
+                    other_codes.get(f"{ch}:{TRACK_STATUS_MEANING.get(ch, '?')}", 0) + int(n)
+
     diag = {
         "present": True,
         "excluded_codes": codes,
         "laps_matching_each_code": per_code,
         "laps_removed_ours": int(hit.sum()),
+        "codes_present_but_not_excluded": other_codes,
         "observed_values": {str(k): int(v) for k, v in ts.value_counts().head(12).items()},
     }
 
-    # Cross-check against the library, on the same input.
-    if fastf1_laps is not None:
+    # Cross-check against the library — on THIS frame, not on the unfiltered
+    # session. Comparing a filtered subset's count against the raw session's
+    # count produced a meaningless negative number in the first run.
+    target = laps if hasattr(laps, "pick_track_status") else fastf1_laps
+    if target is not None and hasattr(target, "pick_track_status"):
         try:
-            ff1_kept = len(fastf1_laps.pick_track_status("".join(codes), how="none"))
-            diag["laps_removed_fastf1"] = int(len(laps) - ff1_kept)
-            diag["agrees_with_fastf1"] = bool(diag["laps_removed_fastf1"] == diag["laps_removed_ours"])
+            ff1_removed = int(len(target) - len(target.pick_track_status("".join(codes), how="none")))
+            diag["laps_removed_fastf1"] = ff1_removed
+            diag["crosscheck_population"] = int(len(target))
+            diag["agrees_with_fastf1"] = bool(ff1_removed == diag["laps_removed_ours"])
         except Exception as exc:                            # noqa: BLE001
             diag["fastf1_crosscheck_error"] = f"{type(exc).__name__}: {exc}"[:120]
+    else:
+        diag["fastf1_crosscheck_error"] = "filtered frame is not a fastf1 Laps object"
 
-    # If nothing matched, say whether the session simply never went yellow.
+    # "Removed nothing" has two very different causes. Separate them.
     if not hit.any():
-        non_green = int((~ts.isin(["1", ""])).sum())
-        diag["laps_with_any_non_green_code"] = non_green
-        diag["verdict"] = ("session ran green throughout — filter correctly removed nothing"
-                           if non_green == 0 else
-                           "NON-GREEN LAPS EXIST BUT NONE MATCHED — investigate code set")
+        present_excluded = sum(per_code.values())
+        if present_excluded == 0:
+            extra = (f" (present but not excluded: "
+                     f"{', '.join(other_codes)})" if other_codes else "")
+            diag["verdict"] = ("no lap ran under any excluded code — "
+                               "removing nothing is correct" + extra)
+            diag["broken"] = False
+        else:
+            diag["verdict"] = (f"BROKEN — {present_excluded} lap(s) carry an excluded "
+                               f"code but none were removed")
+            diag["broken"] = True
 
     report.diagnostics["track_status"] = diag
     return laps[~hit]
 
 
+def tag_track_status(laps: pd.DataFrame, codes: list[str]) -> pd.Series:
+    """Flag laps that ran under a non-excluded, non-green code (yellow).
+
+    A yellow flag forces a lift somewhere on track, so the lap is compromised
+    — but it is still a real lap driven with a real setup, and dropping 20% of
+    a qualifying session for it is too expensive. Tag it, keep it in bronze,
+    and let the training config decide (same principle as wet conditions).
+    """
+    if "TrackStatus" not in laps:
+        return pd.Series("unknown", index=laps.index)
+    ts = laps["TrackStatus"].fillna("").astype(str)
+    excluded = set(codes)
+    def classify(v: str) -> str:
+        marks = {c for c in v if c != "1" and c not in excluded}
+        return "green" if not marks else "flagged_" + "".join(sorted(marks))
+    return ts.map(classify)
+
+
 # -------------------------------------------------------------- 5. D2 gap
+SWEEP_SECONDS = [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0]
+
+
 def max_telemetry_gap(
     laps: pd.DataFrame,
     telemetry: dict[str, "LapTelemetry"],
     uids: pd.Series,
-    max_gap_m: float,
+    max_gap_s: float,
     report: FilterReport,
 ) -> pd.DataFrame:
-    """Reject laps whose telemetry has a hole.
+    """Reject laps whose telemetry has a hole, measured in TIME.
 
-    A 98 m spacing at 300 km/h is ~1.2 s of missing samples — a transmission
-    dropout, not sampling resolution. Interpolating across it would teach the
-    model a stretch of driving that was never recorded (DECISIONS.md D2).
+    The first version of this filter gated on distance at 40 m and removed 88%
+    of a qualifying session. The measured distribution explains why: the
+    median lap's worst spacing is 67 m, because at 300 km/h a single skipped
+    sample already covers 20 m. Distance measures how fast the car was going
+    as much as it measures whether data went missing.
+
+    Time is the honest axis. The feed's nominal period is 240 ms, so a 1.0 s
+    gap means roughly three consecutive samples were dropped, at any speed.
+
+    The diagnostic sweeps candidate thresholds and reports what each would
+    cost, so this number gets set from the distribution rather than from an
+    argument about it (DECISIONS.md D2, revised).
     """
     keep, reasons = [], {"no_telemetry": 0, "gap": 0, "ok": 0}
-    gaps = []
+    gaps_s, gaps_m, missed, where = [], [], [], []
+
     for idx, uid in zip(laps.index, uids):
         t = telemetry.get(uid)
         if t is None or not t.ok:
             reasons["no_telemetry"] += 1
             continue
-        gaps.append(t.max_gap_m)
-        if t.max_gap_m > max_gap_m:
+        gaps_s.append(t.max_gap_s)
+        gaps_m.append(t.max_gap_m)
+        missed.append(t.missed_samples_worst)
+        where.append(t.worst_gap_at_frac)
+        if t.max_gap_s > max_gap_s:
             reasons["gap"] += 1
             continue
         reasons["ok"] += 1
         keep.append(idx)
 
+    def q(arr, p):
+        return round(float(np.quantile(arr, p)), 3) if arr else None
+
+    n = len(gaps_s)
+    sweep = {f"{th}s": int(sum(1 for g in gaps_s if g <= th)) for th in SWEEP_SECONDS} \
+        if gaps_s else {}
+    sweep_pct = {k: (round(100.0 * v / n, 1) if n else 0.0) for k, v in sweep.items()}
+
     report.diagnostics["telemetry_gap"] = {
-        "threshold_m": max_gap_m,
+        "threshold_s": max_gap_s,
+        "laps_evaluated": n,
         "removed_no_telemetry": reasons["no_telemetry"],
         "removed_gap_exceeded": reasons["gap"],
-        "max_gap_m_p50": round(float(np.median(gaps)), 2) if gaps else None,
-        "max_gap_m_p95": round(float(np.quantile(gaps, 0.95)), 2) if gaps else None,
-        "max_gap_m_max": round(float(np.max(gaps)), 2) if gaps else None,
+        "max_gap_s_p50": q(gaps_s, 0.50),
+        "max_gap_s_p90": q(gaps_s, 0.90),
+        "max_gap_s_p95": q(gaps_s, 0.95),
+        "max_gap_s_max": q(gaps_s, 1.0),
+        "missed_samples_p50": int(np.median(missed)) if missed else None,
+        "missed_samples_max": int(np.max(missed)) if missed else None,
+        "worst_gap_position_p50": q(where, 0.50),
+        "max_gap_m_p50": q(gaps_m, 0.50),
+        "max_gap_m_p95": q(gaps_m, 0.95),
+        "threshold_sweep_laps_kept": sweep,
+        "threshold_sweep_pct_kept": sweep_pct,
     }
     return laps.loc[keep]
 
@@ -347,8 +422,10 @@ def apply_chain(
         elif step == "max_telemetry_gap":
             cur = max_telemetry_gap(
                 cur, telemetry, uids_for(cur),
-                float(cfg.get("max_telemetry_gap_m", 40.0)), rep)
-            rep.add("telemetry gap", len(cur))
+                float(cfg.get("max_telemetry_gap_s", 1.0)), rep)
+            d = rep.diagnostics.get("telemetry_gap", {})
+            rep.add("telemetry gap", len(cur),
+                    f"p50={d.get('max_gap_s_p50')}s p95={d.get('max_gap_s_p95')}s")
         elif step == "pace_gate":
             cur = pace_gate(cur, cfg.get("pace_gate", {}), rep)
             rep.add("pace gate", len(cur))

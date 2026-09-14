@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+.turbo/
+
+# Data lake & FastF1 cache (large, regenerable)
+data/cache/
+data/bronze/
+data/silver/
+data/gold/
+data/artifacts/
+*.parquet
+*.feather
+
+# Env & secrets
+.env
+.env.local
+.env.*.local
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

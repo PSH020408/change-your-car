@@ -1,0 +1,29 @@
+target:
+  primary: segment_time_delta_s      # per-segment time vs. session reference
+  secondary: [segment_mean_speed_kph, segment_apex_speed_kph]
+
+split:
+  strategy: grouped                  # never leak a lap across folds
+  group_by: [season, event, driver]
+  holdout_events: [Monza]            # unseen-track generalisation check
+  n_folds: 5
+
+model:
+  type: xgboost                      # xgboost | lightgbm
+  params:
+    n_estimators: 800
+    max_depth: 6
+    learning_rate: 0.03
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_lambda: 1.5
+    objective: reg:squarederror
+
+baseline:
+  type: ridge                        # physics-linear lower bound to beat
+
+acceptance:
+  sector_delta_mae_s: 0.15           # per-sector MAE gate
+  lap_delta_mae_s: 0.30              # full-lap MAE gate
+  unseen_track_mae_s: 0.45           # holdout-event gate
+  monotonicity_checks: true          # more wing => more corner speed, less top speed

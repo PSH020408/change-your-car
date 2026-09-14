@@ -87,6 +87,19 @@ def median_dt_ms(series: pd.Series) -> float | None:
         return None
 
 
+
+def resolve_cache_dir(scope_path: Path, scope: dict) -> Path:
+    """Cache location, read from config rather than walked from __file__.
+
+    The previous version did `scope_path.parent.parent.parent`, which
+    saturates at "." for a relative path and silently put the cache under
+    backend/ instead of the repo root. The path is now explicit in
+    scope.yaml (docs/recon/DECISIONS.md D9).
+    """
+    cfg = (scope.get("paths") or {}).get("cache_dir", "data/cache")
+    base = scope_path.resolve().parent.parent          # -> backend/
+    return (base / cfg).resolve() if not Path(cfg).is_absolute() else Path(cfg)
+
 # ------------------------------------------------------------------ per session
 def survey_session(ff1, season: int, event: str, ident: str) -> dict:
     rec: dict = {
@@ -162,19 +175,35 @@ def survey_session(ff1, season: int, event: str, ident: str) -> dict:
         rec["telemetry_error"] = f"{type(exc).__name__}: {exc}"[:200]
 
     # ---- 4. telemetry availability across ALL drivers --------------------
-    missing = []
+    # A driver who crashed out on lap 1 has no telemetry for a legitimate
+    # reason. Lumping that together with a genuine data hole turns the issue
+    # list into noise (docs/recon/DECISIONS.md D7), so classify it.
+    missing, retired = [], []
+    DNF_LAP_THRESHOLD = 3
+    total_laps = int(laps["LapNumber"].max()) if "LapNumber" in laps else 0
     for drv in sorted(laps["Driver"].dropna().unique()):
         try:
             d_laps = laps.pick_drivers(drv)
-            if not len(d_laps):
-                missing.append({"driver": str(drv), "reason": "no laps"})
+            n = len(d_laps)
+            if not n:
+                retired.append({"driver": str(drv), "reason": "no laps recorded"})
                 continue
+            completed = int(d_laps["LapNumber"].max()) if "LapNumber" in d_laps else n
             t = d_laps.pick_fastest().get_car_data()
             if t is None or len(t) < 10:
-                missing.append({"driver": str(drv), "reason": "empty telemetry"})
+                early_exit = (n <= DNF_LAP_THRESHOLD) or (
+                    total_laps and completed < 0.25 * total_laps)
+                (retired if early_exit else missing).append({
+                    "driver": str(drv),
+                    "laps": n,
+                    "completed_to": completed,
+                    "reason": "retired early — expected" if early_exit
+                              else "laps exist but telemetry empty",
+                })
         except Exception as exc:                          # noqa: BLE001
             missing.append({"driver": str(drv), "reason": f"{type(exc).__name__}"})
-    rec["drivers_without_telemetry"] = missing
+    rec["drivers_without_telemetry"] = missing      # genuine data holes
+    rec["drivers_retired"] = retired                # legitimate absences
 
     # ---- 5. weather ------------------------------------------------------
     w = getattr(session, "weather_data", None)
@@ -323,13 +352,22 @@ def render_markdown(results: list[dict], cache_info: tuple, scope: dict) -> str:
         miss = r.get("drivers_without_telemetry", [])
         if miss:
             issues.append(f"`{r['season']} {r['event']} {r['session']}` — "
-                          f"{len(miss)} driver(s) without usable telemetry: "
+                          f"{len(miss)} driver(s) with laps but no telemetry: "
                           + ", ".join(m["driver"] for m in miss[:8]))
         if r.get("weather", {}).get("rows", 0) == 0:
             issues.append(f"`{r['season']} {r['event']} {r['session']}` — no weather data")
-        if r.get("yield_pct", 100) < 40:
+        # A qualifying session is mostly out / cool-down / in laps; 25-40%
+        # is what a correct filter returns there, so only flag RACE sessions
+        # (docs/recon/DECISIONS.md D3).
+        yp = r.get("yield_pct", 100)
+        if r["session"] in ("R", "S") and yp < 40:
             issues.append(f"`{r['season']} {r['event']} {r['session']}` — "
-                          f"low lap yield ({r['yield_pct']}%); filters may be too aggressive here")
+                          f"race lap yield only {yp}%; check whether the pace gate "
+                          f"is being computed against a session best set in "
+                          f"different conditions")
+        elif r["session"] in ("Q", "SQ") and yp < 15:
+            issues.append(f"`{r['season']} {r['event']} {r['session']}` — "
+                          f"qualifying yield {yp}% is low even for a Q session")
     if issues:
         for i in issues:
             A(f"- {i}")
@@ -353,7 +391,7 @@ def run(scope_path: Path, out_dir: Path) -> int:
     import fastf1 as ff1
 
     scope = yaml.safe_load(scope_path.read_text())
-    cache_dir = (scope_path.parent.parent.parent / "data" / "cache").resolve()
+    cache_dir = resolve_cache_dir(scope_path, scope)
     cache_dir.mkdir(parents=True, exist_ok=True)
     ff1.Cache.enable_cache(str(cache_dir))
 

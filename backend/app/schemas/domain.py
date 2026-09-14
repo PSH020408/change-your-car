@@ -87,14 +87,38 @@ class SegmentDelta(BaseModel):
 
 
 class TelemetryTrace(BaseModel):
-    """Distance-indexed channels. All arrays share the same length."""
+    """Distance-indexed channels on the 20 m display grid.
+
+    Grid choice is measured, not assumed: car telemetry arrives at a fixed
+    240 ms period, so raw spatial spacing is ~20 m at 300 km/h and ~4 m in a
+    hairpin. A finer grid would interpolate detail that was never sampled.
+    See docs/recon/DECISIONS.md D1.
+
+    All arrays share the same length as `distance_m`.
+    """
 
     distance_m: list[float]
     speed_kph: list[float]
     throttle_pct: list[float]
-    brake_pct: list[float]
+
+    # FastF1 reports brake as a BOOLEAN, not a pressure. There is no brake
+    # pressure channel in the public data, so the HUD draws an on/off band
+    # rather than a pressure curve. (docs/recon/DECISIONS.md D5a)
+    brake_on: list[bool]
+
     gear: list[int]
-    drs: list[int]
+
+    # DRS state is RACE-SITUATIONAL upstream (it needs a car within 1 s
+    # ahead), which is not a setup variable. The simulator therefore treats
+    # DRS as a track property: open inside the circuit's activation zones,
+    # closed elsewhere. Do not read this as an observed channel.
+    # (docs/recon/DECISIONS.md D5b)
+    drs_open: list[bool]
+
+    # True where the sample was interpolated onto the display grid rather
+    # than measured. The HUD dims these spans so the page never claims
+    # resolution the data does not have.
+    interpolated: list[bool]
 
 
 class PhysicsDelta(BaseModel):

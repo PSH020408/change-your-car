@@ -109,6 +109,19 @@ def human(n: int) -> str:
     return f"{f:.1f} TB"
 
 
+
+def resolve_cache_dir(scope_path: Path, scope: dict) -> Path:
+    """Cache location, read from config rather than walked from __file__.
+
+    The previous version did `scope_path.parent.parent.parent`, which
+    saturates at "." for a relative path and silently put the cache under
+    backend/ instead of the repo root. The path is now explicit in
+    scope.yaml (docs/recon/DECISIONS.md D9).
+    """
+    cfg = (scope.get("paths") or {}).get("cache_dir", "data/cache")
+    base = scope_path.resolve().parent.parent          # -> backend/
+    return (base / cfg).resolve() if not Path(cfg).is_absolute() else Path(cfg)
+
 # ---------------------------------------------------------------------- worklist
 def build_worklist(ff1, seasons: list[int], sessions: list[str]) -> list[tuple[int, str, str]]:
     """Expand seasons into concrete (season, event, session) triples.
@@ -181,7 +194,7 @@ def run(scope_path: Path, only_seasons: list[int] | None, dry_run: bool, limit: 
     sessions = warm_cfg["sessions"]
     load_cfg = warm_cfg.get("load", {})
 
-    cache_dir = (scope_path.parent.parent.parent / "data" / "cache").resolve()
+    cache_dir = resolve_cache_dir(scope_path, scope)
     cache_dir.mkdir(parents=True, exist_ok=True)
     ff1.Cache.enable_cache(str(cache_dir))
 

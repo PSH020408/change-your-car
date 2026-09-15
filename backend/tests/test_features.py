@@ -59,13 +59,14 @@ def _seg(idx=0, kind="straight", start=0.0, end=300.0, radius=None):
             "direction": "straight", "sector": 1}
 
 
-def test_segment_time_integrates_intervals_not_endpoints():
-    """A dropout inside a segment must not be charged to the driver as time."""
+def test_a_dropout_is_reported_even_though_it_counts_toward_the_total():
+    """Excluding the gap made segment times stop summing to the lap, so it is
+    reported rather than removed — a corrupted lap must not look clean."""
     tel = _lap(40, dt=0.24)
     tel.loc[20:, "session_time_s"] += 5.0            # a 5 s hole mid-segment
-    f = segment_features.features_for_segment(tel, _seg(end=200.0), 1000.0)
-    assert f["segment_time_s"] < 12.0, "the hole must not be counted as driving"
-    assert f["segment_time_gap_s"] > 4.0, "but it must be reported"
+    f = segment_features.features_for_segment(tel, _seg(end=200.0), 1000.0,
+                                              time_span_s=14.4)
+    assert f["segment_time_gap_s"] > 4.0
 
 
 def test_brake_point_is_reported_as_a_fraction_of_the_segment():
@@ -238,3 +239,52 @@ def test_segment_times_summing_to_the_lap_is_checked():
     rep = frun.check_segment_times_sum_to_the_lap(broken)
     assert not rep["passes"]
     assert rep["laps_over_1pct"] >= 1
+
+
+# ------------------------------------------- the boundary-interval defect
+def test_segment_times_tile_the_lap_without_shedding_a_sampling_period():
+    """N samples give N-1 intervals, so summing interior intervals sheds one
+    sampling period per segment. Across 35 segments that was ~8 s of an 80 s
+    lap — a 7% error the invariant caught on the first real build."""
+    n, dt, step = 300, 0.24, 5.0
+    tel = _lap(n, dt=dt, step=step)
+    lap_len = n * step
+    total_time = (n - 1) * dt
+
+    edges = np.linspace(0, lap_len, 11)        # 10 tiling segments
+    segs = [_seg(i, "straight", float(edges[i]), float(edges[i + 1]))
+            for i in range(10)]
+    built = segment_features.features_for_lap(tel, segs, lap_len)
+    summed = float(built["segment_time_s"].sum())
+    assert abs(summed - total_time) / total_time < 0.01, (
+        f"segments summed to {summed:.2f}s against a {total_time:.2f}s lap")
+
+
+def test_a_gap_is_reported_without_being_removed_from_the_total():
+    """The total has to tile the lap, so the gap can no longer be excluded —
+    but it must still be visible, or a corrupted lap looks clean."""
+    tel = _lap(40, dt=0.24, step=5.0)
+    tel.loc[20:, "session_time_s"] += 3.0
+    seg = _seg(end=200.0)
+    built = segment_features.features_for_lap(tel, [seg], 1000.0)
+    assert built["segment_time_gap_s"].iloc[0] > 2.5
+    assert built["segment_time_s"].iloc[0] > 3.0, "the gap stays in the total"
+
+
+# ------------------------------------------------ per-circuit calibration
+def test_the_smoothing_window_scales_with_the_circuit():
+    """Monaco packs 19 turns into 3.3 km; a road course runs nearer 370 m per
+    turn. The global 90 m window found 8 of Monaco's 19."""
+    from pipeline.segment import geometry as G
+    assert G.auto_window_m(3337.0) < G.auto_window_m(7004.0)
+    assert 45.0 <= G.auto_window_m(1000.0) <= 120.0
+    assert 45.0 <= G.auto_window_m(20000.0) <= 120.0
+
+
+def test_a_circuit_override_beats_the_auto_scaled_window():
+    from pipeline.segment import run as srun
+    base = {"geometry_step_m": 10.0, "poly_order": 2}
+    auto = srun.circuit_cfg(base, None, 3337.0)
+    override = srun.circuit_cfg(base, {"segmentation": {"smooth_window_m": 50.0}}, 3337.0)
+    assert override["smooth_window_m"] == 50.0
+    assert auto["smooth_window_m"] != 50.0

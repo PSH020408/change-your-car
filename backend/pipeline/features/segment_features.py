@@ -60,8 +60,41 @@ def segment_slice(tel: pd.DataFrame, start_m: float, end_m: float,
     return tel[m]
 
 
+def boundary_times(tel: pd.DataFrame, segments: list[dict],
+                   lap_length_m: float) -> dict[int, float]:
+    """Each segment's duration, measured on the FULL lap's time axis.
+
+    This has to be done at lap level, not inside the segment. A segment's own
+    slice ends at its last interior sample, so interpolating within it loses
+    the stretch from that sample to the boundary — which is how the first fix
+    still shed 3% of the lap. Interpolating on the whole lap makes adjacent
+    segments share a boundary exactly, so the durations tile by construction.
+    """
+    d = pd.to_numeric(tel["distance_m"], errors="coerce").to_numpy(dtype=float)
+    t = pd.to_numeric(tel.get("session_time_s"), errors="coerce").to_numpy(dtype=float)
+    ok = np.isfinite(d) & np.isfinite(t)
+    out: dict[int, float] = {}
+    if ok.sum() < 2:
+        return out
+    dd, tt = d[ok], t[ok]
+    order = np.argsort(dd)
+    dd, tt = dd[order], tt[order]
+
+    lap_span = float(tt[-1] - tt[0])
+    for seg in segments:
+        a, b = float(seg["start_m"]), float(seg["end_m"])
+        if b > lap_length_m:                 # wraps through start-finish
+            tail = lap_span - float(np.interp(a, dd, tt) - tt[0])
+            head = float(np.interp(b - lap_length_m, dd, tt) - tt[0])
+            out[seg["index"]] = tail + head
+        else:
+            out[seg["index"]] = float(np.interp(b, dd, tt) - np.interp(a, dd, tt))
+    return out
+
+
 def features_for_segment(seg_tel: pd.DataFrame, seg: dict,
-                         lap_length_m: float) -> dict:
+                         lap_length_m: float,
+                         time_span_s: float | None = None) -> dict:
     out: dict = {
         "segment_index": seg["index"],
         "segment_kind": seg["kind"],
@@ -82,18 +115,25 @@ def features_for_segment(seg_tel: pd.DataFrame, seg: dict,
     d = seg_tel["distance_m"].to_numpy(dtype=float)
 
     # --- the label -------------------------------------------------------
-    # Integrate the sample intervals rather than differencing the endpoints:
-    # a dropout inside the segment would otherwise be charged to the driver
-    # as time spent.
-    if np.isfinite(t).sum() >= 2:
-        dt = np.diff(t[np.isfinite(t)])
-        dt = dt[(dt > 0) & (dt < 2.0)]
-        out["segment_time_s"] = round(float(dt.sum()), 4) if len(dt) else np.nan
-        out["segment_time_gap_s"] = round(float(np.diff(t[np.isfinite(t)]).sum()
-                                                - dt.sum()), 4) if len(dt) else np.nan
-    else:
-        out["segment_time_s"] = np.nan
-        out["segment_time_gap_s"] = np.nan
+    # Summing the INTERIOR intervals loses the one that crosses each segment's
+    # opening boundary: N samples give N-1 intervals, so every segment sheds
+    # about one sampling period. Across 35 segments that is ~8 s of a 80 s lap,
+    # and the invariant caught it at a 7% median error.
+    #
+    # The time is therefore measured at the boundaries themselves, interpolated
+    # on the distance axis, which makes adjacent segments tile the lap exactly.
+    # The gap contribution is still computed from the interior intervals and
+    # reported separately, so a dropout inside a segment stays visible even
+    # though it is no longer silently excluded from the total.
+    out["segment_time_s"] = round(time_span_s, 4) if time_span_s is not None else np.nan
+    out["segment_time_gap_s"] = np.nan
+    ok = np.isfinite(t)
+    if ok.sum() >= 2:
+        intervals = np.diff(t[ok])
+        # The gap can no longer be subtracted — the total has to tile the lap —
+        # so it is reported instead. A lap that spent 3 s in a dropout inside
+        # this segment is still visible as one, and P4 can weight it down.
+        out["segment_time_gap_s"] = round(float(intervals[intervals >= 2.0].sum()), 4)
 
     # --- speed -----------------------------------------------------------
     vf = _finite(v)
@@ -149,7 +189,9 @@ def features_for_segment(seg_tel: pd.DataFrame, seg: dict,
 
 def features_for_lap(tel: pd.DataFrame, segments: list[dict],
                      lap_length_m: float) -> pd.DataFrame:
-    rows = [features_for_segment(segment_slice(tel, s["start_m"], s["end_m"],
-                                               lap_length_m), s, lap_length_m)
-            for s in segments]
+    spans = boundary_times(tel, segments, lap_length_m)
+    rows = [features_for_segment(
+        segment_slice(tel, s["start_m"], s["end_m"], lap_length_m),
+        s, lap_length_m, time_span_s=spans.get(s["index"]))
+        for s in segments]
     return pd.DataFrame(rows)

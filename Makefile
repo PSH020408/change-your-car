@@ -34,6 +34,9 @@ warm-status:
 # --- P1 Ingestion ------------------------------------------------------------
 # Reads only what warm_cache has already downloaded, so it makes ZERO network
 # calls and can run while the background download is still going.
+ingest-force:
+	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --force --verbose
+
 ingest:
 	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml
 
@@ -55,6 +58,9 @@ segment:
 
 segment-all:
 	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --verbose
+
+segment-calibrate:
+	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --force --verbose --calibrate
 
 segment-one:
 	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --limit 1 --force --verbose

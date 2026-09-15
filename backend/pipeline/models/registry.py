@@ -66,3 +66,35 @@ def load(root: Path, version: str = "latest") -> tuple[QuantileSet, Level2Model,
     l2 = Level2Model.from_dict(json.loads((d / "level2.json").read_text()))
     metrics = json.loads((d / "metrics.json").read_text())
     return qs, l2, metrics
+
+
+def accept(root: Path, version: str, reason: str) -> None:
+    """Make `version` the model the API loads, gates notwithstanding.
+
+    Used when a gate is missed for a documented reason (the lap gate at
+    ~49% of the measured skill ceiling, 2026-09-16). The reason is written
+    next to the pointer so nobody mistakes it for a pass.
+    """
+    d = root / version
+    if not d.exists():
+        raise FileNotFoundError(d)
+    m = json.loads((d / "metrics.json").read_text())
+    (root / "latest.json").write_text(json.dumps({
+        "version": version, "gates_passed": bool(m.get("gates_passed", False)),
+        "accepted_manually": True, "reason": reason}, indent=1))
+
+
+if __name__ == "__main__":
+    import argparse
+    ap = argparse.ArgumentParser(description="python -m pipeline.models.registry accept <version> --reason ...")
+    ap.add_argument("cmd", choices=["accept", "show"])
+    ap.add_argument("version", nargs="?")
+    ap.add_argument("--reason", default="")
+    ap.add_argument("--root", type=Path, default=Path("../data/artifacts/models"))
+    a = ap.parse_args()
+    if a.cmd == "accept":
+        accept(a.root, a.version, a.reason)
+        print(f"latest -> {a.version}  (manual accept: {a.reason})")
+    else:
+        p = a.root / "latest.json"
+        print(p.read_text() if p.exists() else "no latest")

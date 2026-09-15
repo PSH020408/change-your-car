@@ -23,6 +23,32 @@ def _finite(a) -> np.ndarray:
     return a[np.isfinite(a)]
 
 
+def align_distance(tel: pd.DataFrame, reference_length_m: float) -> pd.DataFrame:
+    """Put this lap's distance axis onto the reference lap's scale.
+
+    Every lap gets its own distance axis from add_distance(), which integrates
+    speed x dt and therefore accumulates its own error — the reference lap
+    came out 1.8% short of the published circuit length. Segments are defined
+    on the REFERENCE lap's axis but applied to every lap's own, so a 1-2%
+    disagreement puts a boundary 50-90 m away from where it belongs. On a
+    380 m corner that is a quarter of the segment: one lap's "corner" includes
+    part of the preceding straight and another's does not, and the difference
+    lands in the target as if the driver had caused it.
+
+    Rescaling proportionally aligns the axes end to end. It does not fix
+    within-lap drift — matching each sample to the nearest point on the
+    reference centreline would — but it removes the dominant term for a
+    fraction of the cost.
+    """
+    out = tel.copy()
+    d = pd.to_numeric(out["distance_m"], errors="coerce").to_numpy(dtype=float)
+    total = float(np.nanmax(d)) if np.isfinite(d).any() else 0.0
+    scale = (reference_length_m / total) if total > 0 else 1.0
+    out["distance_m"] = d * scale
+    out["distance_scale"] = scale
+    return out
+
+
 def segment_slice(tel: pd.DataFrame, start_m: float, end_m: float,
                   lap_length_m: float) -> pd.DataFrame:
     """Samples inside a segment, handling one that wraps start-finish."""

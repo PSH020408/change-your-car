@@ -50,9 +50,10 @@ def build_session(bronze_dir: Path, silver_dir: Path, verbose: bool = False) -> 
         lt = by_lap.get(uid)
         if lt is None or len(lt) < 20:
             continue
-        lt = lt.sort_values("distance_m")
+        lt = segment_features.align_distance(lt.sort_values("distance_m"), lap_len)
 
         seg_df = segment_features.features_for_lap(lt, segments, lap_len)
+        seg_df["lap_distance_scale"] = float(lt["distance_scale"].iloc[0])
         if not len(seg_df):
             continue
 
@@ -76,22 +77,67 @@ def build_session(bronze_dir: Path, silver_dir: Path, verbose: bool = False) -> 
     return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
 
 
-def add_targets(df: pd.DataFrame) -> pd.DataFrame:
-    """Per-segment delta against the session's best time in that segment.
+def add_targets(df: pd.DataFrame, gap_tolerance_s: float = 0.05,
+                reference_quantile: float = 0.02) -> pd.DataFrame:
+    """Per-segment delta against a clean, robust reference for that segment.
 
-    The reference is per (season, event, session, segment_index) so a delta
-    always compares like with like. Only PUSH laps set the reference — a
-    procession's cruise laps would otherwise define "best" and every genuine
-    lap would look fast (2024 Monaco, DECISIONS.md D3).
+    Three things the first version got wrong, all of them the same mistake in
+    different clothes: taking `min` of a quantity we know is corrupted.
+
+    1. A lap with a telemetry gap inside a segment has its time UNDERSTATED —
+       the gap interval is excluded from the integration on purpose. Such a
+       lap then wins the minimum and every honest lap is measured against a
+       time nobody drove. Only laps with a clean segment may set the
+       reference.
+    2. `min` over 88 laps is the most outlier-sensitive statistic available.
+       A low quantile keeps the same meaning with none of the fragility.
+    3. Only push laps set it, so a procession cannot define "best"
+       (2024 Monaco, DECISIONS.md D3).
     """
     if "segment_time_s" not in df:
         return df
     key = ["season", "event", "session", "segment_index"]
-    push = df[df["lap_effort_class"].isin(["push", "moderate"])]
-    ref = (push if len(push) else df).groupby(key)["segment_time_s"].min()
+
+    eligible = df
+    if "lap_effort_class" in df:
+        push = df[df["lap_effort_class"].isin(["push", "moderate"])]
+        eligible = push if len(push) else df
+    if "segment_time_gap_s" in eligible:
+        clean = eligible[pd.to_numeric(eligible["segment_time_gap_s"],
+                                       errors="coerce").fillna(0).abs() <= gap_tolerance_s]
+        eligible = clean if len(clean) else eligible
+
+    ref = eligible.groupby(key)["segment_time_s"].quantile(reference_quantile)
     df = df.merge(ref.rename("segment_reference_s"), on=key, how="left")
     df["segment_delta_s"] = df["segment_time_s"] - df["segment_reference_s"]
     return df
+
+
+def check_segment_times_sum_to_the_lap(df: pd.DataFrame) -> dict:
+    """The invariant that would have caught a broken target immediately.
+
+    A lap's segments tile it exactly once, so their times must add up to the
+    lap time. If they do not, either the segmentation is leaking samples or
+    the integration is wrong — and every delta built on top is meaningless.
+    """
+    if not {"segment_time_s", "lap_time_s", "lap_uid"} <= set(df.columns):
+        return {"checked": False}
+    per_lap = df.groupby("lap_uid").agg(
+        summed=("segment_time_s", "sum"), lap=("lap_time_s", "first"))
+    per_lap = per_lap[per_lap["lap"].notna() & (per_lap["summed"] > 0)]
+    if not len(per_lap):
+        return {"checked": False}
+    err = (per_lap["summed"] - per_lap["lap"]).abs()
+    rel = err / per_lap["lap"]
+    return {
+        "checked": True,
+        "laps": int(len(per_lap)),
+        "median_abs_error_s": round(float(err.median()), 4),
+        "p95_abs_error_s": round(float(err.quantile(0.95)), 4),
+        "median_rel_error_pct": round(float(rel.median()) * 100, 3),
+        "laps_over_1pct": int((rel > 0.01).sum()),
+        "passes": bool(rel.median() <= 0.01),
+    }
 
 
 def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
@@ -160,15 +206,18 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
         print(f"  {k:<10} {v:>6} laps")
 
     print()
-    print("SETUP PROXY imputation  (P1 flagged, P2 fills — measured null rates)")
+    print("SETUP PROXY imputation  (P1 flagged, P2 fills)")
+    print("  Reconnaissance measured these null on RAW laps: i1 20.8%, st 13.4%,")
+    print("  fl 5.4%, i2 0.2%. A low fill rate here is expected, not a bug — a")
+    print("  trap goes unrecorded on out-laps and cool-downs, which the filter")
+    print("  chain has already removed.")
     for t in setup_proxy.TRAPS:
         col = f"speed_{t}_imputed"
         if col in feat:
             per_lap = feat.groupby("lap_uid")[col].first()
             filled = float(per_lap.mean()) * 100
             present = float(feat.groupby("lap_uid")[f"speed_{t}_kph"].first().notna().mean()) * 100
-            print(f"  speed_{t:<3} imputed {filled:>5.1f}% of laps, "
-                  f"{present:>5.1f}% now present")
+            print(f"  speed_{t:<3} imputed {filled:>5.1f}% of laps -> {present:>5.1f}% present")
 
     print()
     print("TARGET  segment_delta_s")
@@ -182,17 +231,55 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
               + ("(should be 0 — the reference is a per-segment minimum)"
                  if neg else "(correct)"))
 
-    thin = feat.isna().mean().sort_values(ascending=False).head(6)
+    # ---- the invariant --------------------------------------------------
+    inv = check_segment_times_sum_to_the_lap(feat)
     print()
-    print("SPARSEST columns  (a feature this empty is not a feature)")
-    for c, frac in thin.items():
-        print(f"  {c:<32} {frac*100:>5.1f}% null")
+    print("INVARIANT  segment times must sum to the lap time")
+    if inv.get("checked"):
+        verdict = "PASS" if inv["passes"] else "FAIL"
+        print(f"  {verdict}  median error {inv['median_abs_error_s']:.3f} s "
+              f"({inv['median_rel_error_pct']:.2f}%), p95 {inv['p95_abs_error_s']:.3f} s, "
+              f"{inv['laps_over_1pct']} lap(s) over 1%")
+        if not inv["passes"]:
+            print("  Segments are leaking samples or the integration is wrong — every")
+            print("  delta built on top of this is meaningless until it passes.")
+    else:
+        print("  not checkable (missing columns)")
+
+    if "lap_distance_scale" in feat:
+        sc = feat.groupby("lap_uid")["lap_distance_scale"].first()
+        drift = (sc.max() - sc.min()) * float(feat["segment_length_m"].sum()
+                                              / max(feat["segment_index"].nunique(), 1))
+        print()
+        print("DISTANCE AXIS alignment  (each lap integrates its own, and they disagree)")
+        print(f"  rescale factor : {sc.min():.4f} - {sc.max():.4f}")
+        print(f"  raw spread     : {(sc.max()/sc.min()-1)*100:.2f}% — before rescaling this")
+        print(f"                   moved segment boundaries by up to ~{abs(drift):.0f} m")
+
+    # ---- sparsity, but only where the column is supposed to exist ---------
+    print()
+    print("SPARSITY  (structural nulls excluded — a straight has no brake point)")
+    applicable = {
+        "brake_point_frac": feat.get("brake_frac", pd.Series(dtype=float)) > 0,
+        "throttle_on_frac": feat.get("throttle_mean_pct", pd.Series(dtype=float)).notna(),
+    }
+    rows = []
+    for c in feat.columns:
+        mask = applicable.get(c)
+        sub = feat[mask] if mask is not None and mask.any() else feat
+        if not len(sub):
+            continue
+        rows.append((c, float(sub[c].isna().mean()), mask is not None))
+    for c, frac, conditioned in sorted(rows, key=lambda r: -r[1])[:6]:
+        tag = "  (where applicable)" if conditioned else ""
+        print(f"  {c:<32} {frac*100:>5.1f}% null{tag}")
 
     (gold / "feature_report.json").write_text(json.dumps({
         "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "rows": int(len(feat)), "columns": list(feat.columns),
         "laps": int(feat["lap_uid"].nunique()),
         "failures": failures,
+        "invariant_segment_times": inv,
         "null_fraction": {c: round(float(v), 4) for c, v in feat.isna().mean().items()},
     }, indent=1))
     print()

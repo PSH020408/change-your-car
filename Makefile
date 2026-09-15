@@ -53,6 +53,9 @@ print(f\"sessions {t['sessions']}  laps {t['laps']:,}  samples {t['telemetry_row
 segment:
 	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml
 
+segment-all:
+	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --verbose
+
 segment-one:
 	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --limit 1 --force --verbose
 

@@ -1,4 +1,4 @@
-.PHONY: setup setup-be setup-fe dev-be dev-fe recon warm warm-bg warm-status ingest segment features train test lint clean
+.PHONY: setup setup-be setup-fe dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
 
 setup: setup-be setup-fe
 
@@ -78,6 +78,9 @@ silver-clean:
 # --- P2-5..P2-7 Feature store ------------------------------------------------
 features:
 	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --verbose
+
+physics-check:
+	cd backend && .venv/bin/python -m pipeline.physics.calibrate --gold ../data/gold/features.parquet
 
 features-one:
 	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --limit 1 --verbose

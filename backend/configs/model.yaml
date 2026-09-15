@@ -16,12 +16,20 @@ data:
   gap_tolerance_s: 0.05                 # a segment with a telemetry hole has an understated time
   exclude_unstable_races: true          # physics-check #2: SC / red-flag races have no rhythm
   holdout_event: miami_grand_prix       # never touched by CV; the "unseen track" number
+  # The gate population: what the HUD simulates. A push lap with nobody
+  # within 2.5 s ahead at the line. Laps in traffic still TRAIN the model
+  # (that is how it learns the gap feature); they are not what it is judged on.
+  clean_air_gap_s: 2.5
+  gate_effort: [push]
 
 features:
   # Only things known BEFORE the lap is driven. Anything measured on the lap
   # itself (speeds, brake points, throttle, DRS, pace ratios, the lap time)
   # is an outcome and is refused by FeatureSpec — see dataset.LEAKAGE.
-  numeric: [tyre_life, lap_number, stint, track_temp_c, air_temp_c, lap_effort_index,
+  # gap_ahead_s: seconds to the car that crossed the line just before this
+  # lap started - traffic, known at the line. The HUD simulates clean air
+  # (gap = 10 s); the model learns what dirty air costs from the race laps.
+  numeric: [tyre_life, lap_number, track_temp_c, air_temp_c, lap_effort_index, gap_ahead_s,
             segment_length_m, segment_min_radius_m, segment_reference_s]
   categorical: [segment_kind, session, compound, fresh_tyre, driver, chassis, season,
                 segment_sector, segment_is_kink]
@@ -33,8 +41,8 @@ level1:
   params:
     n_estimators: 600
     learning_rate: 0.03
-    num_leaves: 63
-    min_child_samples: 50
+    num_leaves: 31                       # 63 leaves / 50 samples fitted per-lap noise: ridge beat it
+    min_child_samples: 200
     subsample: 0.8
     colsample_bytree: 0.8
     reg_lambda: 1.0

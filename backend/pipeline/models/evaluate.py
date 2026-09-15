@@ -48,6 +48,18 @@ def lap_metrics(lap_uid: pd.Series, y: np.ndarray, q: pd.DataFrame) -> dict:
     }
 
 
+def clean_push_mask(df: pd.DataFrame, cfg: dict) -> np.ndarray:
+    """The HUD's population: push laps with clean air at the line."""
+    d = cfg.get("data", {})
+    ok = np.ones(len(df), dtype=bool)
+    if "lap_effort_class" in df:
+        ok &= df["lap_effort_class"].isin(d.get("gate_effort", ["push"])).to_numpy()
+    if "gap_ahead_s" in df and d.get("clean_air_gap_s") is not None:
+        gap = pd.to_numeric(df["gap_ahead_s"], errors="coerce")
+        ok &= (gap.isna() | (gap >= float(d["clean_air_gap_s"]))).to_numpy()
+    return ok
+
+
 def counterfactual_lap_metrics(df: pd.DataFrame, y: np.ndarray, q: pd.DataFrame) -> dict:
     """Error of the quantity the HUD actually shows.
 
@@ -130,10 +142,13 @@ def gates(metrics: dict, cfg: dict) -> dict[str, bool]:
     lo, hi = a.get("coverage_80", [0.7, 0.9])
     cov = ho.get("coverage_80_calibrated", cv.get("coverage_80_calibrated", cv["coverage_80"])) if ho \
         else cv.get("coverage_80_calibrated", cv["coverage_80"])
+    def cf(m: dict) -> float:
+        cp = m.get("clean_push") or {}
+        return float(cp.get("cf_lap_mae_s", m.get("cf_lap_mae_s", np.inf)))
     out = {
         "segment_mae": cv["segment_mae_s"] <= float(a["segment_mae_s"]),
-        "counterfactual_lap_mae": cv.get("cf_lap_mae_s", np.inf) <= float(a["lap_mae_s"]),
-        "unseen_track_counterfactual_lap_mae": (ho.get("cf_lap_mae_s", np.inf) <= float(a["unseen_track_lap_mae_s"])) if ho else True,
+        "clean_push_counterfactual_lap_mae": cf(cv) <= float(a["lap_mae_s"]),
+        "unseen_track_clean_push_counterfactual_lap_mae": (cf(ho) <= float(a["unseen_track_lap_mae_s"])) if ho else True,
         "coverage_80_calibrated": lo <= cov <= hi,
         "beats_ridge": (cv["segment_mae_s"] < metrics.get("ridge", {}).get("segment_mae_s", np.inf))
                        if a.get("beat_ridge", True) else True,

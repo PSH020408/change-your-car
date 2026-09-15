@@ -214,6 +214,46 @@ def tag_telemetry_quality(laps: pd.DataFrame, telemetry, uids) -> pd.Series:
     return pd.Series(out, index=laps.index)
 
 
+def gap_to_neighbours(laps: pd.DataFrame) -> pd.DataFrame:
+    """Seconds to the car that crossed the line just before / just after this
+    lap started, over ALL drivers' crossings in the session.
+
+    Traffic is the largest thing a lap carries that no setup or tyre feature
+    can explain, and it is known BEFORE the lap: at the line you either
+    have a car 0.8 s ahead or you do not. Measured on the unfiltered lap
+    table (in-laps, out-laps and SC laps included) so a car pitting ahead
+    still counts as a car ahead. NaN when there is no other crossing on
+    that side (first car past the line in a session).
+    """
+    out = pd.DataFrame(index=laps.index)
+    if "lap_start_s" not in laps or "Driver" not in laps:
+        out["gap_ahead_s"] = np.nan
+        out["gap_behind_s"] = np.nan
+        return out
+    t = pd.to_numeric(laps["lap_start_s"], errors="coerce").to_numpy(dtype=float)
+    drv = laps["Driver"].astype(str).to_numpy()
+    order = np.argsort(t, kind="stable")
+    ts, ds = t[order], drv[order]
+    ahead = np.full(len(t), np.nan)
+    behind = np.full(len(t), np.nan)
+    for k in range(len(ts)):
+        if not np.isfinite(ts[k]):
+            continue
+        j = k - 1                                   # nearest earlier crossing by another car
+        while j >= 0 and (ds[j] == ds[k] or not np.isfinite(ts[j])):
+            j -= 1
+        if j >= 0:
+            ahead[order[k]] = ts[k] - ts[j]
+        j = k + 1
+        while j < len(ts) and (ds[j] == ds[k] or not np.isfinite(ts[j])):
+            j += 1
+        if j < len(ts):
+            behind[order[k]] = ts[j] - ts[k]
+    out["gap_ahead_s"] = ahead
+    out["gap_behind_s"] = behind
+    return out
+
+
 def tag_track_status(laps: pd.DataFrame, codes: list[str]) -> pd.Series:
     """Flag laps that ran under a non-excluded, non-green code (yellow).
 

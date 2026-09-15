@@ -30,7 +30,8 @@ LAP_CONTEXT = [
     "driver", "team", "chassis", "power_unit", "lap_number", "stint",
     "lap_time_s", "compound", "tyre_life", "fresh_tyre", "condition",
     "track_status_flag", "telemetry_quality", "pace_ratio",
-    "pace_ratio_session_best", "air_temp_c", "track_temp_c", "rainfall",
+    "pace_ratio_session_best", "gap_ahead_s", "gap_behind_s",
+    "air_temp_c", "track_temp_c", "rainfall",
     "wind_speed_kph", "humidity_pct",
 ]
 

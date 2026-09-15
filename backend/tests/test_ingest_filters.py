@@ -371,3 +371,18 @@ def test_red_flag_is_in_the_exclusion_set():
     import yaml
     cfg = yaml.safe_load(paths.Path("configs/scope.yaml").read_text())["lap_filters"]
     assert set(cfg["exclude_track_status"]) == {"4", "5", "6", "7"}
+
+
+def test_gap_to_neighbours_uses_every_crossing_in_the_session():
+    """VER crosses at 100, HAM at 101.2, VER again at 190 (a lap later),
+    LEC at 191.5. HAM's lap starts 1.2 s behind VER; VER's second lap has
+    nobody within 80 s ahead (HAM's next crossing is not in the table)."""
+    from pipeline.ingest import filters as F
+    laps = pd.DataFrame({"Driver": ["VER", "HAM", "VER", "LEC"],
+                         "lap_start_s": [100.0, 101.2, 190.0, 191.5]})
+    g = F.gap_to_neighbours(laps)
+    assert np.isnan(g["gap_ahead_s"].iloc[0])                 # first car past the line
+    assert g["gap_ahead_s"].iloc[1] == pytest.approx(1.2)      # HAM behind VER
+    assert g["gap_ahead_s"].iloc[2] == pytest.approx(88.8)     # VER lap 2: HAM's crossing 88.8 s earlier
+    assert g["gap_behind_s"].iloc[2] == pytest.approx(1.5)     # LEC 1.5 s behind
+    assert np.isnan(g["gap_behind_s"].iloc[3])

@@ -21,16 +21,30 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-KINDS = ["straight", "kink", "low_speed_corner", "medium_speed_corner", "high_speed_corner"]
+SECTORS = [1, 2, 3]
 
 
 def session_table(df: pd.DataFrame) -> pd.DataFrame:
-    """One row per (season, event_slug, session, segment_index)."""
-    keep = df.dropna(subset=["segment_reference_s"])
-    g = keep.groupby(["season", "event_slug", "session", "segment_index"])
-    t = g.agg(reference_s=("segment_reference_s", "first"), kind=("segment_kind", "first"),
+    """One row per (season, event_slug, session, sector).
+
+    Sectors, not segments: a segment index means nothing across seasons (each
+    season's circuit is segmented on its own ensemble, and 2022 Bahrain's
+    segment 7 is not 2024's), so the first version compared unrelated
+    pieces of track and printed a 59% "race penalty". Official sectors are
+    the same physical stretch every year, so a sector's reference time is
+    comparable across seasons and sessions.
+    """
+    keep = df.dropna(subset=["segment_reference_s", "segment_sector"])
+    keep = keep.drop_duplicates(["season", "event_slug", "session", "segment_index"])
+    g = keep.groupby(["season", "event_slug", "session", "segment_sector"])
+    t = g.agg(reference_s=("segment_reference_s", "sum"),
               track_temp_c=("track_temp_c", "median"), air_temp_c=("air_temp_c", "median")).reset_index()
-    best = t.groupby(["event_slug", "segment_index"])["reference_s"].transform("min")
+    t = t.rename(columns={"segment_sector": "sector"})
+    t["sector"] = t["sector"].astype(int)
+    # temperatures per session (the segment rows carried the lap's values)
+    temps = df.groupby(["season", "event_slug", "session"])[["track_temp_c", "air_temp_c"]].median().reset_index()
+    t = t.drop(columns=["track_temp_c", "air_temp_c"]).merge(temps, on=["season", "event_slug", "session"], how="left")
+    best = t.groupby(["event_slug", "sector"])["reference_s"].transform("min")
     t["target_pct"] = 100.0 * (t["reference_s"] - best) / best
     # centre the temperatures within the circuit: the model must not learn
     # "Bahrain is hot" as "hot is slow"
@@ -49,9 +63,7 @@ def design(t: pd.DataFrame) -> tuple[np.ndarray, list[str]]:
     cols.append(t["is_race"].to_numpy(float)); names.append("is_race")
     cols.append(t["season_idx"].to_numpy(float)); names.append("season_idx")
     cols.append(t["air_temp_c_centred"].to_numpy(float)); names.append("air_temp_per_c")
-    for k in KINDS:                                   # track temperature per segment kind
-        cols.append(t["track_temp_c_centred"].to_numpy(float) * (t["kind"] == k).to_numpy(float))
-        names.append(f"track_temp_per_c[{k}]")
+    cols.append(t["track_temp_c_centred"].to_numpy(float)); names.append("track_temp_per_c")
     return np.column_stack(cols), names
 
 
@@ -64,14 +76,16 @@ class Level2Model:
     n_rows: int = 0
     alpha: float = 1.0
 
-    def reference_pct_shift(self, kind: str, d_track_temp_c: float = 0.0, d_air_temp_c: float = 0.0,
+    def reference_pct_shift(self, kind: str = "", d_track_temp_c: float = 0.0, d_air_temp_c: float = 0.0,
                             to_race: float = 0.0, d_season: float = 0.0) -> tuple[float, float, float]:
-        """% change of a segment's reference time for a change in conditions.
-        Returns (nominal, lo, hi) from the coefficient intervals."""
+        """% change of a reference time for a change in conditions.
+        Returns (nominal, lo, hi) from the coefficient intervals. `kind` is
+        accepted for API stability; the sector-level fit has one temperature
+        coefficient for every segment kind."""
         def pick(d: dict, k: str) -> float:
             return float(d.get(k, self.coef.get(k, 0.0)))
-        k_t = f"track_temp_per_c[{kind}]"
-        terms = [("is_race", to_race), ("season_idx", d_season), ("air_temp_per_c", d_air_temp_c), (k_t, d_track_temp_c)]
+        terms = [("is_race", to_race), ("season_idx", d_season), ("air_temp_per_c", d_air_temp_c),
+                 ("track_temp_per_c", d_track_temp_c)]
         nom = sum(self.coef.get(k, 0.0) * x for k, x in terms)
         lo = sum(min(pick(self.coef_lo, k) * x, pick(self.coef_hi, k) * x) for k, x in terms)
         hi = sum(max(pick(self.coef_lo, k) * x, pick(self.coef_hi, k) * x) for k, x in terms)
@@ -97,7 +111,7 @@ def _ridge(X: np.ndarray, y: np.ndarray, alpha: float) -> np.ndarray:
 def fit_level2(df: pd.DataFrame, alpha: float = 1.0, n_boot: int = 200, seed: int = 0) -> tuple[Level2Model, pd.DataFrame]:
     t = session_table(df)
     t = t[t["informative"]].reset_index(drop=True)
-    if len(t) < 20:
+    if len(t) < 12 or t["is_race"].nunique() < 2 and t["season_idx"].nunique() < 2:
         return Level2Model({}, n_sessions=0, n_rows=int(len(t)), alpha=alpha), t
     X, names = design(t)
     y = t["target_pct"].to_numpy(float)

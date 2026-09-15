@@ -36,9 +36,14 @@ def group_folds(groups: pd.Series, n_folds: int) -> list[np.ndarray]:
 
 def _report(title: str, m: dict) -> None:
     print(f"  {title:<10} segment MAE {m['segment_mae_s']:.3f} s  (median {m['segment_median_ae_s']:.3f})"
-          f"   lap MAE {m['lap_mae_s']:.3f} s  (median {m['lap_median_ae_s']:.3f})"
-          f"   coverage80 {m['coverage_80']:.2f}   width {m['interval_width_median_s']:.2f} s"
-          f"   n={m['n']:,} / {m['laps']:,} laps")
+          f"   absolute lap MAE {m['lap_mae_s']:.3f} s"
+          f"   coverage80 {m['coverage_80']:.2f} raw"
+          + (f" / {m['coverage_80_calibrated']:.2f} calibrated" if "coverage_80_calibrated" in m else "")
+          + f"   n={m['n']:,} / {m['laps']:,} laps")
+    if "cf_lap_mae_s" in m:
+        print(f"  {'':<10} COUNTERFACTUAL lap MAE {m['cf_lap_mae_s']:.3f} s  (median {m['cf_lap_median_ae_s']:.3f},"
+              f" 'no change' would score {m['cf_lap_mae_naive_s']:.3f})   segment {m['cf_segment_mae_s']:.3f} s"
+              f"   {m['cf_laps']:,} laps vs their driver's best")
 
 
 def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
@@ -91,17 +96,27 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
             oof_ridge[val] = rg.predict(Q.ridge_frame(spec, X.iloc[val]))
         print(f"  fold {k}/{len(folds)}  val {len(val):>7,} rows   {time.time() - t0:5.0f}s")
 
-    cv = {**E.segment_metrics(y, oof), **E.lap_metrics(train["lap_uid"], y, oof)}
+    # Conformal calibration on the out-of-group residuals: widen [q10, q90]
+    # until 80% of unseen-event truths fall inside. Measured again on the
+    # holdout event, which the calibration never saw.
+    margin = Q.conformal_margin(y, oof, 0.8)
+    oof_cal = oof.copy(); oof_cal["q10"] -= margin; oof_cal["q90"] += margin
+    cv = {**E.segment_metrics(y, oof), **E.lap_metrics(train["lap_uid"], y, oof),
+          **E.counterfactual_lap_metrics(train, y, oof),
+          "coverage_80_calibrated": E.segment_metrics(y, oof_cal)["coverage_80"],
+          "conformal_margin_s": margin}
     metrics: dict = {"cv": cv, "backend": backend, "n_train_rows": int(len(X)),
                      "n_train_laps": int(train["lap_uid"].nunique()), "quick": quick}
     print("\nOUT-OF-GROUP (GroupKFold on season|event)")
     _report("GBM q50", cv)
+    print(f"  {'':<10} conformal margin +-{margin:.3f} s on every band (from these residuals)")
     if ridge_ok:
         rq = pd.DataFrame({"q10": oof_ridge, "q50": oof_ridge, "q90": oof_ridge})
-        ridge = {**E.segment_metrics(y, rq), **E.lap_metrics(train["lap_uid"], y, rq)}
+        ridge = {**E.segment_metrics(y, rq), **E.lap_metrics(train["lap_uid"], y, rq),
+                 **E.counterfactual_lap_metrics(train, y, rq)}
         metrics["ridge"] = ridge
-        print(f"  {'Ridge':<10} segment MAE {ridge['segment_mae_s']:.3f} s   lap MAE {ridge['lap_mae_s']:.3f} s"
-              f"   (the linear floor the GBM must beat)")
+        print(f"  {'Ridge':<10} segment MAE {ridge['segment_mae_s']:.3f} s   absolute lap {ridge['lap_mae_s']:.3f} s"
+              f"   counterfactual lap {ridge['cf_lap_mae_s']:.3f} s   (the linear floor the GBM must beat)")
     naive = pd.DataFrame({c: np.full(len(y), np.median(y)) for c in ("q10", "q50", "q90")})
     metrics["naive_median"] = E.segment_metrics(y, naive)
     print(f"  {'Naive':<10} segment MAE {metrics['naive_median']['segment_mae_s']:.3f} s   (predict the median delta)")
@@ -114,15 +129,30 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
     print("  by session (OOF):")
     print("   " + bs.round(3).to_string().replace("\n", "\n   "))
     metrics["by_session"] = bs.round(4).to_dict(orient="index")
+    if "lap_effort_class" in train:
+        be = E.by_kind(train["lap_effort_class"], y, oof)
+        print("  by effort (OOF):")
+        print("   " + be.round(3).to_string().replace("\n", "\n   "))
+        metrics["by_effort"] = be.round(4).to_dict(orient="index")
+        for cls in ("push", "moderate"):
+            sel = (train["lap_effort_class"] == cls).to_numpy()
+            if sel.sum() > 100:
+                cfm = E.counterfactual_lap_metrics(train[sel], y[sel], oof[sel])
+                print(f"    counterfactual lap MAE, {cls:<8}: {cfm['cf_lap_mae_s']:.3f} s  ({cfm['cf_laps']:,} laps)")
+                metrics[f"cf_{cls}"] = cfm
 
     # ------------------------------------------------------- final + holdout
     final = Q.QuantileSet(spec, quantiles, backend, params).fit(X, y)
+    final.margin = margin
     if len(hold):
         Xh, yh = spec.transform(hold), hold["segment_delta_s"].to_numpy(float)
-        ph = final.predict(Xh)
-        ho = {**E.segment_metrics(yh, ph), **E.lap_metrics(hold["lap_uid"], yh, ph)}
+        ph = final.predict(Xh)                                   # calibrated bands
+        raw = ph.copy(); raw["q10"] += margin; raw["q90"] -= margin
+        ho = {**E.segment_metrics(yh, raw), **E.lap_metrics(hold["lap_uid"], yh, ph),
+              **E.counterfactual_lap_metrics(hold, yh, ph),
+              "coverage_80_calibrated": E.segment_metrics(yh, ph)["coverage_80"]}
         metrics["holdout"] = {**ho, "event": str(hold_slug)}
-        print(f"\nUNSEEN TRACK  ({hold_slug}, never in training)")
+        print(f"\nUNSEEN TRACK  ({hold_slug}, never in training, never in calibration)")
         _report("GBM q50", ho)
         unseen_drivers = int((~hold["driver"].astype(str).isin(spec.vocab.get("driver", []))).sum())
         if unseen_drivers:
@@ -145,12 +175,12 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
     metrics["importance"] = imp.round(5).to_dict(orient="records")
 
     # ------------------------------------------------------------- level 2
-    print("\nLEVEL 2  (session reference vs the circuit's best, % of segment time)")
+    print("\nLEVEL 2  (session SECTOR reference vs the circuit's best sector, % of time)")
     l2, t2 = L2.fit_level2(df, alpha=float(cfg["level2"].get("ridge_alpha", 1.0)),
                            n_boot=int(cfg["level2"].get("bootstrap", 200)))
     if l2.coef:
         desc = L2.describe(l2)
-        print(f"  {l2.n_sessions} sessions on circuits with >1 session/season, {l2.n_rows} rows")
+        print(f"  {l2.n_sessions} sessions on circuits with >1 session/season, {l2.n_rows} sector rows")
         print("   " + desc.to_string(index=False).replace("\n", "\n   "))
         metrics["level2"] = desc.to_dict(orient="records")
     else:

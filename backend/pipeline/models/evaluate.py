@@ -48,6 +48,39 @@ def lap_metrics(lap_uid: pd.Series, y: np.ndarray, q: pd.DataFrame) -> dict:
     }
 
 
+def counterfactual_lap_metrics(df: pd.DataFrame, y: np.ndarray, q: pd.DataFrame) -> dict:
+    """Error of the quantity the HUD actually shows.
+
+    The simulator takes a REAL lap as baseline and shows how it would change
+    under other conditions: shown = actual_baseline + (p(new) - p(baseline)).
+    Whatever a lap carries that no pre-lap feature can know - traffic, a
+    management phase, damage - is in both p terms and cancels. So the error
+    that matters is the error of the DIFFERENCE, measured here between every
+    lap and the same driver's fastest lap of that session, per segment, then
+    summed to the lap.
+    """
+    d = pd.DataFrame({
+        "key": df["season"].astype(str) + "|" + df["event_slug"].astype(str) + "|" + df["session"].astype(str)
+               + "|" + df["driver"].astype(str),
+        "lap": df["lap_uid"].to_numpy(), "seg": df["segment_index"].to_numpy(),
+        "lt": pd.to_numeric(df["lap_time_s"], errors="coerce").to_numpy(),
+        "y": np.asarray(y, float), "p": q["q50"].to_numpy()})
+    best = d.groupby("key")["lt"].transform("min")
+    base = d[d["lt"] == best].drop_duplicates(["key", "seg"])[["key", "seg", "lap", "y", "p"]] \
+            .rename(columns={"lap": "base_lap", "y": "y_b", "p": "p_b"})
+    m = d.merge(base, on=["key", "seg"], how="inner")
+    m = m[m["lap"] != m["base_lap"]]
+    if not len(m):
+        return {"cf_segment_mae_s": float("nan"), "cf_lap_mae_s": float("nan"), "cf_lap_median_ae_s": float("nan"), "cf_laps": 0}
+    m["dy"], m["dp"] = m["y"] - m["y_b"], m["p"] - m["p_b"]
+    g = m.groupby("lap")[["dy", "dp"]].sum()
+    return {"cf_segment_mae_s": float(np.mean(np.abs(m["dy"] - m["dp"]))),
+            "cf_lap_mae_s": float(np.mean(np.abs(g["dy"] - g["dp"]))),
+            "cf_lap_median_ae_s": float(np.median(np.abs(g["dy"] - g["dp"]))),
+            "cf_lap_mae_naive_s": float(np.mean(np.abs(g["dy"]))),   # predict "no change"
+            "cf_laps": int(len(g))}
+
+
 def by_kind(kind: pd.Series, y: np.ndarray, q: pd.DataFrame) -> pd.DataFrame:
     d = pd.DataFrame({"kind": kind.to_numpy(), "ae": np.abs(np.asarray(y, float) - q["q50"].to_numpy()),
                       "inside": (np.asarray(y) >= q["q10"].to_numpy()) & (np.asarray(y) <= q["q90"].to_numpy())})
@@ -95,11 +128,13 @@ def gates(metrics: dict, cfg: dict) -> dict[str, bool]:
     a = cfg["acceptance"]
     cv, ho = metrics["cv"], metrics.get("holdout", {})
     lo, hi = a.get("coverage_80", [0.7, 0.9])
+    cov = ho.get("coverage_80_calibrated", cv.get("coverage_80_calibrated", cv["coverage_80"])) if ho \
+        else cv.get("coverage_80_calibrated", cv["coverage_80"])
     out = {
         "segment_mae": cv["segment_mae_s"] <= float(a["segment_mae_s"]),
-        "lap_mae": cv["lap_mae_s"] <= float(a["lap_mae_s"]),
-        "unseen_track_lap_mae": (ho.get("lap_mae_s", 0.0) <= float(a["unseen_track_lap_mae_s"])) if ho else True,
-        "coverage_80": lo <= cv["coverage_80"] <= hi,
+        "counterfactual_lap_mae": cv.get("cf_lap_mae_s", np.inf) <= float(a["lap_mae_s"]),
+        "unseen_track_counterfactual_lap_mae": (ho.get("cf_lap_mae_s", np.inf) <= float(a["unseen_track_lap_mae_s"])) if ho else True,
+        "coverage_80_calibrated": lo <= cov <= hi,
         "beats_ridge": (cv["segment_mae_s"] < metrics.get("ridge", {}).get("segment_mae_s", np.inf))
                        if a.get("beat_ridge", True) else True,
     }

@@ -90,10 +90,12 @@ def circuit_cfg(base: dict, ref: dict | None, lap_length_m: float) -> dict:
     than Spa and no single number serves both.
     """
     cfg = dict(base)
+    for k, v in ((ref or {}).get("segmentation") or {}).items():
+        cfg[k] = v                                   # per-circuit override first
     if not cfg.get("smooth_window_m"):
         cfg["smooth_window_m"] = G.auto_window_m(lap_length_m)
-    for k, v in ((ref or {}).get("segmentation") or {}).items():
-        cfg[k] = v
+    if not cfg.get("min_gap_m"):
+        cfg["min_gap_m"] = round(float(cfg["smooth_window_m"]) / 3.0, 1)
     return cfg
 
 

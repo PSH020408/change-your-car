@@ -218,7 +218,13 @@ segmentation:
   # 40 m / order 3 (the first guess) gave 16% curvature error at 0.5 m of
   # position jitter and 80% at 1.0 m; 90 m / order 2 holds under 1% across all
   # of them while still recovering a 70 m corner at full amplitude.
-  smooth_window_m: 90.0        # local-fit window, in metres
+  # null = auto-scale from lap length (lap/100, floor 30 m, cap 90 m).
+  # A hard value here beats the auto-scale for EVERY circuit — which is how
+  # the 14-circuit calibration run reported 40-50 m as the right window and
+  # then applied 90 m to thirteen of them anyway. Per-circuit overrides live
+  # in circuits.yaml; this global slot is for a deliberate blanket override
+  # only.
+  smooth_window_m: null
   poly_order: 2                # quadratic resists noise; a cubic chases it
   max_lateral_g: 6.5           # curvature implying more than this is noise
   # A straight whose radius sits just under the corner threshold is the
@@ -235,7 +241,11 @@ segmentation:
   # 400 m radius is 1.8 g at 300 km/h, which is a corner a driver works at,
   # while 667 m is 1.1 g — a kink the car takes flat. Take the tighter one.
   curvature_threshold_1pm: 0.0025
-  min_gap_m: 30.0              # close gaps this short (double-apex corners)
+  # null = window / 3. Gap closure merges a double-apex corner back into one,
+  # but with a fixed 30 m it also merged Bahrain's T1-2-3 and T12-13-14
+  # complexes into single corners at any window. Tied to the window it scales
+  # with the circuit the same way the smoothing does.
+  min_gap_m: null
   min_segment_len_m: 40.0      # drop runs this short (curvature noise)
   corner_speed_bins:
     low: [0, 120]

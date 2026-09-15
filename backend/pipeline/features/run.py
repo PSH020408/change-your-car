@@ -292,9 +292,17 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
     # ---- sparsity, but only where the column is supposed to exist ---------
     print()
     print("SPARSITY  (structural nulls excluded — a straight has no brake point)")
+    kind = feat.get("segment_kind", pd.Series(dtype=str))
+    n_s = pd.to_numeric(feat.get("n_samples", pd.Series(dtype=float)), errors="coerce")
     applicable = {
+        # a brake point needs braking to have happened
         "brake_point_frac": feat.get("brake_frac", pd.Series(dtype=float)) > 0,
-        "throttle_on_frac": feat.get("throttle_mean_pct", pd.Series(dtype=float)).notna(),
+        # "where did full throttle return" only means something where it can:
+        # a slow corner feeding another corner never reaches it, by design
+        "throttle_on_frac": kind.isin(["straight", "kink", "high_speed_corner"]),
+        # a longitudinal-g extreme needs at least three samples to difference
+        "long_g_accel_max": n_s >= 3,
+        "long_g_brake_max": n_s >= 3,
     }
     rows = []
     for c in feat.columns:

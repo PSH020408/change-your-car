@@ -26,6 +26,7 @@ from typing import Any
 import yaml
 
 _DEFAULT_PATH = Path(__file__).resolve().parents[2] / "configs" / "physics.yaml"
+_CIRCUITS_PATH = Path(__file__).resolve().parents[2] / "configs" / "circuits.yaml"
 SCALES = ("nominal", "low", "high")
 
 
@@ -96,6 +97,22 @@ def default_config() -> PhysicsConfig:
     if _CFG is None:
         _CFG = PhysicsConfig.load()
     return _CFG
+
+
+_ROUGH: dict[str, float] | None = None
+
+
+def circuit_roughness(event_slug: str, cfg: PhysicsConfig | None = None) -> float:
+    """Surface roughness 0..1 for the suspension modifier (configs/circuits.yaml)."""
+    global _ROUGH
+    if _ROUGH is None:
+        try:
+            with open(_CIRCUITS_PATH) as fh:
+                _ROUGH = {str(k): float(v) for k, v in (yaml.safe_load(fh) or {}).get("roughness", {}).items()}
+        except FileNotFoundError:
+            _ROUGH = {}
+    cfg = cfg or default_config()
+    return float(_ROUGH.get(str(event_slug), cfg.raw["suspension"].get("default_roughness", 0.5)))
 
 
 # ------------------------------------------------------------------ outputs

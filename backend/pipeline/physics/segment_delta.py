@@ -29,7 +29,6 @@ import pandas as pd
 from pipeline.physics.modifiers import SCALES, PhysicsConfig, PhysicsState, SetupInput, default_config, physics_state
 
 CORNER_KINDS = ("low_speed_corner", "medium_speed_corner", "high_speed_corner")
-KINK_WEIGHT = 0.3   # a kink is nearly flat-out; grip changes move its time far less than a corner's
 
 
 def aero_fraction(speed_kph: float, v0_kph: float) -> float:
@@ -90,12 +89,13 @@ def segment_time_delta(kind: str, time_s: float, speed_min_kph: float, speed_mea
         alpha = aero_fraction(v_ref, v0)
         g_pct = _grip_pct_total(state, alpha)
         dv_over_v = 0.5 * g_pct / 100.0                        # v ~ sqrt(grip)
-        w = KINK_WEIGHT if kind == "kink" else 1.0
+        w = cfg.coeff("aero", "kink_grip_weight").at(state.scale) if kind == "kink" else 1.0
         grip_s = -time_s * w * dv_over_v
         # corner drag: a high-speed corner is partly power-limited too
         if kind == "high_speed_corner":
             expo = cfg.coeff("aero", "drag_to_topspeed_exponent").at("nominal")
-            drag_s = time_s * 0.3 * expo * state.drag_pct / 100.0
+            share = cfg.coeff("aero", "corner_drag_share").at(state.scale)
+            drag_s = time_s * share * expo * state.drag_pct / 100.0
 
     # Fuel: ONE calibrated number (s per kg per lap, grade B) shared out by
     # segment time and kind weight — corners and their exits carry more of

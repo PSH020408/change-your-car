@@ -82,7 +82,10 @@ def permutation_importance(model, X: pd.DataFrame, y: np.ndarray, n: int = 20000
     rows = []
     for c in X.columns:
         Xp = X.copy()
-        Xp[c] = Xp[c].sample(frac=1.0, random_state=int(rng.integers(1 << 30))).to_numpy()
+        # keep the column's dtype (a shuffled category column must stay a
+        # category column, or LightGBM sees a different feature set)
+        perm = rng.permutation(len(Xp))
+        Xp[c] = Xp[c].iloc[perm].set_axis(Xp.index)
         mae = float(np.mean(np.abs(y - model.predict(Xp)["q50"].to_numpy())))
         rows.append({"feature": c, "mae_increase_s": mae - base})
     return pd.DataFrame(rows).sort_values("mae_increase_s", ascending=False).reset_index(drop=True)

@@ -26,8 +26,18 @@ from pathlib import Path
 
 import pandas as pd
 
+import yaml
+
 from pipeline.ingest import paths
 from pipeline.segment import geometry as G, segmentation as S, svg as V
+
+
+def load_circuit_reference(scope_path: Path) -> dict:
+    """Published lap lengths and corner counts, where they have been verified."""
+    f = scope_path.parent / "circuits.yaml"
+    if not f.exists():
+        return {}
+    return yaml.safe_load(f.read_text()) or {}
 
 QUALITY_RANK = {"clean": 0, "normal": 1, "gappy": 2, "holed": 3, "missing": 4}
 SWEEP = [0.0015, 0.0020, 0.0025, 0.0030, 0.0035, 0.0045, 0.0060, 0.0080]
@@ -56,7 +66,7 @@ def pick_reference_lap(laps: pd.DataFrame) -> pd.Series:
 
 
 def process_session(session_dir: Path, out_dir: Path, cfg: dict,
-                    verbose: bool = False) -> dict:
+                    reference: dict | None = None, verbose: bool = False) -> dict:
     laps = pd.read_parquet(session_dir / "laps.parquet")
     tel = pd.read_parquet(session_dir / "telemetry.parquet")
     meta = json.loads((session_dir / "session.json").read_text())
@@ -70,7 +80,8 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
     geo = G.build(frame, lap_distance_m=float(ref.get("lap_distance_m") or
                                               frame["distance_m"].iloc[-1]),
                   step_m=float(cfg.get("geometry_step_m", 10.0)),
-                  smooth_window_m=float(cfg.get("smooth_window_m", 60.0)))
+                  smooth_window_m=float(cfg.get("smooth_window_m", 90.0)),
+                  poly_order=int(cfg.get("poly_order", 2)))
 
     seg_kw = {"min_gap_m": float(cfg.get("min_gap_m", 30.0)),
               "min_segment_len_m": float(cfg.get("min_segment_len_m", 40.0))}
@@ -91,6 +102,10 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
             S.assign_sectors(segments, bounds)
         except (TypeError, ValueError):
             bounds = []
+
+    physics = S.check_physics(segments,
+                              float(cfg.get("curvature_threshold_1pm", 0.0035)),
+                              float(cfg.get("max_lateral_g", 6.5)))
 
     kinds: dict[str, int] = {}
     for s in segments:
@@ -113,16 +128,21 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
             "grid_step_m": geo.grid_step_m,
             "metres_per_xy_unit": round(geo.metres_per_unit, 6),
             "closure_error_m": round(geo.closure_error_m, 2),
+            "implausible_curvature_fraction": geo.implausible_fraction,
             "smooth_window_m": float(cfg.get("smooth_window_m", 60.0)),
         },
         "threshold_sweep_corner_count": sweep,
         "threshold_used_1pm": float(cfg.get("curvature_threshold_1pm", 0.0035)),
         "counts": {"segments": len(segments), "corners": corners, **kinds},
+        "physics_check": physics,
         "sector_boundaries_m": [round(b, 1) for b in bounds],
         "segments": [s.to_dict() for s in segments],
         "microsectors": S.microsectors(geo.lap_length_m,
                                        int(cfg.get("microsectors", 28))),
         "track_map": V.build(geo),
+        "published_reference": _compare_reference(
+            (reference or {}).get(meta["event_slug"]), meta["season"],
+            geo.lap_length_m, corners),
         "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
 
@@ -144,7 +164,39 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
             print(f"    {t} 1/m  ({1/float(t):>5.0f} m radius)  -> {c:>3} corners{mark}")
         print(f"  segments  : {len(segments)}  ({corners} corners)  " +
               ", ".join(f"{k}={v}" for k, v in sorted(kinds.items())))
+        ok = "PASS" if physics["passes"] else "FAIL"
+        print(f"  physics   : {ok}  "
+              f"{len(physics['corners_over_g_limit'])} corner(s) over "
+              f"{physics['max_lateral_g']} g, "
+              f"{len(physics['straights_hiding_a_corner'])} straight(s) hiding a corner")
+        for c in physics["corners_over_g_limit"][:3]:
+            print(f"    seg #{c['index']}: {c['lateral_g']} g "
+                  f"(R={c['radius_m']} m at {c['apex_kph']} km/h)")
+        for h in physics["straights_hiding_a_corner"][:3]:
+            print(f"    seg #{h['index']}: {h['length_m']} m straight with "
+                  f"R={h['radius_m']} m inside")
     return doc
+
+
+def _compare_reference(ref: dict | None, season: int,
+                       lap_length_m: float, corners: int) -> dict | None:
+    """Measured versus published, when a verified figure exists."""
+    if not ref:
+        return None
+    if ref.get("layout_from") and season < int(ref["layout_from"]):
+        return {"applicable": False,
+                "reason": f"reference describes the {ref['layout_from']}+ layout"}
+    pub_m = float(ref["length_km"]) * 1000.0
+    return {
+        "applicable": True,
+        "published_length_m": pub_m,
+        "measured_length_m": round(lap_length_m, 1),
+        "length_delta_pct": round(100.0 * (lap_length_m - pub_m) / pub_m, 2),
+        "published_turns": int(ref["turns"]),
+        "measured_corners": corners,
+        "corner_delta": corners - int(ref["turns"]),
+        "source": ref.get("source", ""),
+    }
 
 
 def run(scope_path: Path, limit: int | None, force: bool, verbose: bool) -> int:
@@ -152,6 +204,7 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool) -> int:
     bronze = paths.bronze_dir(scope_path, scope)
     silver = silver_dir(scope_path, scope)
     cfg = scope.get("segmentation", {})
+    reference = load_circuit_reference(scope_path)
 
     sessions = sorted(p.parent for p in bronze.rglob("session.json"))
     todo = []
@@ -174,7 +227,7 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool) -> int:
     for i, (src, out) in enumerate(todo, 1):
         label = "/".join(src.parts[-3:])
         try:
-            doc = process_session(src, out, cfg, verbose=verbose)
+            doc = process_session(src, out, cfg, reference=reference, verbose=verbose)
             done.append(doc)
             print(f"[{i:>3}/{len(todo)}] {label:<40s} "
                   f"{doc['counts']['corners']:>3} corners, "
@@ -199,12 +252,26 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool) -> int:
         print(f"  derived X/Y scale   : {min(scales):.5f} - {max(scales):.5f} m/unit "
               f"(should be consistent across circuits)")
         print()
-        print("CORNER COUNT per circuit  (compare against published counts)")
+        failed = [d for d in done if not d["physics_check"]["passes"]]
+        print()
+        print("PHYSICS invariants")
+        print(f"  circuits failing : {len(failed)} / {len(done)}")
+        if failed:
+            print("  A corner above the car's lateral limit, or a straight containing a")
+            print("  corner radius, means the curvature is noise-contaminated — widen")
+            print("  smooth_window_m or lower poly_order before trusting the segments.")
+        print()
+        print("CORNER COUNT per circuit  (measured vs published)")
         for d in done:
-            print(f"  {d['season']} {d['event']:<32s} {d['counts']['corners']:>3} corners "
-                  f"({d['counts'].get('low_speed_corner',0)} low / "
-                  f"{d['counts'].get('medium_speed_corner',0)} med / "
-                  f"{d['counts'].get('high_speed_corner',0)} high)")
+            r = d.get("published_reference")
+            tail = "  (no verified reference)"
+            if r and r.get("applicable"):
+                tail = (f"  vs published {r['published_turns']} turns "
+                        f"({r['corner_delta']:+d}), length {r['length_delta_pct']:+.2f}%")
+            print(f"  {d['season']} {d['event']:<30s} {d['counts']['corners']:>3} corners "
+                  f"({d['counts'].get('low_speed_corner',0)}L/"
+                  f"{d['counts'].get('medium_speed_corner',0)}M/"
+                  f"{d['counts'].get('high_speed_corner',0)}H)" + tail)
 
     silver.mkdir(parents=True, exist_ok=True)
     (silver / "segment_report.json").write_text(json.dumps({

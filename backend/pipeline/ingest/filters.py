@@ -408,6 +408,15 @@ def pace_gate(
     out = laps[keep].copy()
     out["pace_reference_s"] = ref[keep]
     out["pace_ratio"] = ratio[keep]
+    # Both references travel with the lap. The rolling one answers "was this
+    # lap normal for its moment"; the session best answers "was the car near
+    # its limit". They diverge exactly where it matters: 2024 Monaco was a
+    # post-red-flag procession, so the rolling gate kept 89% of the race while
+    # most of those laps were deliberate tyre-saving cruises. Keeping only the
+    # rolling ratio would hand P4 a training set of laps nobody was pushing on,
+    # with no way to tell. Tag, do not drop.
+    best = float(np.nanmin(lt[valid]))
+    out["pace_ratio_session_best"] = lt[keep] / best if best > 0 else np.nan
     return out
 
 

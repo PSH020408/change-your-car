@@ -187,7 +187,13 @@ def build_segments(
         k = geo.curvature_1pm[a:b]
         if not len(k):
             continue
-        peak_i = int(np.argmax(np.abs(k)))
+        # Percentile, not max. A single noisy sample used to set the whole
+        # segment's radius — on the 2022 Australian GP that produced corners
+        # implying 9-10 g. The 90th percentile of |curvature| tracks the apex
+        # without letting one outlier define the corner.
+        absk = np.abs(k)
+        thresh_k = float(np.quantile(absk, 0.90))
+        peak_i = int(np.argmin(np.abs(absk - thresh_k)))
         peak = float(k[peak_i])
 
         apex = entry = exit_ = None
@@ -206,7 +212,7 @@ def build_segments(
             length_m=round(end - start, 1),
             mean_curvature_1pm=round(float(np.mean(k)), 6),
             peak_curvature_1pm=round(peak, 6),
-            min_radius_m=round(float(np.min(geo.radius_m[a:b])), 1),
+            min_radius_m=round(1.0 / thresh_k, 1) if thresh_k > 1e-9 else 99999.0,
             direction=direction,
             apex_speed_kph=round(apex, 1) if (is_corner and apex is not None) else None,
             min_speed_kph=round(apex, 1) if apex is not None else None,
@@ -307,3 +313,46 @@ def sector_boundaries_from_times(
     t, d = t[order], d[order]
     return [float(np.interp(sector1_s, t, d)),
             float(np.interp(sector1_s + sector2_s, t, d))]
+
+
+# --------------------------------------------------------------- invariants
+def check_physics(segments: list[Segment], corner_threshold_1pm: float,
+                  max_lateral_g: float = 6.5) -> dict:
+    """Two invariants that must hold, or the segmentation is wrong.
+
+    1. No corner may imply more lateral load than the car can generate. The
+       first version of this pipeline produced six corners at 7-10 g on one
+       circuit, all of them curvature noise wearing a corner's label.
+    2. No straight may contain a radius tighter than the corner threshold —
+       that is a corner the segmentation lost. Five of sixteen straights
+       failed this on the same circuit.
+
+    Reported rather than raised: a marginal circuit should still produce
+    output, but the run must say so out loud.
+    """
+    corner_radius = 1.0 / corner_threshold_1pm if corner_threshold_1pm > 0 else 1e9
+    over_g, hidden = [], []
+
+    for s in segments:
+        if s.kind.endswith("_corner"):
+            v = (s.apex_speed_kph or 0.0) / 3.6
+            r = s.min_radius_m or 1e9
+            g = (v * v / r / 9.81) if r > 0 else 0.0
+            if g > max_lateral_g:
+                over_g.append({"index": s.index, "lateral_g": round(g, 1),
+                               "radius_m": r, "apex_kph": s.apex_speed_kph})
+        elif s.min_radius_m and s.min_radius_m < corner_radius:
+            hidden.append({"index": s.index, "radius_m": s.min_radius_m,
+                           "length_m": s.length_m})
+
+    n_corner = sum(1 for s in segments if s.kind.endswith("_corner"))
+    n_straight = sum(1 for s in segments if s.kind == "straight")
+    return {
+        "max_lateral_g": max_lateral_g,
+        "corner_threshold_radius_m": round(corner_radius, 1),
+        "corners_over_g_limit": over_g,
+        "straights_hiding_a_corner": hidden,
+        "corners_checked": n_corner,
+        "straights_checked": n_straight,
+        "passes": not over_g and not hidden,
+    }

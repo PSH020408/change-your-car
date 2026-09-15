@@ -15,11 +15,16 @@ from pipeline.segment import geometry as G, segmentation as S, svg as V
 XY_UNIT = 10.0          # pretend the position feed is in 1/10 m
 
 
-def _circle(radius: float, n: int = 900):
+def _circle(radius: float, n: int = 900, jitter: float = 0.0, seed: int = 5):
+    rng = np.random.default_rng(seed)
     th = np.linspace(0, 2 * np.pi, n, endpoint=False)
-    x, y = radius * np.cos(th) * XY_UNIT, radius * np.sin(th) * XY_UNIT
-    d = np.linspace(0, 2 * np.pi * radius, n, endpoint=False)
-    return pd.DataFrame({"distance_m": d, "pos_x": x, "pos_y": y}), 2 * np.pi * radius
+    x, y = radius * np.cos(th), radius * np.sin(th)
+    if jitter:
+        x = x + rng.normal(0, jitter, n)
+        y = y + rng.normal(0, jitter, n)
+    d = np.r_[0, np.cumsum(np.hypot(np.diff(x), np.diff(y)))]
+    return pd.DataFrame({"distance_m": d, "pos_x": x * XY_UNIT, "pos_y": y * XY_UNIT,
+                         "speed_kph": np.full(n, 150.0)}), float(d[-1])
 
 
 def _oval(radius: float = 120.0, straight: float = 600.0, n: int = 400):
@@ -213,3 +218,78 @@ def test_track_map_is_small_enough_for_a_lightweight_hud():
     assert m["path"].startswith("M ") and m["path"].endswith(" Z")
     assert len(m["path"]) < 20000        # the whole point is a light 2D HUD
     assert len(m["distance_index"]) > 5
+
+
+# ------------------------------------------- noise robustness (calibration)
+@pytest.mark.parametrize("jitter", [0.2, 0.5, 1.0])
+def test_curvature_survives_realistic_position_jitter(jitter):
+    """The setting that mattered, pinned.
+
+    The original 40 m / cubic window gave 16% curvature error at 0.5 m of
+    jitter and 80% at 1.0 m — which is what produced 10 g corners on the 2022
+    Australian GP. 90 m / quadratic holds under a few percent throughout.
+    """
+    frame, length = _circle(200.0, n=300, jitter=jitter)
+    geo = G.build(frame, lap_distance_m=length, step_m=10.0)
+    measured = float(np.mean(np.abs(geo.curvature_1pm)))
+    assert abs(measured - 1 / 200.0) / (1 / 200.0) < 0.08
+
+
+def test_the_old_narrow_window_is_measurably_worse():
+    """Guards the calibration itself: if someone narrows the window back, the
+    accuracy loss is a test failure rather than a silent regression."""
+    frame, length = _circle(200.0, n=300, jitter=0.5)
+    good = G.build(frame, lap_distance_m=length, step_m=10.0,
+                   smooth_window_m=90.0, poly_order=2)
+    bad = G.build(frame, lap_distance_m=length, step_m=10.0,
+                  smooth_window_m=40.0, poly_order=3)
+    e_good = abs(np.mean(np.abs(good.curvature_1pm)) - 0.005) / 0.005
+    e_bad = abs(np.mean(np.abs(bad.curvature_1pm)) - 0.005) / 0.005
+    assert e_good < e_bad
+
+
+def test_curvature_implying_impossible_g_is_rejected():
+    """A radius that would need more grip than exists is noise, not a corner."""
+    n = 300
+    th = np.linspace(0, 2 * np.pi, n, endpoint=False)
+    R = 200.0
+    x, y = R * np.cos(th), R * np.sin(th)
+    d = np.linspace(0, 2 * np.pi * R, n, endpoint=False)
+    # a single sample displaced hard sideways — the classic GPS glitch
+    x[150] += 12.0
+    frame = pd.DataFrame({"distance_m": d, "pos_x": x * XY_UNIT, "pos_y": y * XY_UNIT,
+                          "speed_kph": np.full(n, 300.0)})
+    geo = G.build(frame, lap_distance_m=2 * np.pi * R, step_m=10.0)
+    assert geo.lateral_g is not None
+    assert float(np.nanmax(geo.lateral_g)) <= G.MAX_PHYSICAL_LATERAL_G + 1e-6
+
+
+# ------------------------------------------------------ physics invariants
+def test_physics_check_flags_a_corner_over_the_grip_limit():
+    seg = S.Segment(index=0, kind="high_speed_corner", start_m=0, end_m=100,
+                    length_m=100, mean_curvature_1pm=0.02, peak_curvature_1pm=0.02,
+                    min_radius_m=44.5, direction="right", apex_speed_kph=233.0)
+    rep = S.check_physics([seg], 0.0035)
+    assert not rep["passes"]
+    assert rep["corners_over_g_limit"][0]["lateral_g"] > 6.5
+
+
+def test_physics_check_flags_a_straight_that_hides_a_corner():
+    seg = S.Segment(index=0, kind="straight", start_m=0, end_m=660, length_m=660,
+                    mean_curvature_1pm=0.0, peak_curvature_1pm=0.0,
+                    min_radius_m=21.4, direction="straight")
+    rep = S.check_physics([seg], 0.0035)
+    assert not rep["passes"]
+    assert rep["straights_hiding_a_corner"][0]["radius_m"] == 21.4
+
+
+def test_physics_check_passes_on_a_plausible_lap():
+    segs = [
+        S.Segment(index=0, kind="low_speed_corner", start_m=0, end_m=90, length_m=90,
+                  mean_curvature_1pm=0.02, peak_curvature_1pm=0.02,
+                  min_radius_m=50.0, direction="left", apex_speed_kph=110.0),
+        S.Segment(index=1, kind="straight", start_m=90, end_m=800, length_m=710,
+                  mean_curvature_1pm=0.0, peak_curvature_1pm=0.0,
+                  min_radius_m=900.0, direction="straight"),
+    ]
+    assert S.check_physics(segs, 0.0035)["passes"]

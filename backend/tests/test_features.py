@@ -293,6 +293,29 @@ def test_a_circuit_override_beats_the_auto_scaled_window():
     assert auto["smooth_window_m"] != 50.0
 
 
+def test_a_null_global_window_lets_the_auto_scale_apply():
+    """The global config carried a hard 90 m that beat the auto-scale for every
+    circuit: the calibration grids said 40-50 m and 90 m was applied to
+    thirteen of fourteen circuits regardless. null must mean auto."""
+    from pipeline.segment import run as srun
+    from pipeline.segment import geometry as G
+    for base in ({"smooth_window_m": None}, {}):
+        cfg = srun.circuit_cfg(base, None, 5336.0)
+        assert abs(cfg["smooth_window_m"] - G.auto_window_m(5336.0)) < 1e-9
+    hard = srun.circuit_cfg({"smooth_window_m": 90.0}, None, 5336.0)
+    assert hard["smooth_window_m"] == 90.0, "an explicit global value is still honoured"
+
+
+def test_gap_closure_scales_with_the_window_unless_pinned():
+    """A fixed 30 m gap merged Bahrain's corner complexes at every window."""
+    from pipeline.segment import run as srun
+    auto = srun.circuit_cfg({"smooth_window_m": None, "min_gap_m": None}, None, 5336.0)
+    assert abs(auto["min_gap_m"] - auto["smooth_window_m"] / 3.0) < 0.15
+    pinned = srun.circuit_cfg({"smooth_window_m": None, "min_gap_m": None},
+                              {"segmentation": {"min_gap_m": 15.0}}, 3337.0)
+    assert pinned["min_gap_m"] == 15.0
+
+
 # ------------------------------------------------------ coverage gate
 def test_partial_coverage_laps_are_excluded_not_stretched():
     """Rescaling a half-lap to full length stretches half a circuit across the

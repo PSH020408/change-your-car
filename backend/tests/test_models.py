@@ -116,9 +116,9 @@ def test_coverage_and_lap_sum_metrics():
 
 
 def test_gates_read_the_right_numbers():
-    metrics = {"cv": {"segment_mae_s": 0.1, "lap_mae_s": 1.5, "cf_lap_mae_s": 0.2, "coverage_80": 0.5,
-                      "coverage_80_calibrated": 0.8},
-               "holdout": {"lap_mae_s": 0.9, "cf_lap_mae_s": 0.4, "coverage_80_calibrated": 0.78},
+    metrics = {"cv": {"segment_mae_s": 0.1, "lap_mae_s": 1.5, "cf_lap_mae_s": 0.2, "cf_lap_mae_naive_s": 0.5,
+                      "coverage_80": 0.5, "coverage_80_calibrated": 0.8, "noise_floor_lap_s": 0.18},
+               "holdout": {"lap_mae_s": 0.9, "cf_lap_mae_s": 0.4, "cf_lap_mae_naive_s": 0.6, "coverage_80_calibrated": 0.78},
                "ridge": {"segment_mae_s": 0.2},
                "probes": {"tyre_life": {"mean_delta_s": 0.05}, "lap_number": {"mean_delta_s": -0.1}}}
     g = E.gates(metrics, _cfg())
@@ -219,3 +219,17 @@ def test_clean_push_mask_keeps_clean_air_push_laps_only():
                        "gap_ahead_s": [10.0, 1.0, 10.0, np.nan]})
     m = E.clean_push_mask(df, {"data": {"clean_air_gap_s": 2.5, "gate_effort": ["push"]}})
     assert m.tolist() == [True, False, False, True]
+
+
+def test_noise_floor_is_the_consecutive_lap_difference_over_root_two():
+    rows = []
+    for lap in range(1, 11):
+        for seg in range(3):
+            rows.append(dict(season=2022, event_slug="e", session="R", driver="VER", stint=1, lap_number=lap,
+                             lap_uid=f"L{lap}", segment_index=seg, y=0.1 * (lap % 2)))   # alternate +0.3/lap
+    df = pd.DataFrame(rows)
+    f = E.lap_noise_floor(df, df["y"].to_numpy())
+    assert f["pairs"] == 9
+    assert f["consecutive_pair_mae_s"] == pytest.approx(0.3)
+    assert f["noise_floor_lap_s"] == pytest.approx(0.3 / np.sqrt(2))
+    assert E.skill({"cf_lap_mae_s": 0.6, "cf_lap_mae_naive_s": 1.2}) == pytest.approx(0.5)

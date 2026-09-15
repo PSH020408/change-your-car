@@ -457,3 +457,76 @@ def test_build_segments_records_an_interior_radius_for_long_straights():
     for st in straights:
         assert st.interior_min_radius_m is not None
         assert st.interior_min_radius_m > 400.0, "a 900 m straight's interior is straight"
+
+
+# ------------------------------------------------------- ensemble reference
+def _jittered_oval_laps(n_laps: int, jitter: float, seed: int = 9):
+    """Several laps of one oval: different phase, different line, GPS jitter."""
+    from pipeline.segment import geometry as G
+    rng = np.random.default_rng(seed)
+    R, ST = 120.0, 600.0
+    a1 = np.linspace(-np.pi / 2, np.pi / 2, 200, endpoint=False)
+    a2 = np.linspace(np.pi / 2, 3 * np.pi / 2, 200, endpoint=False)
+    base = np.vstack([
+        np.c_[np.linspace(0, ST, 150, endpoint=False), np.zeros(150)],
+        np.c_[ST + R * np.cos(a1), R + R * np.sin(a1)],
+        np.c_[np.linspace(ST, 0, 150, endpoint=False), np.full(150, 2 * R)],
+        np.c_[R * np.cos(a2), R + R * np.sin(a2)]])
+    d0 = np.r_[0, np.cumsum(np.hypot(np.diff(base[:, 0]), np.diff(base[:, 1])))]
+    L = float(d0[-1])
+    v0 = np.where(np.abs(G.curvature(base[:, 0], base[:, 1], 1.0)) > 0.004, 110.0, 300.0)
+    laps = []
+    for _ in range(n_laps):
+        roll = int(rng.uniform(0, 40) / (L / len(base)))
+        pts = np.roll(base, -roll, axis=0)
+        c = np.array([ST / 2, R])
+        dirv = pts - c
+        dirv /= np.linalg.norm(dirv, axis=1, keepdims=True) + 1e-9
+        pts = pts + dirv * rng.uniform(-3, 3) + rng.normal(0, jitter, pts.shape)
+        d = np.r_[0, np.cumsum(np.hypot(np.diff(pts[:, 0]), np.diff(pts[:, 1])))]
+        laps.append(pd.DataFrame({"distance_m": d, "pos_x": pts[:, 0] * XY_UNIT,
+                                  "pos_y": pts[:, 1] * XY_UNIT,
+                                  "speed_kph": np.roll(v0, -roll) + rng.normal(0, 3, len(v0))}))
+    return laps, L
+
+
+def _turns_from(frame, L):
+    geo = G.build(frame, lap_distance_m=L, step_m=10.0, smooth_window_m=50.0)
+    cfg = {"curvature_threshold_1pm": 0.0025, "min_gap_m": 17.0, "min_segment_len_m": 40.0,
+           "smooth_window_m": 50.0, "corner_speed_bins": {}}
+    segs = S.build_segments(geo, cfg,
+                            raw_distance_m=frame["distance_m"].to_numpy(float),
+                            raw_speed_kph=frame["speed_kph"].to_numpy(float))
+    return S.count_turns(segs)["turns"]
+
+
+def test_one_lap_is_a_lottery_and_the_ensemble_is_not():
+    """Bahrain returned 10, 14 and 14 turns from three different template
+    laps of an unchanged circuit. On a synthetic oval with 1 m of jitter,
+    single laps return 7-14 turns for a 2-turn track; sixteen averaged
+    return 2."""
+    from pipeline.segment import ensemble as E
+    laps, L = _jittered_oval_laps(16, jitter=1.0)
+    singles = [_turns_from(f, L) for f in laps[:5]]
+    assert max(singles) >= 4, "the single-lap problem must actually reproduce"
+    ens = E.build_ensemble(laps, L, step_m=5.0)
+    assert ens.n_laps == 16
+    assert _turns_from(ens.frame, L) == 2
+
+
+def test_ensemble_phase_locks_laps_on_their_speed_profile():
+    """Distance zero lands 20-50 m apart on different laps. Averaging
+    out-of-phase corners smears them; braking points do not move, so the
+    speed profile is what to lock on."""
+    from pipeline.segment import ensemble as E
+    laps, L = _jittered_oval_laps(8, jitter=0.3)
+    ens = E.build_ensemble(laps, L, step_m=5.0)
+    assert any(abs(s) > 5.0 for s in ens.phase_shifts_m), "the fixture has phase offsets"
+    assert max(abs(s) for s in ens.phase_shifts_m) <= 80.0
+
+
+def test_ensemble_refuses_to_average_too_few_laps():
+    from pipeline.segment import ensemble as E
+    laps, L = _jittered_oval_laps(2, jitter=0.3)
+    with pytest.raises(ValueError):
+        E.build_ensemble(laps, L, min_laps=3)

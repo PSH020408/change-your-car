@@ -11,8 +11,14 @@ later pipeline run reads from disk at full speed.
 Properties this job needs, and has:
   * resumable   — a JSON ledger records every completed session; re-running
                   skips them, so a crash or a laptop closing costs nothing
-  * polite      — exponential backoff on RateLimitExceededError, a floor
-                  delay between sessions, never a tight retry loop
+  * polite      — stays under FastF1's 500 calls/hour by pacing (one session
+                  load is ~10 calls, so ~60 s per session), and backs off
+                  when the limit is hit anyway. NOTE: FastF1 does not raise
+                  RateLimitExceededError out of Session.load() — it logs it,
+                  loads nothing, and the first attribute access raises
+                  DataNotLoadedError. The first run of this job treated that
+                  as "session failed" and burned through 426 sessions in ten
+                  minutes. DataNotLoadedError is now a rate-limit signal.
   * measured    — Cache.get_cache_info() is sampled after every session, so
                   the ledger doubles as the real answer to "how big is this
                   going to get" instead of a guess
@@ -47,10 +53,15 @@ LEDGER_NAME = "_warm_ledger.json"
 
 # Politeness knobs. FastF1 throttles on its own; these keep us well clear of
 # the hard limit rather than discovering it.
-BASE_DELAY_S = 1.5
-BACKOFF_START_S = 60.0
+BASE_DELAY_S = 60.0          # ~10 API calls per session -> ~50 sessions/hour, under 500 calls/h
+BACKOFF_START_S = 300.0
 BACKOFF_MAX_S = 1800.0
-MAX_RETRIES = 6
+MAX_RETRIES = 8              # 5+10+20+30+30+30+30 min = the hourly window and then some
+RETRY_STATUSES = ("failed",) # ledger entries that a re-run tries again ("skipped" it does not)
+
+# Sessions that do not exist for that event (no sprint that weekend) are not
+# failures and must not be retried.
+_NOT_A_SESSION = ("does not exist", "not found", "No such session")
 
 
 @dataclass
@@ -202,7 +213,8 @@ def run(scope_path: Path, only_seasons: list[int] | None, dry_run: bool, limit: 
     ledger = read_ledger(lpath)
 
     work = build_worklist(ff1, seasons, sessions)
-    pending = [w for w in work if f"{w[0]}|{w[1]}|{w[2]}" not in ledger]
+    pending = [w for w in work
+               if ledger.get(f"{w[0]}|{w[1]}|{w[2]}", {}).get("status") not in ("done", "skipped")]
     if limit:
         pending = pending[:limit]
 
@@ -220,6 +232,7 @@ def run(scope_path: Path, only_seasons: list[int] | None, dry_run: bool, limit: 
 
     prev_total = ff1.Cache.get_cache_info()[1] or 0
     failures = 0
+    streak = 0            # consecutive failures; five in a row means the API, not the session
 
     for i, (season, event, ident) in enumerate(pending, 1):
         key = f"{season}|{event}|{ident}"
@@ -243,7 +256,9 @@ def run(scope_path: Path, only_seasons: list[int] | None, dry_run: bool, limit: 
                 prev_total = total
                 break
 
-            except ff1.RateLimitExceededError:
+            except (ff1.RateLimitExceededError, ff1.core.DataNotLoadedError):
+                # DataNotLoadedError here means Session.load() silently gave
+                # up — in practice because the hourly limit was hit.
                 if attempt == MAX_RETRIES:
                     entry = Entry(key=key, season=season, event=event, session=ident,
                                   status="failed", error="rate limit, retries exhausted",
@@ -258,10 +273,11 @@ def run(scope_path: Path, only_seasons: list[int] | None, dry_run: bool, limit: 
             except Exception as exc:                   # noqa: BLE001
                 # Missing session, no telemetry for that year, API hole — record
                 # and move on. One bad session must not stop a 700-session job.
+                msg = f"{type(exc).__name__}: {exc}"
                 entry = Entry(
                     key=key, season=season, event=event, session=ident,
-                    status="failed",
-                    error=f"{type(exc).__name__}: {exc}"[:300],
+                    status="skipped" if any(t in msg for t in _NOT_A_SESSION) else "failed",
+                    error=msg[:300],
                     seconds=round(time.time() - started, 1),
                     ts=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 )
@@ -272,14 +288,22 @@ def run(scope_path: Path, only_seasons: list[int] | None, dry_run: bool, limit: 
         write_ledger(lpath, ledger)
 
         if entry.status == "done":
+            streak = 0
             print(f"[{i:>4}/{len(pending)}] {season} {event:<34s} {ident:<3s} "
                   f"{entry.laps:>4d} laps  {entry.drivers:>2d} drv  "
                   f"+{human(entry.cache_bytes_delta):>9s}  "
                   f"total {human(entry.cache_bytes_total)}  {entry.seconds:.0f}s")
+        elif entry.status == "skipped":
+            print(f"[{i:>4}/{len(pending)}] {season} {event:<34s} {ident:<3s} skipped  {entry.error}")
         else:
             failures += 1
+            streak += 1
             print(f"[{i:>4}/{len(pending)}] {season} {event:<34s} {ident:<3s} "
                   f"FAILED  {entry.error}", file=sys.stderr)
+            if streak >= 5:
+                print("  five failures in a row — stopping rather than burning the worklist; "
+                      "re-run later, the ledger resumes", file=sys.stderr)
+                break
 
         time.sleep(BASE_DELAY_S)
 

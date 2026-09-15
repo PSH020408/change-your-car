@@ -17,7 +17,11 @@ era:
 # hours; disk is cheap), but TRAIN NARROW - see `train.sessions` below.
 warm:
   seasons: [2022, 2023, 2024, 2025]
-  sessions: ["FP1", "FP2", "FP3", "Q", "SQ", "S", "R"]
+  # Q + R (+ sprint) only: ~220 sessions, ~15 GB. Practice sessions are not
+  # used by the simulator (no representative push laps, no race fuel) and the
+  # full 460-session set was projected at 31 GB. Add FP3 back here if the
+  # P8 expansion wants it.
+  sessions: ["Q", "SQ", "S", "R"]
   load:
     laps: true
     telemetry: true

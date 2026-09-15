@@ -80,6 +80,7 @@ class TrackGeometry:
     lateral_g: np.ndarray | None = None
     implausible_fraction: float = 0.0   # share of raw samples above MAX_PHYSICAL_LATERAL_G
     grid_step_m: float = 10.0
+    slice_gap_m: float = 0.0            # arc the telemetry slice does not cover
 
 
 def calibrate_scale(x: np.ndarray, y: np.ndarray, lap_distance_m: float) -> float:
@@ -213,11 +214,12 @@ def local_poly_derivatives(s: np.ndarray, v: np.ndarray, window_m: float,
 
 
 def curvature_from_raw(s: np.ndarray, x: np.ndarray, y: np.ndarray,
-                       window_m: float = 90.0, order: int = 2
+                       window_m: float = 90.0, order: int = 2,
+                       period: float | None = None
                        ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Signed curvature at each raw sample, plus the smoothed x/y."""
-    xs, dx, ddx = local_poly_derivatives(s, x, window_m, order)
-    ys, dy, ddy = local_poly_derivatives(s, y, window_m, order)
+    xs, dx, ddx = local_poly_derivatives(s, x, window_m, order, period=period)
+    ys, dy, ddy = local_poly_derivatives(s, y, window_m, order, period=period)
     denom = (dx * dx + dy * dy) ** 1.5
     with np.errstate(divide="ignore", invalid="ignore"):
         k = (dx * ddy - dy * ddx) / denom
@@ -279,9 +281,19 @@ def build(frame: pd.DataFrame, lap_distance_m: float, step_m: float = 10.0,
     scale = calibrate_scale(xu, yu, lap_distance_m)
     xm, ym = xu * scale, yu * scale
 
+    # The local fit wraps through start-finish, so it needs the lap's true
+    # period. Taking it from the distance axis alone assumes the telemetry
+    # slice covers the whole lap — it does not: this slice is ~1.8% short of
+    # the published length, and assuming otherwise fits samples 80 m apart as
+    # if they were neighbours, which smeared the geometry at start-finish and
+    # tripled the closure error. The missing arc is the straight-line gap
+    # between the last sample and the first.
+    slice_gap_m = float(np.hypot(xm[0] - xm[-1], ym[0] - ym[-1]))
+    period_m = float(d[-1] - d[0]) + slice_gap_m
+
     # Curvature on the RAW samples — no interpolation, no polyline artefacts.
     k_raw, xs_raw, ys_raw = curvature_from_raw(
-        d, xm, ym, window_m=smooth_window_m, order=poly_order)
+        d, xm, ym, window_m=smooth_window_m, order=poly_order, period=period_m)
 
     # Physics gate. A curvature implying more lateral load than the car can
     # generate is noise; zero it rather than let it become a corner.
@@ -317,8 +329,13 @@ def build(frame: pd.DataFrame, lap_distance_m: float, step_m: float = 10.0,
         implausible_fraction=round(implausible, 4),
         lap_length_m=float(grid[-1] - grid[0]),
         metres_per_unit=scale,
+        # Closure is measured against the gap the raw slice already had. A
+        # slice that starts and ends 90 m apart cannot close to zero, and
+        # charging that to the smoothing hides the real question — which is
+        # how complete the slice is, reported separately as slice_gap_m.
         closure_error_m=max(0.0, float(
-            np.hypot(xg[-1] - xg[0], yg[-1] - yg[0])) - step_m),
+            np.hypot(xg[-1] - xg[0], yg[-1] - yg[0])) - max(step_m, slice_gap_m)),
+        slice_gap_m=round(slice_gap_m, 1),
         n_samples_raw=int(len(d)),
         grid_step_m=float(step_m),
     )

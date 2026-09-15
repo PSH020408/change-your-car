@@ -48,8 +48,10 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
         cfg["level1"]["n_folds"] = 3
         cfg["level1"]["params"]["n_estimators"] = 150
         cfg["level2"]["bootstrap"] = 50
-    gold = (cfg_path.parent / cfg["data"]["gold"]).resolve() if not Path(cfg["data"]["gold"]).is_absolute() \
-        else Path(cfg["data"]["gold"])
+    # relative paths in model.yaml are relative to backend/ (where make runs), not to configs/
+    root_dir = cfg_path.resolve().parent.parent
+    gold = Path(cfg["data"]["gold"])
+    gold = gold if gold.is_absolute() else (root_dir / gold).resolve()
     df = D.load_gold(gold)
     print(f"gold      : {gold}  ({len(df):,} rows)")
 
@@ -165,7 +167,8 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
     print(f"  -> {'ALL PASSED' if passed else 'NOT REGISTERED AS LATEST'}")
 
     if register:
-        root = (cfg_path.parent / cfg["registry"]).resolve()
+        root = Path(cfg["registry"])
+        root = root if root.is_absolute() else (root_dir / root).resolve()
         version = R.register(root, final, l2, metrics, cfg, passed)
         print(f"\nregistry  : {root / version}   {'(latest)' if passed else '(kept for inspection)'}")
     print(f"total     : {time.time() - t0:.0f}s")

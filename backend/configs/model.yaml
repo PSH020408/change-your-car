@@ -29,8 +29,11 @@ features:
   # gap_ahead_s: seconds to the car that crossed the line just before this
   # lap started - traffic, known at the line. The HUD simulates clean air
   # (gap = 10 s); the model learns what dirty air costs from the race laps.
+  # lap_session_progress: track evolution - where in the session the lap
+  # started (0 first crossing, 1 last). Rubber goes down, the track speeds
+  # up; a Q3 lap is not a Q1 lap. Known at the line.
   numeric: [tyre_life, lap_number, track_temp_c, air_temp_c, lap_effort_index, gap_ahead_s,
-            segment_length_m, segment_min_radius_m, segment_reference_s]
+            lap_session_progress, segment_length_m, segment_min_radius_m, segment_reference_s]
   categorical: [segment_kind, session, compound, fresh_tyre, driver, chassis, season,
                 segment_sector, segment_is_kink]
 

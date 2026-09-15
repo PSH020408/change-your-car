@@ -38,7 +38,7 @@ def _gold(n_events: int = 6, laps_per: int = 40, seed: int = 0) -> pd.DataFrame:
 
 def _cfg() -> dict:
     return {"data": {"train_conditions": ["dry"], "effort_classes": ["push", "moderate"], "gap_tolerance_s": 0.05},
-            "features": {"numeric": ["tyre_life", "lap_number", "stint", "track_temp_c", "air_temp_c", "lap_effort_index", "gap_ahead_s",
+            "features": {"numeric": ["tyre_life", "lap_number", "stint", "track_temp_c", "air_temp_c", "lap_effort_index", "gap_ahead_s", "lap_session_progress",
                                      "segment_length_m", "segment_min_radius_m", "segment_reference_s"],
                          "categorical": ["segment_kind", "session", "compound", "fresh_tyre", "driver", "chassis",
                                          "season", "segment_sector", "segment_is_kink"]},

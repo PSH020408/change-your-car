@@ -54,8 +54,12 @@ def _report(title: str, m: dict) -> None:
         print(f"  {'':<10} {'':<14} same, vs the driver's FASTEST lap: {cb['cf_lap_mae_s']:.3f} s"
               f"  ('no change' {cb['cf_lap_mae_naive_s']:.3f}) — inflated by the fastest lap's own luck, not gated")
     if np.isfinite(m.get("noise_floor_lap_s", np.nan)):
-        print(f"  {'':<10} NOISE FLOOR {m['consecutive_pair_mae_s']:.3f} s — consecutive clean push laps of one driver on the"
-              f" same tyres differ by that much ({m['pairs']:,} pairs); no pre-lap feature can see it")
+        floor = m["consecutive_pair_mae_s"]
+        ceiling = 1.0 - floor / cp["cf_lap_mae_naive_s"] if cp else float("nan")
+        print(f"  {'':<10} NOISE FLOOR {floor:.3f} s — consecutive clean push laps of one driver on the"
+              f" same tyres differ by that much ({m['pairs']:,} pairs); no pre-lap feature can see it"
+              + (f"\n  {'':<10} SKILL CEILING {ceiling:.0%} (a perfect model would stop at the floor); "
+                 f"this model reaches {E.skill(cp) / ceiling:.0%} of it" if cp and ceiling > 0 else ""))
 
 
 def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:

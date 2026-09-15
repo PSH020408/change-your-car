@@ -58,6 +58,14 @@ def build_session(bronze_dir: Path, track_json: Path, verbose: bool = False
     rows: list[pd.DataFrame] = []
     skipped = {"too_few_samples": 0, "coverage": 0}
 
+    # Track evolution: where in the session this lap started, 0 = first
+    # crossing of the session, 1 = last. Rubber goes down and the track
+    # speeds up through a session; that is known at the line, so it is a
+    # legitimate pre-lap feature (grade A - the model learns its size).
+    t0 = pd.to_numeric(laps.get("lap_start_s"), errors="coerce")
+    span = float(t0.max() - t0.min()) if t0.notna().any() else 0.0
+    progress = ((t0 - t0.min()) / span) if span > 0 else pd.Series(np.nan, index=laps.index)
+
     for _, lap in laps.iterrows():
         uid = str(lap["lap_uid"])
         lt = by_lap.get(uid)
@@ -74,6 +82,7 @@ def build_session(bronze_dir: Path, track_json: Path, verbose: bool = False
         seg_df = segment_features.features_for_lap(lt, segments, lap_len)
         seg_df["lap_distance_scale"] = float(lt["distance_scale"].iloc[0])
         seg_df["lap_telemetry_coverage"] = round(coverage, 4)
+        seg_df["lap_session_progress"] = round(float(progress.loc[lap.name]), 4) if pd.notna(progress.loc[lap.name]) else np.nan
         if not len(seg_df):
             continue
 

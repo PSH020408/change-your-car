@@ -114,7 +114,8 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
     kinds: dict[str, int] = {}
     for s in segments:
         kinds[s.kind] = kinds.get(s.kind, 0) + 1
-    corners = sum(v for k, v in kinds.items() if k.endswith("_corner"))
+    turns = S.count_turns(segments)
+    corners = turns["turns"]          # published counts include flat kinks
 
     doc = {
         "season": meta["season"], "event": meta["event"],
@@ -139,7 +140,8 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
         "threshold_sweep_corner_count": sweep,
         "threshold_sweep": sweep_rows,
         "threshold_used_1pm": float(cfg.get("curvature_threshold_1pm", 0.0035)),
-        "counts": {"segments": len(segments), "corners": corners, **kinds},
+        "counts": {"segments": len(segments), "corners": turns["corners"],
+                   "kinks": turns["kinks"], "turns": turns["turns"], **kinds},
         "physics_check": physics,
         "sector_boundaries_m": [round(b, 1) for b in bounds],
         "segments": [s.to_dict() for s in segments],
@@ -171,12 +173,12 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
               f"{'segs':>6}{'phys':>7}")
         for r in sweep_rows:
             mark = "  <-- current" if abs(r["threshold_1pm"] - doc["threshold_used_1pm"]) < 1e-9 else ""
-            hit = "  == published" if pub and r["corners"] == pub else ""
-            comp = "{}/{}/{}".format(r["low"], r["medium"], r["high"])
+            hit = "  == published" if pub and r["turns"] == pub else ""
+            comp = "{}/{}/{}+{}k".format(r["low"], r["medium"], r["high"], r["kinks"])
             verdict = "PASS" if r["physics_passes"] else "fail"
-            print("    {:<8.4f}{:>7} m{:>7.1f}{:>9}{:>10}{:>6}{:>7}{}{}".format(
+            print("    {:<8.4f}{:>7} m{:>7.1f}{:>7}{:>13}{:>6}{:>7}{}{}".format(
                 r["threshold_1pm"], r["radius_m"], r["lateral_g_at_300kph"],
-                r["corners"], comp, r["segments"], verdict, hit, mark))
+                r["turns"], comp, r["segments"], verdict, hit, mark))
 
         print(f"  segments  : {len(segments)}  ({corners} corners)  " +
               ", ".join(f"{k}={v}" for k, v in sorted(kinds.items())))
@@ -288,10 +290,11 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool) -> int:
             if r and r.get("applicable"):
                 tail = (f"  vs published {r['published_turns']} turns "
                         f"({r['corner_delta']:+d}), length {r['length_delta_pct']:+.2f}%")
-            print(f"  {d['season']} {d['event']:<30s} {d['counts']['corners']:>3} corners "
-                  f"({d['counts'].get('low_speed_corner',0)}L/"
-                  f"{d['counts'].get('medium_speed_corner',0)}M/"
-                  f"{d['counts'].get('high_speed_corner',0)}H)" + tail)
+            c = d["counts"]
+            print(f"  {d['season']} {d['event']:<30s} {c.get('turns', 0):>3} turns "
+                  f"= {c.get('corners',0)} corners ({c.get('low_speed_corner',0)}L/"
+                  f"{c.get('medium_speed_corner',0)}M/{c.get('high_speed_corner',0)}H)"
+                  f" + {c.get('kinks',0)} kinks" + tail)
 
     silver.mkdir(parents=True, exist_ok=True)
     (silver / "segment_report.json").write_text(json.dumps({

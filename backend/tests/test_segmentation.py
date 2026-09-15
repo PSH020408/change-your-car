@@ -94,7 +94,7 @@ def test_oval_resolves_to_two_corners_and_two_straights():
            "corner_speed_bins": {"low": [0, 120], "medium": [120, 200],
                                  "high": [200, 400]}}
     segs = S.build_segments(geo, cfg, raw_distance_m=raw_d, raw_speed_kph=raw_v)
-    corners = [s for s in segs if s.kind.endswith("_corner")]
+    corners = [s for s in segs if S.is_corner_kind(s.kind)]
     straights = [s for s in segs if s.kind == "straight"]
     assert len(corners) == 2 and len(straights) == 2
 
@@ -133,7 +133,7 @@ def test_sweep_agrees_with_what_segmentation_actually_emits():
     for t, expected in sweep.items():
         cfg = {"curvature_threshold_1pm": float(t), **kw, "corner_speed_bins": {}}
         segs = S.build_segments(geo, cfg, raw_distance_m=raw_d, raw_speed_kph=raw_v)
-        assert len([s for s in segs if s.kind.endswith("_corner")]) == expected
+        assert S.count_turns(segs)["turns"] == expected
 
 
 def test_threshold_above_the_actual_curvature_finds_no_corners():
@@ -319,8 +319,9 @@ def test_sweep_full_reports_composition_and_physics_per_threshold():
     rows = S.sweep_full(geo, cfg, [0.0025, 0.0035],
                         raw_distance_m=raw_d, raw_speed_kph=raw_v)
     for r in rows:
-        assert r["corners"] == 2
+        assert r["turns"] == 2
         assert r["low"] + r["medium"] + r["high"] == r["corners"]
+        assert r["corners"] + r["kinks"] == r["turns"]
         assert r["physics_passes"] is True
         # the threshold's physical meaning travels with it
         assert 0.5 < r["lateral_g_at_300kph"] < 10
@@ -334,3 +335,83 @@ def test_slice_gap_is_reported_separately_from_closure():
     geo = G.build(cut, lap_distance_m=float(cut["distance_m"].iloc[-1]), step_m=10.0)
     assert geo.slice_gap_m > 20.0
     assert geo.closure_error_m < geo.slice_gap_m
+
+
+def test_kinks_are_judged_against_the_approach_speed_not_their_own_entry():
+    """Inside a corner the car has already finished braking, so its first
+    sample is the slowed speed — comparing against that makes every corner
+    look flat. The approach is the previous segment's exit."""
+    segs = [
+        S.Segment(index=0, kind="straight", start_m=0, end_m=500, length_m=500,
+                  mean_curvature_1pm=0.0, peak_curvature_1pm=0.0, min_radius_m=900.0,
+                  direction="straight", exit_speed_kph=300.0, max_speed_kph=300.0),
+        # braked hard for this one: 300 -> 120
+        S.Segment(index=1, kind="low_speed_corner", start_m=500, end_m=600,
+                  length_m=100, mean_curvature_1pm=0.02, peak_curvature_1pm=0.02,
+                  min_radius_m=50.0, direction="left",
+                  apex_speed_kph=120.0, entry_speed_kph=125.0, exit_speed_kph=150.0,
+                  max_speed_kph=150.0),
+        # took this one flat: approached at 150, apex 150
+        S.Segment(index=2, kind="high_speed_corner", start_m=600, end_m=640,
+                  length_m=40, mean_curvature_1pm=0.005, peak_curvature_1pm=0.005,
+                  min_radius_m=200.0, direction="left",
+                  apex_speed_kph=150.0, entry_speed_kph=150.0, exit_speed_kph=160.0,
+                  max_speed_kph=160.0),
+    ]
+    S._mark_kinks(segs)
+    assert segs[1].kind == "low_speed_corner", "a corner braked for stays a corner"
+    assert segs[2].kind == "kink"
+
+
+def test_a_curve_taken_flat_is_a_kink_not_a_corner():
+    """Albert Park returned 40 m of curvature at 305 km/h with entry == apex
+    == exit as a 'high speed corner'. Real geometry, but nobody lifted — and
+    a setup change is not felt there the way it is in a corner."""
+    worked = S.Segment(index=0, kind="high_speed_corner", start_m=0, end_m=150,
+                       length_m=150, mean_curvature_1pm=0.006,
+                       peak_curvature_1pm=0.006, min_radius_m=160.0,
+                       direction="left", apex_speed_kph=230.0, entry_speed_kph=300.0)
+    flat = S.Segment(index=1, kind="high_speed_corner", start_m=200, end_m=240,
+                     length_m=40, mean_curvature_1pm=0.005,
+                     peak_curvature_1pm=0.005, min_radius_m=180.0,
+                     direction="left", apex_speed_kph=305.0, entry_speed_kph=305.0)
+    assert worked.apex_speed_kph < S.KINK_SPEED_RETENTION * worked.entry_speed_kph
+    assert flat.apex_speed_kph >= S.KINK_SPEED_RETENTION * flat.entry_speed_kph
+
+
+def test_published_turn_counts_include_kinks():
+    segs = [
+        S.Segment(index=0, kind="low_speed_corner", start_m=0, end_m=90, length_m=90,
+                  mean_curvature_1pm=0.02, peak_curvature_1pm=0.02,
+                  min_radius_m=50.0, direction="left", apex_speed_kph=110.0),
+        S.Segment(index=1, kind="kink", start_m=90, end_m=130, length_m=40,
+                  mean_curvature_1pm=0.005, peak_curvature_1pm=0.005,
+                  min_radius_m=200.0, direction="left", apex_speed_kph=305.0),
+        S.Segment(index=2, kind="straight", start_m=130, end_m=900, length_m=770,
+                  mean_curvature_1pm=0.0, peak_curvature_1pm=0.0,
+                  min_radius_m=900.0, direction="straight"),
+    ]
+    t = S.count_turns(segs)
+    assert t == {"corners": 1, "kinks": 1, "turns": 2}
+
+
+def test_one_marginal_straight_does_not_fail_a_whole_circuit():
+    """The gate exists to catch a 21 m hairpin hiding in a straight. Failing a
+    circuit over a single 263 m radius makes the alarm worthless."""
+    segs = [S.Segment(index=i, kind="straight", start_m=i*100, end_m=i*100+80,
+                      length_m=80, mean_curvature_1pm=0.0, peak_curvature_1pm=0.0,
+                      min_radius_m=900.0, direction="straight") for i in range(15)]
+    segs[8].min_radius_m = 263.0
+    rep = S.check_physics(segs, 0.0025)
+    assert rep["passes"], "one borderline straight in fifteen is not contamination"
+
+    segs[3].min_radius_m = 21.0
+    segs[5].min_radius_m = 30.0
+    assert not S.check_physics(segs, 0.0025)["passes"]
+
+
+def test_over_g_always_fails_regardless_of_budget():
+    seg = S.Segment(index=0, kind="high_speed_corner", start_m=0, end_m=100,
+                    length_m=100, mean_curvature_1pm=0.02, peak_curvature_1pm=0.02,
+                    min_radius_m=44.5, direction="right", apex_speed_kph=233.0)
+    assert not S.check_physics([seg], 0.0025)["passes"]

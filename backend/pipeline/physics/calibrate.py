@@ -53,17 +53,28 @@ def aero_efficiency_line(df: pd.DataFrame) -> pd.DataFrame:
     laps = laps.dropna(subset=["trap_kph", "hs_corner_kph", "lap_time_s"])
 
     rows = []
+    pooled = []
     for (season, ev), g in laps.groupby(["season", "event_slug"]):
         per_chassis = []
         for ch, gg in g.groupby("chassis"):
             best = gg.nsmallest(3, "lap_time_s")
-            per_chassis.append((ch, best["trap_kph"].median(), best["hs_corner_kph"].median()))
+            per_chassis.append((ch, best["trap_kph"].median(), best["hs_corner_kph"].median(),
+                                best["lap_time_s"].median()))
         if len(per_chassis) < 5:
             continue
-        pc = pd.DataFrame(per_chassis, columns=["chassis", "trap", "hs"])
+        pc = pd.DataFrame(per_chassis, columns=["chassis", "trap", "hs", "lap"])
         x, y = pc["trap"].to_numpy(float), pc["hs"].to_numpy(float)
         slope = float(np.polyfit(x, y, 1)[0])
         corr = float(np.corrcoef(x, y)[0, 1])
+        # The raw slope is confounded by CAR QUALITY: a good car is faster
+        # everywhere, so trap and corner speed rise together. Hold overall
+        # pace (best lap time) fixed and ask again: among equally fast cars,
+        # does the higher trap speed come with slower fast corners?
+        z = lambda v: (v - v.mean()) / (v.std(ddof=0) + 1e-9)
+        pooled.append(pd.DataFrame({"hs": z(pc["hs"]), "trap": z(pc["trap"]), "lap": z(pc["lap"])}))
+        Xp = np.column_stack([np.ones(len(pc)), z(pc["trap"]), z(pc["lap"])])
+        bp, *_ = np.linalg.lstsq(Xp, z(pc["hs"]).to_numpy(float), rcond=None)
+        partial = float(bp[1])
         # implied drag-per-downforce for a wing change, from the two speed laws:
         #   dv_c/v_c = 0.5*alpha*d_df   ;   dv_t/v_t = -(1/3)*d_drag
         v0 = cfg.coeff("car", "aero_crossover_kph").value
@@ -72,46 +83,83 @@ def aero_efficiency_line(df: pd.DataFrame) -> pd.DataFrame:
         ratio = -1.5 * alpha / (slope * vt / vc) if slope != 0 else np.nan
         rows.append({"season": season, "event": ev, "chassis": len(pc), "trap_kph": round(vt, 1),
                      "hs_corner_kph": round(vc, 1), "slope": round(slope, 3), "corr": round(corr, 2),
-                     "drag_per_df": round(ratio, 2)})
-    return pd.DataFrame(rows)
+                     "partial_slope_z": round(partial, 2), "drag_per_df": round(ratio, 2)})
+    out = pd.DataFrame(rows)
+    if pooled:
+        allp = pd.concat(pooled)
+        X = np.column_stack([np.ones(len(allp)), allp["trap"], allp["lap"]])
+        b, *_ = np.linalg.lstsq(X, allp["hs"].to_numpy(float), rcond=None)
+        out.attrs["pooled"] = {"n": int(len(allp)), "trap_given_pace": round(float(b[1]), 3),
+                               "pace": round(float(b[2]), 3)}
+    return out
 
 
 # ------------------------------------------------------------ check 2: fuel
-def fuel_slope(df: pd.DataFrame) -> pd.DataFrame:
+def _fuel_design(g: pd.DataFrame) -> tuple[np.ndarray, np.ndarray, int]:
+    """lap_time ~ driver FE + compound FE + lap_number + tyre_life x compound.
+
+    Within ONE driver, lap_number and tyre_life differ by a constant per
+    stint, so with a stint (or compound) dummy the three are exactly
+    collinear and least squares returns garbage — the first version of this
+    check did exactly that and printed -0.8 s/kg. Pooling the field fixes
+    it: drivers pit on different laps, so the same compound sits at different
+    (lap_number - tyre_life) offsets and fuel separates from tyre age.
+    """
+    drivers = sorted(g["driver"].unique())
+    comps = sorted(g["compound"].unique())
+    cols = [np.ones(len(g))]
+    for d in drivers[1:]:
+        cols.append((g["driver"] == d).to_numpy(float))
+    for c in comps[1:]:
+        cols.append((g["compound"] == c).to_numpy(float))
+    cols.append(g["lap_number"].to_numpy(float))                     # <- fuel
+    idx_lap = len(cols) - 1
+    for c in comps:
+        cols.append(g["tyre_life"].to_numpy(float) * (g["compound"] == c).to_numpy(float))
+    return np.column_stack(cols), g["lap_time_s"].to_numpy(float), idx_lap
+
+
+def fuel_slope(df: pd.DataFrame, n_boot: int = 60, seed: int = 7) -> pd.DataFrame:
     cfg = default_config()
     full = float(cfg.raw["car"]["fuel_max_kg"])
     r = df[(df["session"] == "R") & (df["condition"] == "dry")]
     laps = _lap_table(r).reset_index()
     if "lap_effort_class" in laps.columns:
         laps = laps[laps["lap_effort_class"].isin(["push", "moderate"])]
-    laps = laps.dropna(subset=["lap_time_s", "lap_number", "tyre_life", "compound"])
+    laps = laps.dropna(subset=["lap_time_s", "lap_number", "tyre_life", "compound", "driver"])
     laps = laps[laps["lap_number"] > 2]
+    rng = np.random.default_rng(seed)
 
     rows = []
     for (season, ev), g in laps.groupby(["season", "event_slug"]):
         total = int(g["lap_number"].max())
         kg_per_lap = full / total
-        per_driver = []
-        for drv, gd in g.groupby("driver"):
-            if gd["stint"].nunique() < 2 or len(gd) < 15:
-                continue
-            comps = sorted(gd["compound"].unique())
-            X = [np.ones(len(gd)), gd["lap_number"].to_numpy(float), gd["tyre_life"].to_numpy(float)]
-            for c in comps[1:]:
-                X.append((gd["compound"] == c).to_numpy(float))
-            X = np.column_stack(X)
-            y = gd["lap_time_s"].to_numpy(float)
-            # trim the slowest 10% (traffic, damage) — robust enough for a slope
-            keep = y <= np.quantile(y, 0.90)
-            beta, *_ = np.linalg.lstsq(X[keep], y[keep], rcond=None)
-            per_driver.append(-beta[1] / kg_per_lap)           # s per kg
-        if len(per_driver) < 3:
+        # trim each driver's slowest 10% (traffic, damage, a botched lap)
+        g = g[g["lap_time_s"] <= g.groupby("driver")["lap_time_s"].transform(lambda s: s.quantile(0.90))]
+        drivers = sorted(g["driver"].unique())
+        if len(drivers) < 5 or len(g) < 100:
             continue
-        arr = np.asarray(per_driver)
-        rows.append({"season": season, "event": ev, "laps": total, "drivers": len(arr),
-                     "kg_per_lap": round(kg_per_lap, 2),
-                     "s_per_kg_median": round(float(np.median(arr)), 4),
-                     "s_per_kg_iqr": round(float(np.subtract(*np.percentile(arr, [75, 25]))), 4)})
+        X, y, i = _fuel_design(g)
+        beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+        point = -beta[i] / kg_per_lap
+        boots = []
+        for _ in range(n_boot):                       # resample DRIVERS, keep their laps whole
+            pick = rng.choice(drivers, size=len(drivers), replace=True)
+            gb = pd.concat([g[g["driver"] == d].assign(driver=f"{d}#{k}") for k, d in enumerate(pick)])
+            Xb, yb, ib = _fuel_design(gb)
+            bb, *_ = np.linalg.lstsq(Xb, yb, rcond=None)
+            boots.append(-bb[ib] / kg_per_lap)
+        arr = np.asarray(boots)
+        lo, hi = np.percentile(arr, [25, 75])
+        # When resampling the field barely moves the number, the slope is a
+        # property of the race. When it swings by an order of magnitude the
+        # race had no steady rhythm (safety cars, red flags, formation
+        # running) and the number means nothing.
+        rows.append({"season": season, "event": ev, "laps": total, "drivers": len(drivers),
+                     "n_laps": int(len(g)), "kg_per_lap": round(kg_per_lap, 2),
+                     "s_per_kg": round(float(point), 4),
+                     "boot_iqr": round(float(hi - lo), 4),
+                     "trusted": bool((hi - lo) < 0.02 and 0 < point < 0.2)})
     return pd.DataFrame(rows)
 
 
@@ -174,19 +222,31 @@ def main() -> int:
     if len(t1):
         print(t1.to_string(index=False))
         rw = cfg.raw["aero"]["rear_wing"]
-        print(f"   configured rear-wing drag/downforce : {rw['drag_pct']['value'] / rw['downforce_pct']['value']:.2f}"
-              f"   measured median : {t1['drag_per_df'].median():.2f}"
-              f"   ({int((t1['slope'] < 0).sum())}/{len(t1)} events with the expected sign)")
+        print(f"   raw slope: {int((t1['slope'] < 0).sum())}/{len(t1)} events negative — confounded by car quality"
+              f" (a good car is fast everywhere)")
+        po = t1.attrs.get("pooled")
+        if po:
+            print(f"   PARTIAL (pace held fixed, pooled {po['n']} chassis-events, z-units):"
+                  f"  trap -> hs corner {po['trap_given_pace']:+.3f}   pace -> hs corner {po['pace']:+.3f}")
+            print(f"   {int((t1['partial_slope_z'] < 0).sum())}/{len(t1)} events negative once pace is held fixed."
+                  f"  Expected: negative. If it is not, the wing ratio cannot be checked with public data")
+            print(f"   and stays what it is in physics.yaml: rear-wing drag/downforce "
+                  f"{rw['drag_pct']['value'] / rw['downforce_pct']['value']:.2f} (literature).")
     else:
         print("   (no qualifying session had 5+ chassis with usable laps)")
 
-    print("\n#2 FUEL SLOPE  (races, dry, push+moderate laps, lap_time ~ lap_number + tyre_life + compound)")
+    print("\n#2 FUEL SLOPE  (races, dry, push+moderate laps; field-pooled: driver FE + compound FE + lap_number + tyre_life x compound)")
     t2 = fuel_slope(df)
     if len(t2):
         print(t2.to_string(index=False))
         cf = cfg.coeff("fuel", "s_per_kg_per_lap")
-        print(f"   configured {cf.value:.3f} s/kg (u +-{cf.u:.0%})   measured median "
-              f"{t2['s_per_kg_median'].median():.4f} s/kg over {len(t2)} races")
+        tr = t2[t2["trusted"]]
+        print(f"   configured {cf.value:.3f} s/kg (u +-{cf.u:.0%})   measured median over the "
+              f"{len(tr)} stable race(s): "
+              + (f"{tr['s_per_kg'].median():.4f} s/kg" if len(tr) else "n/a"))
+        print(f"   untrusted: {len(t2) - len(tr)} race(s) with bootstrap IQR >= 0.02 s/kg or a negative slope — "
+              f"no steady rhythm to measure (SC / red flag / formation running); the ML must not")
+        print(f"   read a lap-number trend into those either -> P4 note: a 'laps since restart' feature or race-level gate.")
     else:
         print("   (no race with 3+ drivers on 2+ stints)")
 

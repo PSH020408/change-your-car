@@ -77,6 +77,7 @@ class QuantileSet:
     backend: str
     params: dict
     models: dict = None
+    margin: float = 0.0     # conformal widening (s), from out-of-group residuals
 
     def _X(self, X: pd.DataFrame) -> pd.DataFrame:
         # LightGBM / XGBoost take pandas categories; sklearn wants codes
@@ -94,8 +95,30 @@ class QuantileSet:
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         Xb = self._X(X)
         cols = {f"q{int(round(q * 100))}": self.models[q].predict(Xb) for q in self.quantiles}
-        out = pd.DataFrame(cols, index=X.index)
-        return enforce_non_crossing(out)
+        out = enforce_non_crossing(pd.DataFrame(cols, index=X.index))
+        if self.margin:
+            out["q10"] = out["q10"] - self.margin
+            out["q90"] = out["q90"] + self.margin
+        return out
+
+
+def conformal_margin(y: np.ndarray, q: pd.DataFrame, coverage: float = 0.8) -> float:
+    """Conformalised quantile regression (Romano et al. 2019), split form.
+
+    Three quantile GBMs fitted on 600 trees each are confident about the
+    laps they saw; on laps from an event they never saw, the [q10, q90] band
+    held 51% of the truth instead of 80%. The fix is not more tuning but a
+    calibration: on OUT-OF-GROUP predictions, measure how far outside the
+    band the truth falls (E = max(q10 - y, y - q90)) and widen every band by
+    the 80th percentile of that. The band is then honest by construction on
+    data like the calibration set, and the holdout event says whether it
+    stayed honest on data unlike it.
+    """
+    y = np.asarray(y, dtype=float)
+    e = np.maximum(q["q10"].to_numpy() - y, y - q["q90"].to_numpy())
+    n = len(e)
+    k = min(np.ceil((n + 1) * coverage) / n, 1.0)
+    return float(max(np.quantile(e, k), 0.0))
 
 
 def enforce_non_crossing(q: pd.DataFrame) -> pd.DataFrame:

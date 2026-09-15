@@ -38,7 +38,7 @@ def _gold(n_events: int = 6, laps_per: int = 40, seed: int = 0) -> pd.DataFrame:
 
 def _cfg() -> dict:
     return {"data": {"train_conditions": ["dry"], "effort_classes": ["push", "moderate"], "gap_tolerance_s": 0.05},
-            "features": {"numeric": ["tyre_life", "lap_number", "stint", "track_temp_c", "air_temp_c", "effort_index",
+            "features": {"numeric": ["tyre_life", "lap_number", "stint", "track_temp_c", "air_temp_c", "lap_effort_index",
                                      "segment_length_m", "segment_min_radius_m", "segment_reference_s"],
                          "categorical": ["segment_kind", "session", "compound", "fresh_tyre", "driver", "chassis",
                                          "season", "segment_sector", "segment_is_kink"]},
@@ -116,8 +116,10 @@ def test_coverage_and_lap_sum_metrics():
 
 
 def test_gates_read_the_right_numbers():
-    metrics = {"cv": {"segment_mae_s": 0.1, "lap_mae_s": 0.2, "coverage_80": 0.8},
-               "holdout": {"lap_mae_s": 0.4}, "ridge": {"segment_mae_s": 0.2},
+    metrics = {"cv": {"segment_mae_s": 0.1, "lap_mae_s": 1.5, "cf_lap_mae_s": 0.2, "coverage_80": 0.5,
+                      "coverage_80_calibrated": 0.8},
+               "holdout": {"lap_mae_s": 0.9, "cf_lap_mae_s": 0.4, "coverage_80_calibrated": 0.78},
+               "ridge": {"segment_mae_s": 0.2},
                "probes": {"tyre_life": {"mean_delta_s": 0.05}, "lap_number": {"mean_delta_s": -0.1}}}
     g = E.gates(metrics, _cfg())
     assert all(g.values())
@@ -135,10 +137,10 @@ def test_level2_recovers_a_planted_temperature_effect():
     both = pd.concat([df, df2])
     model, t = L2.fit_level2(both, alpha=0.01, n_boot=30)
     assert model.n_sessions >= 12
-    for k in ("straight", "low_speed_corner"):
-        c = model.coef[f"track_temp_per_c[{k}]"]
-        assert 0.1 < c < 0.3, f"{k}: {c}"
-    nom, lo, hi = model.reference_pct_shift("straight", d_track_temp_c=10.0)
+    assert set(t["sector"]) == {1, 2, 3}, "level 2 works on official sectors, comparable across seasons"
+    c = model.coef["track_temp_per_c"]
+    assert 0.1 < c < 0.3, c
+    nom, lo, hi = model.reference_pct_shift(d_track_temp_c=10.0)
     assert lo <= nom <= hi and 1.0 < nom < 3.0
 
 
@@ -146,7 +148,7 @@ def test_level2_is_identity_without_informative_sessions():
     df = _gold(3, 4)
     df = df[df["session"] == "Q"]                      # one session per circuit
     model, _ = L2.fit_level2(df, n_boot=5)
-    assert model.coef == {} and model.reference_pct_shift("straight", 10.0) == (0.0, 0.0, 0.0)
+    assert model.coef == {} and model.reference_pct_shift(d_track_temp_c=10.0) == (0.0, 0.0, 0.0)
 
 
 # ------------------------------------------------------------ end to end
@@ -179,3 +181,34 @@ def test_gbm_recovers_the_planted_effects_and_registers(tmp_path):
     back, l2b, met = R.load(tmp_path)
     assert met["version"] == v2
     assert np.allclose(back.predict(X.head(50)).to_numpy(), q.head(50).to_numpy())
+
+
+def test_conformal_margin_restores_the_nominal_coverage():
+    rng = np.random.default_rng(0)
+    y = rng.normal(0, 1, 5000)
+    q = pd.DataFrame({"q10": np.full(5000, -0.3), "q50": np.zeros(5000), "q90": np.full(5000, 0.3)})   # far too narrow
+    assert E.segment_metrics(y, q)["coverage_80"] < 0.4
+    m = Q.conformal_margin(y, q, 0.8)
+    q2 = q.copy(); q2["q10"] -= m; q2["q90"] += m
+    assert abs(E.segment_metrics(y, q2)["coverage_80"] - 0.8) < 0.02
+    assert Q.conformal_margin(y, q2, 0.8) == pytest.approx(0.0, abs=1e-9)
+
+
+def test_counterfactual_error_cancels_a_per_lap_offset():
+    """A lap-wide offset nobody can predict (traffic) must not count against
+    the model when the HUD only ever shows differences between laps."""
+    df = _gold(1, 6, seed=3)
+    y = df["segment_delta_s"].to_numpy(float).copy()
+    p = y.copy()
+    # the model is exact except that every lap carries its own unknown offset
+    offsets = {u: o for u, o in zip(df["lap_uid"].unique(), np.linspace(-1, 1, df["lap_uid"].nunique()))}
+    y = y + df["lap_uid"].map(offsets).to_numpy()
+    q = pd.DataFrame({"q10": p - 0.1, "q50": p, "q90": p + 0.1})
+    absolute = E.lap_metrics(df["lap_uid"], y, q)["lap_mae_s"]
+    cf = E.counterfactual_lap_metrics(df, y, q)
+    assert absolute > 1.0                      # the offsets, summed over 4 segments
+    assert cf["cf_lap_mae_s"] > 0.5            # the offset difference to the baseline lap remains...
+    y2 = df["segment_delta_s"].to_numpy(float)  # ...but a model exact up to a CONSTANT offset scores zero
+    q2 = pd.DataFrame({"q10": y2 + 0.4, "q50": y2 + 0.5, "q90": y2 + 0.6})
+    assert E.lap_metrics(df["lap_uid"], y2, q2)["lap_mae_s"] == pytest.approx(2.0)
+    assert E.counterfactual_lap_metrics(df, y2, q2)["cf_lap_mae_s"] == pytest.approx(0.0, abs=1e-9)

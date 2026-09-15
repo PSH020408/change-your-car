@@ -40,7 +40,7 @@ def register(root: Path, model: QuantileSet, level2: Level2Model, metrics: dict,
         joblib.dump(m, d / f"model_q{int(round(q * 100))}.joblib")
     (d / "spec.json").write_text(model.spec.to_json())
     (d / "backend.json").write_text(json.dumps({"backend": model.backend, "quantiles": model.quantiles,
-                                                 "params": model.params}))
+                                                 "params": model.params, "margin": float(model.margin)}))
     (d / "level2.json").write_text(json.dumps(level2.to_dict(), indent=1))
     (d / "metrics.json").write_text(json.dumps({**metrics, "version": version, "gates_passed": passed},
                                                indent=1, default=str))
@@ -59,7 +59,8 @@ def load(root: Path, version: str = "latest") -> tuple[QuantileSet, Level2Model,
     d = root / version
     spec = FeatureSpec.from_json((d / "spec.json").read_text())
     b = json.loads((d / "backend.json").read_text())
-    qs = QuantileSet(spec=spec, quantiles=list(b["quantiles"]), backend=b["backend"], params=b["params"])
+    qs = QuantileSet(spec=spec, quantiles=list(b["quantiles"]), backend=b["backend"], params=b["params"],
+                     margin=float(b.get("margin", 0.0)))
     import joblib
     qs.models = {q: joblib.load(d / f"model_q{int(round(q * 100))}.joblib") for q in qs.quantiles}
     l2 = Level2Model.from_dict(json.loads((d / "level2.json").read_text()))

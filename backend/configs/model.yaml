@@ -21,7 +21,7 @@ features:
   # Only things known BEFORE the lap is driven. Anything measured on the lap
   # itself (speeds, brake points, throttle, DRS, pace ratios, the lap time)
   # is an outcome and is refused by FeatureSpec — see dataset.LEAKAGE.
-  numeric: [tyre_life, lap_number, stint, track_temp_c, air_temp_c, effort_index,
+  numeric: [tyre_life, lap_number, stint, track_temp_c, air_temp_c, lap_effort_index,
             segment_length_m, segment_min_radius_m, segment_reference_s]
   categorical: [segment_kind, session, compound, fresh_tyre, driver, chassis, season,
                 segment_sector, segment_is_kink]
@@ -44,10 +44,17 @@ level2:
   bootstrap: 200                         # over sessions -> coefficient intervals
 
 acceptance:
-  segment_mae_s: 0.15                    # roadmap gate, per segment (CV, q50)
-  lap_mae_s: 0.30                        # roadmap gate, lap = sum of its segments
-  unseen_track_lap_mae_s: 0.45           # holdout event
-  coverage_80: [0.70, 0.90]              # share of truths inside [q10, q90]; nominal 0.80
+  # The HUD never shows an absolute delta: it shows the CHANGE from a real
+  # baseline lap when conditions change. So the lap gates are on the
+  # counterfactual error - (y_lap - y_baseline) vs (p_lap - p_baseline) with
+  # the driver's fastest lap of the session as baseline - which is the
+  # quantity deployed. The absolute lap MAE is still printed; it carries
+  # everything a lap has that no pre-lap feature can know (traffic, damage,
+  # a management phase) and sums it over 28 segments.
+  segment_mae_s: 0.15                    # per segment, out-of-group, q50
+  lap_mae_s: 0.30                        # counterfactual lap error, out-of-group
+  unseen_track_lap_mae_s: 0.45           # counterfactual lap error on the holdout event
+  coverage_80: [0.70, 0.90]              # after conformal calibration, on the holdout event
   beat_ridge: true                       # the GBM must beat the linear baseline on segment MAE
   monotonic:
     tyre_life_up_slower: true            # +5 laps on the tyre -> delta up

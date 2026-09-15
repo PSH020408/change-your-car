@@ -41,8 +41,20 @@ class EnsembleResult:
     frame: pd.DataFrame          # distance_m, pos_x, pos_y, speed_kph on a grid
     n_laps: int
     lap_length_m: float
-    phase_shifts_m: list[float]
+    phase_shifts_m: list[float]  # one per USED lap, in `used` order
     rejected: int
+    used: list[int] | None = None       # indices into the input `frames`
+    scales: list[float] | None = None   # distance scale applied to each used lap
+
+    def to_ensemble_axis(self, i: int, distance_m: float) -> float:
+        """Where a point at `distance_m` on used lap `i` lands on the ensemble axis.
+
+        The lap was first rescaled to the anchor length, then rolled by its
+        phase shift; a sector boundary measured on the lap's own axis has to
+        travel the same way before it can be compared with ensemble segments.
+        """
+        x = distance_m * (self.scales[i] if self.scales else 1.0) + self.phase_shifts_m[i]
+        return float(x % self.lap_length_m)
 
 
 def _resample(frame: pd.DataFrame, grid: np.ndarray, scale: float) -> dict[str, np.ndarray] | None:
@@ -82,17 +94,20 @@ def build_ensemble(frames: list[pd.DataFrame], lap_length_m: float,
     n = max(int(round(lap_length_m / step_m)), 10)
     grid = np.arange(n, dtype=float) * step_m
 
-    sampled, rejected = [], 0
-    for f in frames:
+    sampled, rejected, used, scales = [], 0, [], []
+    for i, f in enumerate(frames):
         raw_len = float(pd.to_numeric(f["distance_m"], errors="coerce").max())
         if not raw_len or not np.isfinite(raw_len):
             rejected += 1
             continue
-        cols = _resample(f, grid, lap_length_m / raw_len)
+        scale = lap_length_m / raw_len
+        cols = _resample(f, grid, scale)
         if cols is None:
             rejected += 1
             continue
         sampled.append(cols)
+        used.append(i)
+        scales.append(scale)
 
     if len(sampled) < min_laps:
         raise ValueError(f"only {len(sampled)} usable laps for an ensemble (need {min_laps})")
@@ -111,4 +126,5 @@ def build_ensemble(frames: list[pd.DataFrame], lap_length_m: float,
     frame = pd.DataFrame({"distance_m": grid, "pos_x": med["pos_x"],
                           "pos_y": med["pos_y"], "speed_kph": med["speed_kph"]})
     return EnsembleResult(frame=frame, n_laps=len(sampled), lap_length_m=lap_length_m,
-                          phase_shifts_m=shifts, rejected=rejected)
+                          phase_shifts_m=shifts, rejected=rejected,
+                          used=used, scales=scales)

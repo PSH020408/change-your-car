@@ -530,3 +530,74 @@ def test_ensemble_refuses_to_average_too_few_laps():
     laps, L = _jittered_oval_laps(2, jitter=0.3)
     with pytest.raises(ValueError):
         E.build_ensemble(laps, L, min_laps=3)
+
+
+def test_ensemble_axis_mapping_rescales_then_shifts():
+    """A point on a used lap's own axis lands on the ensemble axis after the
+    same rescale and phase roll that lap's samples went through."""
+    from pipeline.segment import ensemble as E
+    ens = E.EnsembleResult(frame=pd.DataFrame(), n_laps=2, lap_length_m=1000.0,
+                           phase_shifts_m=[0.0, 30.0], rejected=0,
+                           used=[0, 1], scales=[1.0, 1.1])
+    assert ens.to_ensemble_axis(0, 400.0) == 400.0
+    assert ens.to_ensemble_axis(1, 400.0) == pytest.approx(470.0)
+    assert ens.to_ensemble_axis(1, 900.0) == pytest.approx(20.0)   # wraps past the line
+
+
+def test_median_sector_boundaries_survives_a_boundary_near_the_line():
+    """S1 ending 5 m after the line on one lap and 995 m on another are the
+    same place; a naive median (500 m) would be nowhere near either."""
+    L = 1000.0
+    per_lap = [[995.0, 660.0], [5.0, 662.0], [998.0, 658.0], [3.0, 661.0]]
+    b = S.median_sector_boundaries(per_lap, L)
+    assert b[0] in (pytest.approx(998.5), pytest.approx(0.5), pytest.approx(999.0),
+                    pytest.approx(1.5), pytest.approx(998.0), pytest.approx(0.0))
+    assert min(b[0], L - b[0]) < 3.0
+    assert b[1] == pytest.approx(660.5)
+    assert S.median_sector_boundaries([[float("nan"), 1.0]], L) == []
+
+
+def test_sector_boundaries_survive_the_ensemble_path(tmp_path):
+    """The first ensemble run produced a segments table with 100% null
+    sectors: the ensemble frame has no time axis, so the sector-time walk
+    was silently skipped. Sector boundaries must now come from the laps
+    themselves and land on every segment."""
+    pytest.importorskip("pyarrow")
+    from pipeline.segment import run as R
+    laps, L = _jittered_oval_laps(16, jitter=0.5)
+    tel, rows = [], []
+    for i, f in enumerate(laps):
+        f = f.copy()
+        v_ms = np.clip(f["speed_kph"].to_numpy(float), 30, None) / 3.6
+        ds = np.diff(f["distance_m"].to_numpy(float), prepend=0.0)
+        t = np.cumsum(ds / v_ms)
+        start = 1000.0 + 200.0 * i
+        f["session_time_s"] = start + t
+        f["lap_uid"] = f"lap{i}"
+        tel.append(f)
+        d = f["distance_m"].to_numpy(float)
+        t1 = float(np.interp(L / 3, d, t))
+        t2 = float(np.interp(2 * L / 3, d, t))
+        rows.append({"lap_uid": f"lap{i}", "driver": "VER", "lap_time_s": float(t[-1]),
+                     "lap_distance_m": L, "telemetry_quality": "clean",
+                     "lap_start_s": start, "sector1_s": t1, "sector2_s": t2 - t1})
+    d = tmp_path / "Q"
+    d.mkdir()
+    pd.DataFrame(rows).to_parquet(d / "laps.parquet", index=False)
+    pd.concat(tel).to_parquet(d / "telemetry.parquet", index=False)
+    meta = {"session": "Q", "season": 2024, "event": "Oval", "event_slug": "oval"}
+    cfg = {"geometry_step_m": 10.0, "smooth_window_m": 50.0, "poly_order": 2,
+           "curvature_threshold_1pm": 0.0025, "min_gap_m": 17.0,
+           "min_segment_len_m": 40.0, "max_lateral_g": 6.5,
+           "hidden_corner_factor": 0.7, "microsectors": 28, "corner_speed_bins": {}}
+    doc = R.process_circuit([(d, meta)], tmp_path / "out", cfg)
+    assert doc["ensemble"]["laps"] >= 3
+    assert doc["ensemble"]["sector_bounds_from"] == "ensemble median"
+    b = doc["sector_boundaries_m"]
+    assert len(b) == 2
+    # laps are rolled by up to 40 m against each other; the median must sit
+    # within that of the true thirds
+    assert abs(b[0] - L / 3) < 60.0 and abs(b[1] - 2 * L / 3) < 60.0
+    segs = pd.read_parquet(tmp_path / "out" / "segments.parquet")
+    assert segs["sector"].notna().all()
+    assert set(segs["sector"].astype(int)) == {1, 2, 3}

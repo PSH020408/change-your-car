@@ -62,7 +62,7 @@ SESSION_PREFERENCE = {"Q": 0, "SQ": 1, "R": 2, "S": 3}
 
 def ensemble_frames(laps_by: dict[str, pd.DataFrame], tel_by: dict[str, pd.DataFrame],
                     anchor_length_m: float, n: int = ENSEMBLE_LAPS
-                    ) -> list[pd.DataFrame]:
+                    ) -> list[tuple[str, pd.Series, pd.DataFrame]]:
     """The best-covered clean laps of the weekend, for the ensemble centreline.
 
     Coverage is judged against the anchor lap's length. Quality clean/normal
@@ -86,8 +86,23 @@ def ensemble_frames(laps_by: dict[str, pd.DataFrame], tel_by: dict[str, pd.DataF
     for _, _, _, ses, uid in rows[:n]:
         f = tel_by[ses][tel_by[ses]["lap_uid"] == uid].sort_values("distance_m")
         if len(f) >= 20:
-            out.append(f)
+            ref = laps_by[ses][laps_by[ses]["lap_uid"].astype(str) == uid].iloc[0]
+            out.append((ses, ref, f))
     return out
+
+
+def _lap_sector_bounds(laps: pd.DataFrame, ref: pd.Series, frame: pd.DataFrame) -> list[float]:
+    """Sector boundaries on ONE lap's own distance axis, or [] if it can't say."""
+    if not {"sector1_s", "sector2_s", "lap_start_s"} <= set(laps.columns) or \
+            "session_time_s" not in frame.columns:
+        return []
+    try:
+        return S.sector_boundaries_from_times(
+            frame["distance_m"].to_numpy(dtype=float),
+            frame["session_time_s"].to_numpy(dtype=float),
+            float(ref["lap_start_s"]), float(ref["sector1_s"]), float(ref["sector2_s"]))
+    except (TypeError, ValueError):
+        return []
 
 
 def candidate_laps(laps_by_session: dict[str, pd.DataFrame], n: int = 4) -> list[tuple[str, pd.Series]]:
@@ -177,16 +192,31 @@ def process_circuit(sessions: list[tuple[Path, dict]], out_dir: Path, cfg: dict,
     # the ensemble: the median of the weekend's best laps, phase-locked on
     # speed. One lap's GPS lottery gave the same circuit 10, 14 and 14 turns
     # in three years; sixteen laps averaged do not.
+    # Sector boundaries come from lap TIMES, so they need a frame that still
+    # has a time axis. The ensemble frame has none (it is a median of
+    # positions on a distance grid) — the first ensemble run lost every
+    # sector boundary this way and 100% of segment_sector went null. Each
+    # lap's boundaries are therefore measured on its own axis, moved onto
+    # the ensemble axis (rescale + phase shift), and the median is kept.
+    anchor_bounds = _lap_sector_bounds(laps_by[ses], ref, frame)
     ens = None
+    ens_bounds: list[float] = []
     try:
-        frames = ensemble_frames(laps_by, tel_by, lap_len_hint)
-        if len(frames) >= 3:
-            ens = E.build_ensemble(frames, lap_len_hint, step_m=5.0)
+        picks = ensemble_frames(laps_by, tel_by, lap_len_hint)
+        if len(picks) >= 3:
+            ens = E.build_ensemble([f for _, _, f in picks], lap_len_hint, step_m=5.0)
             geo = G.build(ens.frame, lap_distance_m=lap_len_hint,
                           step_m=float(cfg.get("geometry_step_m", 10.0)),
                           smooth_window_m=float(cfg["smooth_window_m"]),
                           poly_order=int(cfg.get("poly_order", 2)))
             frame = ens.frame
+            per_lap = []
+            for j, idx in enumerate(ens.used or []):
+                p_ses, p_ref, p_frame = picks[idx]
+                b = _lap_sector_bounds(laps_by[p_ses], p_ref, p_frame)
+                if len(b) == 2:
+                    per_lap.append([ens.to_ensemble_axis(j, x) for x in b])
+            ens_bounds = S.median_sector_boundaries(per_lap, lap_len_hint)
     except ValueError:
         ens = None
 
@@ -201,17 +231,9 @@ def process_circuit(sessions: list[tuple[Path, dict]], out_dir: Path, cfg: dict,
                               max_lateral_g=float(cfg.get("max_lateral_g", 6.5)))
     segments = S.build_segments(geo, cfg, raw_distance_m=raw_d, raw_speed_kph=raw_v)
 
-    bounds: list[float] = []
-    laps = laps_by[ses]
-    if {"sector1_s", "sector2_s", "lap_start_s"} <= set(laps.columns) and \
-            "session_time_s" in frame.columns:
-        try:
-            bounds = S.sector_boundaries_from_times(
-                raw_d, frame["session_time_s"].to_numpy(dtype=float),
-                float(ref["lap_start_s"]), float(ref["sector1_s"]), float(ref["sector2_s"]))
-            S.assign_sectors(segments, bounds)
-        except (TypeError, ValueError):
-            bounds = []
+    bounds: list[float] = ens_bounds if ens is not None and ens_bounds else anchor_bounds
+    if bounds:
+        S.assign_sectors(segments, bounds)
 
     physics = S.check_physics(segments,
                               float(cfg.get("curvature_threshold_1pm", 0.0035)),
@@ -241,6 +263,7 @@ def process_circuit(sessions: list[tuple[Path, dict]], out_dir: Path, cfg: dict,
             "rejected": ens.rejected,
             "phase_shift_m_max": round(max(abs(x) for x in ens.phase_shifts_m), 1),
             "grid_step_m": 5.0,
+            "sector_bounds_from": "ensemble median" if ens_bounds else "anchor lap",
         } if ens else {"laps": 1, "note": "fell back to the anchor lap alone"}),
         "geometry": {
             "lap_length_m": round(geo.lap_length_m, 1),
@@ -301,6 +324,12 @@ def process_circuit(sessions: list[tuple[Path, dict]], out_dir: Path, cfg: dict,
         print(f"  ensemble  : {e['laps']} laps"
               + (f", phase-locked within {e['phase_shift_m_max']} m, "
                  f"{e['rejected']} rejected" if e.get('laps', 1) > 1 else "  (anchor only)"))
+        if bounds:
+            print(f"  sectors   : S1 ends {bounds[0]:.0f} m, S2 ends {bounds[1]:.0f} m  "
+                  f"({e.get('sector_bounds_from', 'anchor lap')}, "
+                  f"{sum(1 for sg in segments if sg.sector is None)} segments unassigned)")
+        else:
+            print("  sectors   : NONE — segment_sector will be null downstream")
         print(f"  geometry  : {geo.lap_length_m:.0f} m, scale "
               f"{geo.metres_per_unit:.5f} m/unit, closure {geo.closure_error_m:.2f} m, "
               f"window {cfg['smooth_window_m']:.0f} m")

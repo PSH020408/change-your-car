@@ -89,6 +89,9 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
 
     raw_d = frame["distance_m"].to_numpy(dtype=float)
     raw_v = pd.to_numeric(frame.get("speed_kph"), errors="coerce").to_numpy(dtype=float)
+    sweep_rows = S.sweep_full(geo, cfg, SWEEP, raw_distance_m=raw_d,
+                              raw_speed_kph=raw_v,
+                              max_lateral_g=float(cfg.get("max_lateral_g", 6.5)))
     segments = S.build_segments(geo, cfg, raw_distance_m=raw_d, raw_speed_kph=raw_v)
 
     # Official sectors, converted from the reference lap's sector TIMES.
@@ -105,7 +108,8 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
 
     physics = S.check_physics(segments,
                               float(cfg.get("curvature_threshold_1pm", 0.0035)),
-                              float(cfg.get("max_lateral_g", 6.5)))
+                              float(cfg.get("max_lateral_g", 6.5)),
+                              float(cfg.get("hidden_corner_factor", 0.7)))
 
     kinds: dict[str, int] = {}
     for s in segments:
@@ -128,10 +132,12 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
             "grid_step_m": geo.grid_step_m,
             "metres_per_xy_unit": round(geo.metres_per_unit, 6),
             "closure_error_m": round(geo.closure_error_m, 2),
+            "slice_gap_m": geo.slice_gap_m,
             "implausible_curvature_fraction": geo.implausible_fraction,
             "smooth_window_m": float(cfg.get("smooth_window_m", 60.0)),
         },
         "threshold_sweep_corner_count": sweep,
+        "threshold_sweep": sweep_rows,
         "threshold_used_1pm": float(cfg.get("curvature_threshold_1pm", 0.0035)),
         "counts": {"segments": len(segments), "corners": corners, **kinds},
         "physics_check": physics,
@@ -157,18 +163,30 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
               f"({doc['reference_lap']['telemetry_quality']})")
         print(f"  geometry  : {geo.lap_length_m:.0f} m, scale "
               f"{geo.metres_per_unit:.5f} m/unit, closure {geo.closure_error_m:.2f} m")
-        print("  curvature threshold sweep -> corner count "
-              "(compare against the circuit's published count)")
-        for t, c in sweep.items():
-            mark = "  <-- current" if abs(float(t) - doc["threshold_used_1pm"]) < 1e-9 else ""
-            print(f"    {t} 1/m  ({1/float(t):>5.0f} m radius)  -> {c:>3} corners{mark}")
+        ref = doc.get("published_reference") or {}
+        pub = ref.get("published_turns") if ref.get("applicable") else None
+        print("  curvature threshold sweep"
+              + (f"   (published: {pub} turns)" if pub else ""))
+        print(f"    {'1/m':<8}{'radius':>8}{'g@300':>7}{'corners':>9}{'L/M/H':>10}"
+              f"{'segs':>6}{'phys':>7}")
+        for r in sweep_rows:
+            mark = "  <-- current" if abs(r["threshold_1pm"] - doc["threshold_used_1pm"]) < 1e-9 else ""
+            hit = "  == published" if pub and r["corners"] == pub else ""
+            comp = "{}/{}/{}".format(r["low"], r["medium"], r["high"])
+            verdict = "PASS" if r["physics_passes"] else "fail"
+            print("    {:<8.4f}{:>7} m{:>7.1f}{:>9}{:>10}{:>6}{:>7}{}{}".format(
+                r["threshold_1pm"], r["radius_m"], r["lateral_g_at_300kph"],
+                r["corners"], comp, r["segments"], verdict, hit, mark))
+
         print(f"  segments  : {len(segments)}  ({corners} corners)  " +
               ", ".join(f"{k}={v}" for k, v in sorted(kinds.items())))
         ok = "PASS" if physics["passes"] else "FAIL"
         print(f"  physics   : {ok}  "
               f"{len(physics['corners_over_g_limit'])} corner(s) over "
               f"{physics['max_lateral_g']} g, "
-              f"{len(physics['straights_hiding_a_corner'])} straight(s) hiding a corner")
+              f"{len(physics['straights_hiding_a_corner'])} straight(s) hiding a corner"
+              + (f", {len(physics['straights_at_the_boundary'])} at the boundary"
+                 if physics["straights_at_the_boundary"] else ""))
         for c in physics["corners_over_g_limit"][:3]:
             print(f"    seg #{c['index']}: {c['lateral_g']} g "
                   f"(R={c['radius_m']} m at {c['apex_kph']} km/h)")
@@ -245,9 +263,11 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool) -> int:
         print()
         print("GEOMETRY sanity")
         worst = max(d["geometry"]["closure_error_m"] for d in done)
-        print(f"  worst closure error : {worst:.2f} m  "
-              f"(a closed lap should return to its start; >20 m means the "
-              f"reference lap was cut badly)")
+        gap = max(d["geometry"].get("slice_gap_m", 0.0) for d in done)
+        print(f"  worst closure error : {worst:.2f} m beyond the slice gap "
+              f"(>20 m means the smoothing displaced the geometry)")
+        print(f"  worst slice gap     : {gap:.1f} m — arc the telemetry lap does "
+              f"not cover; compare with the length delta below")
         scales = [d["geometry"]["metres_per_xy_unit"] for d in done]
         print(f"  derived X/Y scale   : {min(scales):.5f} - {max(scales):.5f} m/unit "
               f"(should be consistent across circuits)")

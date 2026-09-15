@@ -293,3 +293,44 @@ def test_physics_check_passes_on_a_plausible_lap():
                   min_radius_m=900.0, direction="straight"),
     ]
     assert S.check_physics(segs, 0.0035)["passes"]
+
+
+def test_a_straight_at_the_classification_boundary_is_not_a_failure():
+    """R=281 m against a 286 m threshold is a 2% judgement call, not a defect.
+
+    The first version flagged it, which turned the invariant into noise and
+    would have buried a real 21 m violation in the same list.
+    """
+    seg = S.Segment(index=8, kind="straight", start_m=0, end_m=100, length_m=100,
+                    mean_curvature_1pm=0.003, peak_curvature_1pm=0.0036,
+                    min_radius_m=280.9, direction="straight")
+    rep = S.check_physics([seg], 0.0035)
+    assert rep["passes"]
+    assert rep["straights_hiding_a_corner"] == []
+    assert rep["straights_at_the_boundary"][0]["index"] == 8
+
+
+def test_sweep_full_reports_composition_and_physics_per_threshold():
+    frame, length, raw_d, raw_v = _oval()
+    geo = G.build(frame, lap_distance_m=length, step_m=10.0)
+    cfg = {"min_gap_m": 30.0, "min_segment_len_m": 40.0,
+           "corner_speed_bins": {"low": [0, 120], "medium": [120, 200],
+                                 "high": [200, 400]}}
+    rows = S.sweep_full(geo, cfg, [0.0025, 0.0035],
+                        raw_distance_m=raw_d, raw_speed_kph=raw_v)
+    for r in rows:
+        assert r["corners"] == 2
+        assert r["low"] + r["medium"] + r["high"] == r["corners"]
+        assert r["physics_passes"] is True
+        # the threshold's physical meaning travels with it
+        assert 0.5 < r["lateral_g_at_300kph"] < 10
+
+
+def test_slice_gap_is_reported_separately_from_closure():
+    """A telemetry lap that does not cover the full circuit cannot close to
+    zero; charging that to the smoothing hid how incomplete the slice was."""
+    frame, length = _circle(200.0, n=400)
+    cut = frame.iloc[: int(len(frame) * 0.94)].copy()      # drop the last 6%
+    geo = G.build(cut, lap_distance_m=float(cut["distance_m"].iloc[-1]), step_m=10.0)
+    assert geo.slice_gap_m > 20.0
+    assert geo.closure_error_m < geo.slice_gap_m

@@ -197,7 +197,20 @@ segmentation:
   smooth_window_m: 90.0        # local-fit window, in metres
   poly_order: 2                # quadratic resists noise; a cubic chases it
   max_lateral_g: 6.5           # curvature implying more than this is noise
-  curvature_threshold_1pm: 0.0035
+  # A straight whose radius sits just under the corner threshold is the
+  # boundary doing its job, not a lost corner. Only flag radii materially
+  # tighter than the threshold (default: below 70% of it).
+  hidden_corner_factor: 0.7
+  # SETTLED from the sweep on 2022 Australian GP (published: 14 turns), after
+  # the curvature fix:
+  #     0.0015 (667 m, 1.1 g @300) -> 14 corners   == published
+  #     0.0020 (500 m, 1.4 g)      -> 15
+  #     0.0025 (400 m, 1.8 g)      -> 14 corners   == published
+  #     0.0035 (286 m, 2.5 g)      -> 11           <- the old value, too few
+  # Two candidates match the published count, so physics breaks the tie: a
+  # 400 m radius is 1.8 g at 300 km/h, which is a corner a driver works at,
+  # while 667 m is 1.1 g — a kink the car takes flat. Take the tighter one.
+  curvature_threshold_1pm: 0.0025
   min_gap_m: 30.0              # close gaps this short (double-apex corners)
   min_segment_len_m: 40.0      # drop runs this short (curvature noise)
   corner_speed_bins:

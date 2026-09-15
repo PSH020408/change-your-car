@@ -127,6 +127,44 @@ def sweep_thresholds(curvature: np.ndarray, step_m: float,
             for t in candidates}
 
 
+def sweep_full(geo, cfg: dict, candidates: list[float],
+               raw_distance_m=None, raw_speed_kph=None,
+               max_lateral_g: float = 6.5) -> list[dict]:
+    """Corner count AND composition AND physics verdict, per threshold.
+
+    A count alone cannot settle the threshold: 11 corners and 14 corners can
+    both look reasonable until you see that one of them classifies seven of
+    them as high-speed on a circuit that does not have seven fast corners.
+    One run now answers the whole question.
+    """
+    rows = []
+    for t in candidates:
+        c = dict(cfg)
+        c["curvature_threshold_1pm"] = t
+        segs = build_segments(geo, c, raw_distance_m=raw_distance_m,
+                              raw_speed_kph=raw_speed_kph)
+        kinds: dict[str, int] = {}
+        for s in segs:
+            kinds[s.kind] = kinds.get(s.kind, 0) + 1
+        phys = check_physics(segs, t, max_lateral_g)
+        rows.append({
+            "threshold_1pm": t,
+            "radius_m": round(1.0 / t) if t > 0 else None,
+            # What this threshold means physically: the lateral load a car
+            # pulls at 300 km/h on a corner right at the boundary.
+            "lateral_g_at_300kph": round((300 / 3.6) ** 2 * t / 9.81, 2),
+            "corners": sum(1 for s in segs if s.kind.endswith("_corner")),
+            "low": kinds.get("low_speed_corner", 0),
+            "medium": kinds.get("medium_speed_corner", 0),
+            "high": kinds.get("high_speed_corner", 0),
+            "segments": len(segs),
+            "physics_passes": phys["passes"],
+            "over_g": len(phys["corners_over_g_limit"]),
+            "hidden": len(phys["straights_hiding_a_corner"]),
+        })
+    return rows
+
+
 # ------------------------------------------------------------ classification
 def classify_corner(apex_speed_kph: float | None, bins: dict) -> str:
     if apex_speed_kph is None or not np.isfinite(apex_speed_kph):
@@ -317,7 +355,8 @@ def sector_boundaries_from_times(
 
 # --------------------------------------------------------------- invariants
 def check_physics(segments: list[Segment], corner_threshold_1pm: float,
-                  max_lateral_g: float = 6.5) -> dict:
+                  max_lateral_g: float = 6.5,
+                  hidden_corner_factor: float = 0.7) -> dict:
     """Two invariants that must hold, or the segmentation is wrong.
 
     1. No corner may imply more lateral load than the car can generate. The
@@ -331,7 +370,13 @@ def check_physics(segments: list[Segment], corner_threshold_1pm: float,
     output, but the run must say so out loud.
     """
     corner_radius = 1.0 / corner_threshold_1pm if corner_threshold_1pm > 0 else 1e9
-    over_g, hidden = [], []
+    # A straight whose robust radius sits just under the threshold is not a
+    # lost corner, it is a gentle kink at the classification boundary — the
+    # boundary has to fall somewhere. Only a MATERIALLY tighter radius is a
+    # defect: R = 21 m inside a straight is a missed hairpin, R = 281 m
+    # against a 286 m threshold is a 2% judgement call.
+    material_radius = corner_radius * hidden_corner_factor
+    over_g, hidden, borderline = [], [], []
 
     for s in segments:
         if s.kind.endswith("_corner"):
@@ -342,8 +387,10 @@ def check_physics(segments: list[Segment], corner_threshold_1pm: float,
                 over_g.append({"index": s.index, "lateral_g": round(g, 1),
                                "radius_m": r, "apex_kph": s.apex_speed_kph})
         elif s.min_radius_m and s.min_radius_m < corner_radius:
-            hidden.append({"index": s.index, "radius_m": s.min_radius_m,
-                           "length_m": s.length_m})
+            row = {"index": s.index, "radius_m": s.min_radius_m,
+                   "length_m": s.length_m,
+                   "pct_of_threshold": round(100.0 * s.min_radius_m / corner_radius)}
+            (hidden if s.min_radius_m < material_radius else borderline).append(row)
 
     n_corner = sum(1 for s in segments if s.kind.endswith("_corner"))
     n_straight = sum(1 for s in segments if s.kind == "straight")
@@ -352,6 +399,8 @@ def check_physics(segments: list[Segment], corner_threshold_1pm: float,
         "corner_threshold_radius_m": round(corner_radius, 1),
         "corners_over_g_limit": over_g,
         "straights_hiding_a_corner": hidden,
+        "straights_at_the_boundary": borderline,
+        "material_radius_m": round(material_radius, 1),
         "corners_checked": n_corner,
         "straights_checked": n_straight,
         "passes": not over_g and not hidden,

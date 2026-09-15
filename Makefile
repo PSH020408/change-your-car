@@ -25,7 +25,7 @@ recon:
 # project folder) instead of pasted.
 # Background cache warming — resumable, rate-limit aware. Run it and forget it.
 warm-bg:
-	cd backend && nohup .venv/bin/python -m pipeline.ingest.warm_cache \
+	cd backend && PYTHONUNBUFFERED=1 nohup .venv/bin/python -m pipeline.ingest.warm_cache \
 		--scope configs/scope.yaml > ../data/cache/warm.log 2>&1 & \
 		echo "warming started -> data/cache/warm.log"
 
@@ -33,7 +33,9 @@ warm:
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.ingest.warm_cache --scope configs/scope.yaml
 
 warm-status:
-	@tail -n 20 data/cache/warm.log 2>/dev/null || echo "no warm.log yet"
+	@pgrep -fl warm_cache >/dev/null && echo "warm_cache: RUNNING" || echo "warm_cache: NOT running"
+	@python3 -c "import json,collections;d=json.load(open('backend/data/cache/_warm_ledger.json'));print('ledger  :',dict(collections.Counter(v['status'] for v in d.values())))" 2>/dev/null || true
+	@tail -n 8 data/cache/warm.log 2>/dev/null || echo "no warm.log yet"
 
 # --- P1 Ingestion ------------------------------------------------------------
 # Reads only what warm_cache has already downloaded, so it makes ZERO network

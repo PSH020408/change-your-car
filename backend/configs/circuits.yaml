@@ -18,5 +18,24 @@ australian_grand_prix:
   source: https://en.wikipedia.org/wiki/Albert_Park_Circuit
   note: 2022 reconfiguration removed turns 9/10; pre-2022 was 5.303 km / 16 turns
 
+monaco_grand_prix:
+  layout_from: 2015
+  length_km: 3.337
+  turns: 19
+  source: https://en.wikipedia.org/wiki/Circuit_de_Monaco
+  note: |
+    19 turns in 3.337 km is 176 m per turn, less than half the ~370 m of every
+    other circuit here. A smoothing window tuned for a road course merges
+    Monaco's corners into each other, which is exactly what happened: the
+    global 90 m window found 8 turns instead of 19.
+  segmentation:
+    smooth_window_m: 50.0
+
+bahrain_grand_prix:
+  layout_from: 2005
+  length_km: 5.412
+  turns: 15
+  source: https://en.wikipedia.org/wiki/Bahrain_International_Circuit
+
 # Add the remaining pilot circuits only once each figure has been checked
 # against a primary source. An empty entry is better than a guessed one.

@@ -23,6 +23,8 @@ import pandas as pd
 from pipeline.ingest import paths
 from pipeline.features import driver_style, effort as effort_mod, segment_features, setup_proxy
 
+REFERENCE_QUANTILE = 0.02
+
 LAP_CONTEXT = [
     "lap_uid", "season", "event", "event_slug", "session", "circuit",
     "driver", "team", "chassis", "power_unit", "lap_number", "stint",
@@ -78,7 +80,7 @@ def build_session(bronze_dir: Path, silver_dir: Path, verbose: bool = False) -> 
 
 
 def add_targets(df: pd.DataFrame, gap_tolerance_s: float = 0.05,
-                reference_quantile: float = 0.02) -> pd.DataFrame:
+                reference_quantile: float = REFERENCE_QUANTILE) -> pd.DataFrame:
     """Per-segment delta against a clean, robust reference for that segment.
 
     Three things the first version got wrong, all of them the same mistake in
@@ -226,10 +228,15 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
         print(f"  rows with a target : {len(dlt):,} ({100*len(dlt)/len(feat):.1f}%)")
         print(f"  median / p90 / max : {dlt.median():.3f} / "
               f"{dlt.quantile(0.9):.3f} / {dlt.max():.3f} s")
+        # The reference is a low QUANTILE, not a minimum, so a small share of
+        # laps sitting below it is the definition working, not a defect. Only
+        # an excess is worth reporting.
         neg = int((dlt < -1e-9).sum())
-        print(f"  negative deltas    : {neg}  "
-              + ("(should be 0 — the reference is a per-segment minimum)"
-                 if neg else "(correct)"))
+        expected = REFERENCE_QUANTILE * len(dlt)
+        verdict = ("as expected for a q={:.2f} reference"
+                   .format(REFERENCE_QUANTILE) if neg <= 2.5 * expected
+                   else "MORE than the quantile explains — check the reference")
+        print(f"  below reference    : {neg} ({100*neg/len(dlt):.1f}%)  {verdict}")
 
     # ---- the invariant --------------------------------------------------
     inv = check_segment_times_sum_to_the_lap(feat)
@@ -248,13 +255,21 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
 
     if "lap_distance_scale" in feat:
         sc = feat.groupby("lap_uid")["lap_distance_scale"].first()
-        drift = (sc.max() - sc.min()) * float(feat["segment_length_m"].sum()
-                                              / max(feat["segment_index"].nunique(), 1))
+        spread = float(sc.max() / sc.min() - 1) if sc.min() else 0.0
+        lap_len = float(feat.groupby(["event", "session"])["segment_length_m"]
+                        .apply(lambda g: g.groupby(level=0).first().sum()).max()) \
+            if len(feat) else 0.0
+        # Approximate the circuit length from one lap's segments, not from the
+        # whole column — summing 41,000 rows of segment lengths produced a
+        # nonsense 4,741 m drift figure in the first version.
+        one = feat.drop_duplicates(subset=["event", "session", "segment_index"])
+        lap_len = float(one.groupby(["event", "session"])["segment_length_m"].sum().max())
         print()
         print("DISTANCE AXIS alignment  (each lap integrates its own, and they disagree)")
         print(f"  rescale factor : {sc.min():.4f} - {sc.max():.4f}")
-        print(f"  raw spread     : {(sc.max()/sc.min()-1)*100:.2f}% — before rescaling this")
-        print(f"                   moved segment boundaries by up to ~{abs(drift):.0f} m")
+        print(f"  raw spread     : {spread*100:.2f}% over a ~{lap_len:.0f} m lap — before")
+        print(f"                   rescaling this moved boundaries by up to "
+              f"~{spread*lap_len:.0f} m")
 
     # ---- sparsity, but only where the column is supposed to exist ---------
     print()

@@ -41,6 +41,7 @@ def load_circuit_reference(scope_path: Path) -> dict:
 
 QUALITY_RANK = {"clean": 0, "normal": 1, "gappy": 2, "holed": 3, "missing": 4}
 SWEEP = [0.0015, 0.0020, 0.0025, 0.0030, 0.0035, 0.0045, 0.0060, 0.0080]
+WINDOW_SWEEP = [40.0, 50.0, 65.0, 80.0, 100.0, 120.0]
 
 
 def silver_dir(scope_path: Path, scope: dict) -> Path:
@@ -65,8 +66,24 @@ def pick_reference_lap(laps: pd.DataFrame) -> pd.Series:
     raise ValueError("no usable reference lap")
 
 
+def circuit_cfg(base: dict, ref: dict | None, lap_length_m: float) -> dict:
+    """Segmentation settings for THIS circuit.
+
+    Precedence: an explicit per-circuit override, then the global config, then
+    a window auto-scaled to the circuit's size. Monaco needs a tighter window
+    than Spa and no single number serves both.
+    """
+    cfg = dict(base)
+    if not cfg.get("smooth_window_m"):
+        cfg["smooth_window_m"] = G.auto_window_m(lap_length_m)
+    for k, v in ((ref or {}).get("segmentation") or {}).items():
+        cfg[k] = v
+    return cfg
+
+
 def process_session(session_dir: Path, out_dir: Path, cfg: dict,
-                    reference: dict | None = None, verbose: bool = False) -> dict:
+                    reference: dict | None = None, verbose: bool = False,
+                    calibrate: bool = False) -> dict:
     laps = pd.read_parquet(session_dir / "laps.parquet")
     tel = pd.read_parquet(session_dir / "telemetry.parquet")
     meta = json.loads((session_dir / "session.json").read_text())
@@ -77,10 +94,13 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
     if len(frame) < 20:
         raise ValueError(f"reference lap {uid} has only {len(frame)} samples")
 
-    geo = G.build(frame, lap_distance_m=float(ref.get("lap_distance_m") or
-                                              frame["distance_m"].iloc[-1]),
+    lap_len_hint = float(ref.get("lap_distance_m") or frame["distance_m"].iloc[-1])
+    circuit_ref = (reference or {}).get(meta["event_slug"])
+    cfg = circuit_cfg(cfg, circuit_ref, lap_len_hint)
+
+    geo = G.build(frame, lap_distance_m=lap_len_hint,
                   step_m=float(cfg.get("geometry_step_m", 10.0)),
-                  smooth_window_m=float(cfg.get("smooth_window_m", 90.0)),
+                  smooth_window_m=float(cfg["smooth_window_m"]),
                   poly_order=int(cfg.get("poly_order", 2)))
 
     seg_kw = {"min_gap_m": float(cfg.get("min_gap_m", 30.0)),
@@ -148,9 +168,9 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
         "microsectors": S.microsectors(geo.lap_length_m,
                                        int(cfg.get("microsectors", 28))),
         "track_map": V.build(geo),
+        "smooth_window_m": float(cfg["smooth_window_m"]),
         "published_reference": _compare_reference(
-            (reference or {}).get(meta["event_slug"]), meta["season"],
-            geo.lap_length_m, corners),
+            circuit_ref, meta["season"], geo.lap_length_m, corners),
         "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
 
@@ -159,12 +179,35 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
     pd.DataFrame([s.to_dict() for s in segments]).to_parquet(
         out_dir / "segments.parquet", index=False, compression="zstd")
 
+    if calibrate:
+        pub = (circuit_ref or {}).get("turns")
+        print(f"  CALIBRATION grid   window x threshold -> turns"
+              + (f"   (published: {pub})" if pub else ""))
+        header = "    {:>7}".format("win\\1/m") + "".join(
+            "{:>8.4f}".format(t) for t in SWEEP)
+        print(header)
+        for w in WINDOW_SWEEP:
+            g2 = G.build(frame, lap_distance_m=lap_len_hint,
+                         step_m=float(cfg.get("geometry_step_m", 10.0)),
+                         smooth_window_m=w, poly_order=int(cfg.get("poly_order", 2)))
+            rows2 = S.sweep_full(g2, cfg, SWEEP, raw_distance_m=raw_d,
+                                 raw_speed_kph=raw_v,
+                                 max_lateral_g=float(cfg.get("max_lateral_g", 6.5)))
+            cells = []
+            for r in rows2:
+                mark = "*" if pub and r["turns"] == pub else (
+                    "+" if r["physics_passes"] else " ")
+                cells.append("{:>7}{}".format(r["turns"], mark))
+            print("    {:>7.0f}".format(w) + "".join(cells))
+        print("      * = matches published turn count, + = physics invariants pass")
+
     if verbose:
         print(f"  reference : {uid}  {ref.get('driver')}  "
               f"{doc['reference_lap']['lap_time_s']:.3f}s  "
               f"({doc['reference_lap']['telemetry_quality']})")
         print(f"  geometry  : {geo.lap_length_m:.0f} m, scale "
-              f"{geo.metres_per_unit:.5f} m/unit, closure {geo.closure_error_m:.2f} m")
+              f"{geo.metres_per_unit:.5f} m/unit, closure {geo.closure_error_m:.2f} m, "
+              f"window {cfg['smooth_window_m']:.0f} m")
         ref = doc.get("published_reference") or {}
         pub = ref.get("published_turns") if ref.get("applicable") else None
         print("  curvature threshold sweep"
@@ -219,7 +262,8 @@ def _compare_reference(ref: dict | None, season: int,
     }
 
 
-def run(scope_path: Path, limit: int | None, force: bool, verbose: bool) -> int:
+def run(scope_path: Path, limit: int | None, force: bool, verbose: bool,
+        calibrate: bool = False) -> int:
     scope = paths.load_scope(scope_path)
     bronze = paths.bronze_dir(scope_path, scope)
     silver = silver_dir(scope_path, scope)
@@ -247,7 +291,8 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool) -> int:
     for i, (src, out) in enumerate(todo, 1):
         label = "/".join(src.parts[-3:])
         try:
-            doc = process_session(src, out, cfg, reference=reference, verbose=verbose)
+            doc = process_session(src, out, cfg, reference=reference,
+                                  verbose=verbose, calibrate=calibrate)
             done.append(doc)
             print(f"[{i:>3}/{len(todo)}] {label:<40s} "
                   f"{doc['counts']['corners']:>3} corners, "
@@ -315,9 +360,11 @@ def main() -> None:
     p.add_argument("--limit", type=int, default=None)
     p.add_argument("--force", action="store_true")
     p.add_argument("--verbose", "-v", action="store_true")
+    p.add_argument("--calibrate", action="store_true",
+                   help="sweep smoothing window x curvature threshold per circuit")
     a = p.parse_args()
     try:
-        sys.exit(run(a.scope, a.limit, a.force, a.verbose))
+        sys.exit(run(a.scope, a.limit, a.force, a.verbose, a.calibrate))
     except KeyboardInterrupt:
         sys.exit(130)
     except Exception:                                       # noqa: BLE001

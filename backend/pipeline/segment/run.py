@@ -35,7 +35,10 @@ import pandas as pd
 import yaml
 
 from pipeline.ingest import paths
-from pipeline.segment import geometry as G, segmentation as S, svg as V
+from pipeline.segment import ensemble as E, geometry as G, segmentation as S, svg as V
+
+ENSEMBLE_LAPS = 16        # sqrt(16) = 4x jitter reduction; more gains little
+ENSEMBLE_COVERAGE = (0.97, 1.03)
 
 
 def load_circuit_reference(scope_path: Path) -> dict:
@@ -55,6 +58,36 @@ def silver_dir(scope_path: Path, scope: dict) -> Path:
 
 
 SESSION_PREFERENCE = {"Q": 0, "SQ": 1, "R": 2, "S": 3}
+
+
+def ensemble_frames(laps_by: dict[str, pd.DataFrame], tel_by: dict[str, pd.DataFrame],
+                    anchor_length_m: float, n: int = ENSEMBLE_LAPS
+                    ) -> list[pd.DataFrame]:
+    """The best-covered clean laps of the weekend, for the ensemble centreline.
+
+    Coverage is judged against the anchor lap's length. Quality clean/normal
+    only: a lap with a 4 s hole in its position stream would drag the median
+    toward a straight line through the hole.
+    """
+    rows = []
+    for ses, laps in laps_by.items():
+        df = laps.copy()
+        df["_q"] = df.get("telemetry_quality", pd.Series("normal", index=df.index)) \
+            .map(lambda v: QUALITY_RANK.get(str(v), 9))
+        df["_t"] = pd.to_numeric(df.get("lap_time_s"), errors="coerce")
+        df["_len"] = pd.to_numeric(df.get("lap_distance_m"), errors="coerce")
+        cov = df["_len"] / anchor_length_m
+        df = df[df["_t"].notna() & (df["_q"] <= 1) & cov.between(*ENSEMBLE_COVERAGE)]
+        df["_s"] = SESSION_PREFERENCE.get(ses, 9)
+        for _, r in df.iterrows():
+            rows.append((r["_s"], r["_q"], r["_t"], ses, str(r["lap_uid"])))
+    rows.sort()
+    out = []
+    for _, _, _, ses, uid in rows[:n]:
+        f = tel_by[ses][tel_by[ses]["lap_uid"] == uid].sort_values("distance_m")
+        if len(f) >= 20:
+            out.append(f)
+    return out
 
 
 def candidate_laps(laps_by_session: dict[str, pd.DataFrame], n: int = 4) -> list[tuple[str, pd.Series]]:
@@ -140,6 +173,23 @@ def process_circuit(sessions: list[tuple[Path, dict]], out_dir: Path, cfg: dict,
     _, ses, ref, frame, geo, cfg, lap_len_hint = best
     uid = str(ref["lap_uid"])
 
+    # The anchor lap settles length, phase and window. The SHAPE comes from
+    # the ensemble: the median of the weekend's best laps, phase-locked on
+    # speed. One lap's GPS lottery gave the same circuit 10, 14 and 14 turns
+    # in three years; sixteen laps averaged do not.
+    ens = None
+    try:
+        frames = ensemble_frames(laps_by, tel_by, lap_len_hint)
+        if len(frames) >= 3:
+            ens = E.build_ensemble(frames, lap_len_hint, step_m=5.0)
+            geo = G.build(ens.frame, lap_distance_m=lap_len_hint,
+                          step_m=float(cfg.get("geometry_step_m", 10.0)),
+                          smooth_window_m=float(cfg["smooth_window_m"]),
+                          poly_order=int(cfg.get("poly_order", 2)))
+            frame = ens.frame
+    except ValueError:
+        ens = None
+
     seg_kw = {"min_gap_m": float(cfg.get("min_gap_m", 30.0)),
               "min_segment_len_m": float(cfg.get("min_segment_len_m", 40.0))}
     sweep = S.sweep_thresholds(geo.curvature_1pm, geo.grid_step_m, SWEEP, **seg_kw)
@@ -186,6 +236,12 @@ def process_circuit(sessions: list[tuple[Path, dict]], out_dir: Path, cfg: dict,
             "telemetry_quality": str(ref.get("telemetry_quality", "")),
             "samples": int(len(frame)),
         },
+        "ensemble": ({
+            "laps": ens.n_laps,
+            "rejected": ens.rejected,
+            "phase_shift_m_max": round(max(abs(x) for x in ens.phase_shifts_m), 1),
+            "grid_step_m": 5.0,
+        } if ens else {"laps": 1, "note": "fell back to the anchor lap alone"}),
         "geometry": {
             "lap_length_m": round(geo.lap_length_m, 1),
             "grid_step_m": geo.grid_step_m,
@@ -238,10 +294,13 @@ def process_circuit(sessions: list[tuple[Path, dict]], out_dir: Path, cfg: dict,
         print("      * = matches published turn count, + = physics invariants pass")
 
     if verbose:
-        print(f"  reference : {uid}  {ref.get('driver')}  {ses}  "
+        print(f"  anchor    : {uid}  {ref.get('driver')}  {ses}  "
               f"{doc['reference_lap']['lap_time_s']:.3f}s  "
-              f"({doc['reference_lap']['telemetry_quality']})  "
-              f"[chosen for coverage: slice gap {geo.slice_gap_m:.1f} m]")
+              f"({doc['reference_lap']['telemetry_quality']})")
+        e = doc["ensemble"]
+        print(f"  ensemble  : {e['laps']} laps"
+              + (f", phase-locked within {e['phase_shift_m_max']} m, "
+                 f"{e['rejected']} rejected" if e.get('laps', 1) > 1 else "  (anchor only)"))
         print(f"  geometry  : {geo.lap_length_m:.0f} m, scale "
               f"{geo.metres_per_unit:.5f} m/unit, closure {geo.closure_error_m:.2f} m, "
               f"window {cfg['smooth_window_m']:.0f} m")
@@ -330,7 +389,7 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool,
             print(f"[{i:>3}/{len(todo)}] {label:<36s} "
                   f"{doc['counts']['turns']:>3} turns, {doc['counts']['segments']:>3} segments, "
                   f"{doc['geometry']['lap_length_m']:>6.0f} m, "
-                  f"ref {doc['reference_lap']['session']}, "
+                  f"ensemble {doc['ensemble']['laps']:>2} laps, "
                   f"sessions {','.join(doc['sessions_covered'])}")
         except Exception as exc:                            # noqa: BLE001
             failures.append({"circuit": label, "error": f"{type(exc).__name__}: {exc}"[:240]})

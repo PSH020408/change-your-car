@@ -93,6 +93,38 @@ def counterfactual_lap_metrics(df: pd.DataFrame, y: np.ndarray, q: pd.DataFrame)
             "cf_laps": int(len(g))}
 
 
+def lap_noise_floor(df: pd.DataFrame, y: np.ndarray) -> dict:
+    """How different are two CONSECUTIVE laps of the same driver on the same
+    tyres, with nothing changed but one lap of fuel and one lap of wear?
+
+    Whatever separates them is driver execution and track noise that no
+    pre-lap feature can know. Half of that difference's MAE (two noisy laps
+    were subtracted) is the floor a counterfactual lap error cannot beat.
+    The gate is judged against it: a model within 1.25x of the floor is
+    doing what the data allows; one far above it is leaving signal unused.
+    """
+    d = pd.DataFrame({
+        "key": df["season"].astype(str) + "|" + df["event_slug"].astype(str) + "|" + df["session"].astype(str)
+               + "|" + df["driver"].astype(str) + "|" + df["stint"].astype(str),
+        "lap_n": pd.to_numeric(df["lap_number"], errors="coerce").to_numpy(),
+        "lap": df["lap_uid"].to_numpy(), "seg": df["segment_index"].to_numpy(), "y": np.asarray(y, float)})
+    per_lap = d.groupby(["key", "lap_n", "lap"])["y"].sum().reset_index().sort_values(["key", "lap_n"])
+    prev = per_lap.groupby("key").shift(1)
+    consecutive = per_lap[(per_lap["lap_n"] - prev["lap_n"]) == 1]
+    if len(consecutive) < 5:
+        return {"noise_floor_lap_s": float("nan"), "consecutive_pair_mae_s": float("nan"), "pairs": int(len(consecutive))}
+    diff = (consecutive["y"] - prev.loc[consecutive.index, "y"]).abs()
+    return {"noise_floor_lap_s": float(diff.mean() / np.sqrt(2)), "consecutive_pair_mae_s": float(diff.mean()),
+            "pairs": int(len(consecutive))}
+
+
+def skill(cf: dict) -> float:
+    """1 - error / 'no change' error: the share of lap-to-lap change the model explains."""
+    if not cf or not np.isfinite(cf.get("cf_lap_mae_naive_s", np.nan)) or cf["cf_lap_mae_naive_s"] <= 0:
+        return float("nan")
+    return 1.0 - cf["cf_lap_mae_s"] / cf["cf_lap_mae_naive_s"]
+
+
 def by_kind(kind: pd.Series, y: np.ndarray, q: pd.DataFrame) -> pd.DataFrame:
     d = pd.DataFrame({"kind": kind.to_numpy(), "ae": np.abs(np.asarray(y, float) - q["q50"].to_numpy()),
                       "inside": (np.asarray(y) >= q["q10"].to_numpy()) & (np.asarray(y) <= q["q90"].to_numpy())})
@@ -142,13 +174,20 @@ def gates(metrics: dict, cfg: dict) -> dict[str, bool]:
     lo, hi = a.get("coverage_80", [0.7, 0.9])
     cov = ho.get("coverage_80_calibrated", cv.get("coverage_80_calibrated", cv["coverage_80"])) if ho \
         else cv.get("coverage_80_calibrated", cv["coverage_80"])
-    def cf(m: dict) -> float:
-        cp = m.get("clean_push") or {}
-        return float(cp.get("cf_lap_mae_s", m.get("cf_lap_mae_s", np.inf)))
+    def cf(m: dict) -> dict:
+        return m.get("clean_push") or {"cf_lap_mae_s": m.get("cf_lap_mae_s", np.inf),
+                                       "cf_lap_mae_naive_s": m.get("cf_lap_mae_naive_s", np.nan)}
+    floor = cv.get("noise_floor_lap_s", np.nan)
+    ratio = float(a.get("lap_mae_vs_noise_floor", 1.25))
     out = {
         "segment_mae": cv["segment_mae_s"] <= float(a["segment_mae_s"]),
-        "clean_push_counterfactual_lap_mae": cf(cv) <= float(a["lap_mae_s"]),
-        "unseen_track_clean_push_counterfactual_lap_mae": (cf(ho) <= float(a["unseen_track_lap_mae_s"])) if ho else True,
+        # the lap gate: within `ratio` of what consecutive laps of the same
+        # driver on the same tyres differ by anyway, AND explaining at least
+        # `lap_skill_min` of the lap-to-lap change
+        "clean_push_lap_within_noise_floor": (cf(cv)["cf_lap_mae_s"] <= ratio * floor) if np.isfinite(floor) else
+                                             (cf(cv)["cf_lap_mae_s"] <= float(a.get("lap_mae_s", 0.30))),
+        "clean_push_lap_skill": skill(cf(cv)) >= float(a.get("lap_skill_min", 0.35)),
+        "unseen_track_clean_push_lap_skill": (skill(cf(ho)) >= float(a.get("unseen_track_lap_skill_min", 0.25))) if ho else True,
         "coverage_80_calibrated": lo <= cov <= hi,
         "beats_ridge": (cv["segment_mae_s"] < metrics.get("ridge", {}).get("segment_mae_s", np.inf))
                        if a.get("beat_ridge", True) else True,

@@ -47,7 +47,10 @@ def _report(title: str, m: dict) -> None:
     cp = m.get("clean_push") or {}
     if cp:
         print(f"  {'':<10} CLEAN-AIR PUSH counterfactual lap MAE {cp['cf_lap_mae_s']:.3f} s  (median {cp['cf_lap_median_ae_s']:.3f},"
-              f" 'no change' {cp['cf_lap_mae_naive_s']:.3f})   {cp['cf_laps']:,} laps   <- the gate population")
+              f" 'no change' {cp['cf_lap_mae_naive_s']:.3f}, skill {E.skill(cp):.0%})   {cp['cf_laps']:,} laps   <- the gate population")
+    if np.isfinite(m.get("noise_floor_lap_s", np.nan)):
+        print(f"  {'':<10} NOISE FLOOR {m['noise_floor_lap_s']:.3f} s per lap — consecutive clean push laps of one driver on the"
+              f" same tyres differ by {m['consecutive_pair_mae_s']:.3f} s ({m['pairs']:,} pairs); no pre-lap feature can see that")
 
 
 def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
@@ -110,7 +113,8 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
           **E.counterfactual_lap_metrics(train, y, oof),
           "coverage_80_calibrated": E.segment_metrics(y, oof_cal)["coverage_80"],
           "conformal_margin_s": margin,
-          "clean_push": E.counterfactual_lap_metrics(train[clean], y[clean], oof[clean]) if clean.sum() > 100 else {}}
+          "clean_push": E.counterfactual_lap_metrics(train[clean], y[clean], oof[clean]) if clean.sum() > 100 else {},
+          **E.lap_noise_floor(train[clean], y[clean])}
     metrics: dict = {"cv": cv, "backend": backend, "n_train_rows": int(len(X)),
                      "n_train_laps": int(train["lap_uid"].nunique()), "quick": quick}
     print("\nOUT-OF-GROUP (GroupKFold on season|event)")

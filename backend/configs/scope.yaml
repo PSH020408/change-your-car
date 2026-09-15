@@ -190,7 +190,13 @@ setup_proxies:
 # ---------------------------------------------------------------------------
 segmentation:
   geometry_step_m: 10.0        # uniform arc-length grid for geometry only
-  smooth_window_m: 60.0        # Savitzky-Golay window, in metres not samples
+  # CALIBRATED against a jittered circle of known radius and a 70 m hairpin.
+  # 40 m / order 3 (the first guess) gave 16% curvature error at 0.5 m of
+  # position jitter and 80% at 1.0 m; 90 m / order 2 holds under 1% across all
+  # of them while still recovering a 70 m corner at full amplitude.
+  smooth_window_m: 90.0        # local-fit window, in metres
+  poly_order: 2                # quadratic resists noise; a cubic chases it
+  max_lateral_g: 6.5           # curvature implying more than this is noise
   curvature_threshold_1pm: 0.0035
   min_gap_m: 30.0              # close gaps this short (double-apex corners)
   min_segment_len_m: 40.0      # drop runs this short (curvature noise)

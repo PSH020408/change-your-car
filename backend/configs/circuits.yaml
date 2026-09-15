@@ -1,0 +1,22 @@
+# ---------------------------------------------------------------------------
+# Published circuit references, for the P2 gate.
+#
+# The corner count and lap length the segmentation produces are only
+# meaningful against a published figure, so those figures live here as data
+# and `segment.run` reports the delta. Only VERIFIED entries belong here — an
+# unverified number would turn the gate into a rubber stamp.
+#
+# `layout_from` matters: Albert Park was reconfigured for 2022 (turns 9 and 10
+# removed), so a pre-2022 reference would fail a post-2022 lap for the right
+# reason and the wrong one at the same time.
+# ---------------------------------------------------------------------------
+
+australian_grand_prix:
+  layout_from: 2022
+  length_km: 5.278
+  turns: 14
+  source: https://en.wikipedia.org/wiki/Albert_Park_Circuit
+  note: 2022 reconfiguration removed turns 9/10; pre-2022 was 5.303 km / 16 turns
+
+# Add the remaining pilot circuits only once each figure has been checked
+# against a primary source. An empty entry is better than a guessed one.

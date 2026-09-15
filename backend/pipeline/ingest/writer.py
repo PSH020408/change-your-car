@@ -73,6 +73,7 @@ LAP_COLUMNS: dict[str, str] = {
     # pace gate provenance
     "pace_reference_s": "pace_reference_s",
     "pace_ratio": "pace_ratio",
+    "pace_ratio_session_best": "pace_ratio_session_best",
     # telemetry quality
     "n_samples": "n_samples",
     "lap_distance_m": "lap_distance_m",

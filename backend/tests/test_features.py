@@ -277,8 +277,11 @@ def test_the_smoothing_window_scales_with_the_circuit():
     turn. The global 90 m window found 8 of Monaco's 19."""
     from pipeline.segment import geometry as G
     assert G.auto_window_m(3337.0) < G.auto_window_m(7004.0)
-    assert 45.0 <= G.auto_window_m(1000.0) <= 120.0
-    assert 45.0 <= G.auto_window_m(20000.0) <= 120.0
+    assert 30.0 <= G.auto_window_m(1000.0) <= 90.0
+    assert 30.0 <= G.auto_window_m(20000.0) <= 90.0
+    # calibrated on the 19-session grids: 40-50 m matched published counts
+    # where 90 m found two-thirds of them
+    assert 45.0 <= G.auto_window_m(5300.0) <= 60.0
 
 
 def test_a_circuit_override_beats_the_auto_scaled_window():
@@ -288,3 +291,15 @@ def test_a_circuit_override_beats_the_auto_scaled_window():
     override = srun.circuit_cfg(base, {"segmentation": {"smooth_window_m": 50.0}}, 3337.0)
     assert override["smooth_window_m"] == 50.0
     assert auto["smooth_window_m"] != 50.0
+
+
+# ------------------------------------------------------ coverage gate
+def test_partial_coverage_laps_are_excluded_not_stretched():
+    """Rescaling a half-lap to full length stretches half a circuit across the
+    whole. The 19-session build carried a 1.82x rescale and a 92 s
+    per-segment delta because of it."""
+    assert frun.COVERAGE_MIN <= 0.96 and frun.COVERAGE_MAX >= 1.04
+    half = 0.55
+    assert not (frun.COVERAGE_MIN <= half <= frun.COVERAGE_MAX)
+    fine = 0.982
+    assert frun.COVERAGE_MIN <= fine <= frun.COVERAGE_MAX

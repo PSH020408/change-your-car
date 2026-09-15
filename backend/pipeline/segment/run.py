@@ -1,8 +1,14 @@
 """P2 orchestrator — bronze -> silver track geometry.
 
-Per session: pick one reference lap, derive the circuit's geometry from it,
-split it into corners and straights, and write the track definition the ML
-features (P2-5) and the HUD track map (P7-6) both read.
+Per CIRCUIT (season x event), not per session. The first version segmented
+each session independently and the same circuit came out with 29 segments
+from qualifying and 35 from the race — segment #5 meant one thing on Saturday
+and another on Sunday, driver-style z-scores compared across mismatched
+indices, and the HUD would have needed two track maps for one track.
+
+A circuit's geometry is a property of the circuit. It is derived once, from
+the best-covered lap across all of that weekend's sessions, and applied to
+every session.
 
 Choosing the reference lap is the decision that matters. It is the fastest
 lap whose telemetry is intact — using `telemetry_quality` from P1, which
@@ -48,22 +54,32 @@ def silver_dir(scope_path: Path, scope: dict) -> Path:
     return paths.lake_dir(scope_path, scope) / "silver"
 
 
-def pick_reference_lap(laps: pd.DataFrame) -> pd.Series:
-    """Fastest lap with intact telemetry, not simply the fastest lap."""
-    df = laps.copy()
-    df["_q"] = df.get("telemetry_quality", pd.Series("normal", index=df.index)) \
-        .map(lambda v: QUALITY_RANK.get(str(v), 9))
-    df["_t"] = pd.to_numeric(df.get("lap_time_s"), errors="coerce")
-    df = df[df["_t"].notna()]
-    if not len(df):
-        raise ValueError("no lap with a valid lap time")
+SESSION_PREFERENCE = {"Q": 0, "SQ": 1, "R": 2, "S": 3}
 
-    # Prefer clean/normal; only fall back to gappy if nothing better exists.
-    for ceiling in (1, 2, 3, 9):
-        sub = df[df["_q"] <= ceiling]
-        if len(sub):
-            return sub.sort_values("_t").iloc[0]
-    raise ValueError("no usable reference lap")
+
+def candidate_laps(laps_by_session: dict[str, pd.DataFrame], n: int = 4) -> list[tuple[str, pd.Series]]:
+    """Best few reference candidates across a weekend's sessions.
+
+    Qualifying first — a Q lap is driven alone at the limit on a clean track —
+    then by telemetry quality, then by lap time. Several candidates are
+    returned because the decisive property (how much of the circuit the
+    telemetry slice actually covers) is only known after the geometry is
+    built, so the final choice is made on that.
+    """
+    rows = []
+    for ses, laps in laps_by_session.items():
+        df = laps.copy()
+        df["_q"] = df.get("telemetry_quality", pd.Series("normal", index=df.index)) \
+            .map(lambda v: QUALITY_RANK.get(str(v), 9))
+        df["_t"] = pd.to_numeric(df.get("lap_time_s"), errors="coerce")
+        df = df[df["_t"].notna() & (df["_q"] <= 2)]
+        df["_s"] = SESSION_PREFERENCE.get(ses, 9)
+        for _, r in df.sort_values(["_s", "_q", "_t"]).head(n).iterrows():
+            rows.append((ses, r))
+    rows.sort(key=lambda x: (SESSION_PREFERENCE.get(x[0], 9), x[1]["_q"], x[1]["_t"]))
+    if not rows:
+        raise ValueError("no usable reference lap in any session")
+    return rows[:n]
 
 
 def circuit_cfg(base: dict, ref: dict | None, lap_length_m: float) -> dict:
@@ -81,27 +97,46 @@ def circuit_cfg(base: dict, ref: dict | None, lap_length_m: float) -> dict:
     return cfg
 
 
-def process_session(session_dir: Path, out_dir: Path, cfg: dict,
+def process_circuit(sessions: list[tuple[Path, dict]], out_dir: Path, cfg: dict,
                     reference: dict | None = None, verbose: bool = False,
                     calibrate: bool = False) -> dict:
-    laps = pd.read_parquet(session_dir / "laps.parquet")
-    tel = pd.read_parquet(session_dir / "telemetry.parquet")
-    meta = json.loads((session_dir / "session.json").read_text())
+    """One track definition for a (season, event), from its best-covered lap."""
+    laps_by, tel_by, meta_by = {}, {}, {}
+    for d, meta in sessions:
+        ses = meta["session"]
+        laps_by[ses] = pd.read_parquet(d / "laps.parquet")
+        tel_by[ses] = pd.read_parquet(d / "telemetry.parquet")
+        meta_by[ses] = meta
+    first_meta = next(iter(meta_by.values()))
 
-    ref = pick_reference_lap(laps)
+    circuit_ref = (reference or {}).get(first_meta["event_slug"])
+
+    # Build geometry for each candidate and keep the one whose telemetry
+    # slice covers the circuit best. Coverage, not lap time, is what makes a
+    # lap a good template — the fastest lap of the weekend is useless as a
+    # circuit definition if its position stream starts 100 m after the line.
+    best = None
+    for ses, ref in candidate_laps(laps_by):
+        uid = str(ref["lap_uid"])
+        frame = tel_by[ses][tel_by[ses]["lap_uid"] == uid].sort_values("distance_m")
+        if len(frame) < 20:
+            continue
+        lap_len_hint = float(ref.get("lap_distance_m") or frame["distance_m"].iloc[-1])
+        c = circuit_cfg(cfg, circuit_ref, lap_len_hint)
+        try:
+            geo = G.build(frame, lap_distance_m=lap_len_hint,
+                          step_m=float(c.get("geometry_step_m", 10.0)),
+                          smooth_window_m=float(c["smooth_window_m"]),
+                          poly_order=int(c.get("poly_order", 2)))
+        except ValueError:
+            continue
+        score = geo.slice_gap_m + geo.closure_error_m
+        if best is None or score < best[0]:
+            best = (score, ses, ref, frame, geo, c, lap_len_hint)
+    if best is None:
+        raise ValueError("no candidate lap produced a geometry")
+    _, ses, ref, frame, geo, cfg, lap_len_hint = best
     uid = str(ref["lap_uid"])
-    frame = tel[tel["lap_uid"] == uid].sort_values("distance_m")
-    if len(frame) < 20:
-        raise ValueError(f"reference lap {uid} has only {len(frame)} samples")
-
-    lap_len_hint = float(ref.get("lap_distance_m") or frame["distance_m"].iloc[-1])
-    circuit_ref = (reference or {}).get(meta["event_slug"])
-    cfg = circuit_cfg(cfg, circuit_ref, lap_len_hint)
-
-    geo = G.build(frame, lap_distance_m=lap_len_hint,
-                  step_m=float(cfg.get("geometry_step_m", 10.0)),
-                  smooth_window_m=float(cfg["smooth_window_m"]),
-                  poly_order=int(cfg.get("poly_order", 2)))
 
     seg_kw = {"min_gap_m": float(cfg.get("min_gap_m", 30.0)),
               "min_segment_len_m": float(cfg.get("min_segment_len_m", 40.0))}
@@ -114,8 +149,8 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
                               max_lateral_g=float(cfg.get("max_lateral_g", 6.5)))
     segments = S.build_segments(geo, cfg, raw_distance_m=raw_d, raw_speed_kph=raw_v)
 
-    # Official sectors, converted from the reference lap's sector TIMES.
     bounds: list[float] = []
+    laps = laps_by[ses]
     if {"sector1_s", "sector2_s", "lap_start_s"} <= set(laps.columns) and \
             "session_time_s" in frame.columns:
         try:
@@ -132,17 +167,18 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
                               float(cfg.get("hidden_corner_factor", 0.7)))
 
     kinds: dict[str, int] = {}
-    for s in segments:
-        kinds[s.kind] = kinds.get(s.kind, 0) + 1
+    for sg in segments:
+        kinds[sg.kind] = kinds.get(sg.kind, 0) + 1
     turns = S.count_turns(segments)
-    corners = turns["turns"]          # published counts include flat kinks
+    corners = turns["turns"]
 
     doc = {
-        "season": meta["season"], "event": meta["event"],
-        "event_slug": meta["event_slug"], "session": meta["session"],
-        "circuit": meta.get("circuit", ""),
+        "season": first_meta["season"], "event": first_meta["event"],
+        "event_slug": first_meta["event_slug"],
+        "sessions_covered": sorted(meta_by),
+        "circuit": first_meta.get("circuit", ""),
         "reference_lap": {
-            "lap_uid": uid,
+            "lap_uid": uid, "session": ses,
             "driver": str(ref.get("driver", "")),
             "lap_time_s": float(ref["_t"]),
             "telemetry_quality": str(ref.get("telemetry_quality", "")),
@@ -155,7 +191,7 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
             "closure_error_m": round(geo.closure_error_m, 2),
             "slice_gap_m": geo.slice_gap_m,
             "implausible_curvature_fraction": geo.implausible_fraction,
-            "smooth_window_m": float(cfg.get("smooth_window_m", 60.0)),
+            "smooth_window_m": float(cfg["smooth_window_m"]),
         },
         "threshold_sweep_corner_count": sweep,
         "threshold_sweep": sweep_rows,
@@ -164,56 +200,54 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
                    "kinks": turns["kinks"], "turns": turns["turns"], **kinds},
         "physics_check": physics,
         "sector_boundaries_m": [round(b, 1) for b in bounds],
-        "segments": [s.to_dict() for s in segments],
+        "segments": [sg.to_dict() for sg in segments],
         "microsectors": S.microsectors(geo.lap_length_m,
                                        int(cfg.get("microsectors", 28))),
         "track_map": V.build(geo),
         "smooth_window_m": float(cfg["smooth_window_m"]),
         "published_reference": _compare_reference(
-            circuit_ref, meta["season"], geo.lap_length_m, corners),
+            circuit_ref, first_meta["season"], geo.lap_length_m, corners),
         "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
 
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "track.json").write_text(json.dumps(doc, indent=1))
-    pd.DataFrame([s.to_dict() for s in segments]).to_parquet(
+    pd.DataFrame([sg.to_dict() for sg in segments]).to_parquet(
         out_dir / "segments.parquet", index=False, compression="zstd")
 
     if calibrate:
         pub = (circuit_ref or {}).get("turns")
         print(f"  CALIBRATION grid   window x threshold -> turns"
               + (f"   (published: {pub})" if pub else ""))
-        header = "    {:>7}".format("win\\1/m") + "".join(
-            "{:>8.4f}".format(t) for t in SWEEP)
-        print(header)
+        print("    {:>7}".format("win\\1/m") + "".join("{:>8.4f}".format(t) for t in SWEEP))
         for w in WINDOW_SWEEP:
             g2 = G.build(frame, lap_distance_m=lap_len_hint,
                          step_m=float(cfg.get("geometry_step_m", 10.0)),
                          smooth_window_m=w, poly_order=int(cfg.get("poly_order", 2)))
-            rows2 = S.sweep_full(g2, cfg, SWEEP, raw_distance_m=raw_d,
+            c2 = dict(cfg); c2["smooth_window_m"] = w
+            rows2 = S.sweep_full(g2, c2, SWEEP, raw_distance_m=raw_d,
                                  raw_speed_kph=raw_v,
                                  max_lateral_g=float(cfg.get("max_lateral_g", 6.5)))
             cells = []
             for r in rows2:
-                mark = "*" if pub and r["turns"] == pub else (
-                    "+" if r["physics_passes"] else " ")
+                mark = "*" if pub and r["turns"] == pub else ("+" if r["physics_passes"] else " ")
                 cells.append("{:>7}{}".format(r["turns"], mark))
             print("    {:>7.0f}".format(w) + "".join(cells))
         print("      * = matches published turn count, + = physics invariants pass")
 
     if verbose:
-        print(f"  reference : {uid}  {ref.get('driver')}  "
+        print(f"  reference : {uid}  {ref.get('driver')}  {ses}  "
               f"{doc['reference_lap']['lap_time_s']:.3f}s  "
-              f"({doc['reference_lap']['telemetry_quality']})")
+              f"({doc['reference_lap']['telemetry_quality']})  "
+              f"[chosen for coverage: slice gap {geo.slice_gap_m:.1f} m]")
         print(f"  geometry  : {geo.lap_length_m:.0f} m, scale "
               f"{geo.metres_per_unit:.5f} m/unit, closure {geo.closure_error_m:.2f} m, "
               f"window {cfg['smooth_window_m']:.0f} m")
-        ref = doc.get("published_reference") or {}
-        pub = ref.get("published_turns") if ref.get("applicable") else None
-        print("  curvature threshold sweep"
-              + (f"   (published: {pub} turns)" if pub else ""))
-        print(f"    {'1/m':<8}{'radius':>8}{'g@300':>7}{'corners':>9}{'L/M/H':>10}"
-              f"{'segs':>6}{'phys':>7}")
+        ref_pub = doc.get("published_reference") or {}
+        pub = ref_pub.get("published_turns") if ref_pub.get("applicable") else None
+        print("  curvature threshold sweep" + (f"   (published: {pub} turns)" if pub else ""))
+        print("    {:<8}{:>8}{:>7}{:>7}{:>13}{:>6}{:>7}".format(
+            "1/m", "radius", "g@300", "turns", "L/M/H+kink", "segs", "phys"))
         for r in sweep_rows:
             mark = "  <-- current" if abs(r["threshold_1pm"] - doc["threshold_used_1pm"]) < 1e-9 else ""
             hit = "  == published" if pub and r["turns"] == pub else ""
@@ -222,22 +256,16 @@ def process_session(session_dir: Path, out_dir: Path, cfg: dict,
             print("    {:<8.4f}{:>7} m{:>7.1f}{:>7}{:>13}{:>6}{:>7}{}{}".format(
                 r["threshold_1pm"], r["radius_m"], r["lateral_g_at_300kph"],
                 r["turns"], comp, r["segments"], verdict, hit, mark))
-
-        print(f"  segments  : {len(segments)}  ({corners} corners)  " +
+        print(f"  segments  : {len(segments)}  ({corners} turns)  " +
               ", ".join(f"{k}={v}" for k, v in sorted(kinds.items())))
         ok = "PASS" if physics["passes"] else "FAIL"
-        print(f"  physics   : {ok}  "
-              f"{len(physics['corners_over_g_limit'])} corner(s) over "
+        print(f"  physics   : {ok}  {len(physics['corners_over_g_limit'])} corner(s) over "
               f"{physics['max_lateral_g']} g, "
               f"{len(physics['straights_hiding_a_corner'])} straight(s) hiding a corner"
               + (f", {len(physics['straights_at_the_boundary'])} at the boundary"
                  if physics["straights_at_the_boundary"] else ""))
-        for c in physics["corners_over_g_limit"][:3]:
-            print(f"    seg #{c['index']}: {c['lateral_g']} g "
-                  f"(R={c['radius_m']} m at {c['apex_kph']} km/h)")
         for h in physics["straights_hiding_a_corner"][:3]:
-            print(f"    seg #{h['index']}: {h['length_m']} m straight with "
-                  f"R={h['radius_m']} m inside")
+            print(f"    seg #{h['index']}: {h['length_m']} m straight, interior R={h['radius_m']} m")
     return doc
 
 
@@ -270,39 +298,42 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool,
     cfg = scope.get("segmentation", {})
     reference = load_circuit_reference(scope_path)
 
-    sessions = sorted(p.parent for p in bronze.rglob("session.json"))
+    circuits: dict[tuple[int, str], list[tuple[Path, dict]]] = {}
+    for sj in sorted(bronze.rglob("session.json")):
+        meta = json.loads(sj.read_text())
+        circuits.setdefault((int(meta["season"]), meta["event_slug"]), []).append((sj.parent, meta))
+
     todo = []
-    for d in sessions:
-        rel = d.relative_to(bronze)
-        out = silver / rel
+    for (season, slug), sessions in sorted(circuits.items()):
+        out = silver / str(season) / slug
         if (out / "track.json").exists() and not force:
             continue
-        todo.append((d, out))
+        todo.append(((season, slug), sessions, out))
     if limit:
         todo = todo[:limit]
 
     print(f"bronze     : {bronze}")
     print(f"silver     : {silver}")
-    print(f"ingested   : {len(sessions)} session(s)")
+    print(f"circuits   : {len(circuits)} (from {sum(len(v) for v in circuits.values())} sessions)")
     print(f"to segment : {len(todo)}")
     print()
 
     done, failures = [], []
-    for i, (src, out) in enumerate(todo, 1):
-        label = "/".join(src.parts[-3:])
+    for i, ((season, slug), sessions, out) in enumerate(todo, 1):
+        label = f"{season}/{slug}"
         try:
-            doc = process_session(src, out, cfg, reference=reference,
+            doc = process_circuit(sessions, out, cfg, reference=reference,
                                   verbose=verbose, calibrate=calibrate)
             done.append(doc)
-            print(f"[{i:>3}/{len(todo)}] {label:<40s} "
-                  f"{doc['counts']['corners']:>3} corners, "
-                  f"{doc['counts']['segments']:>3} segments, "
-                  f"{doc['geometry']['lap_length_m']:>7.0f} m, "
-                  f"closure {doc['geometry']['closure_error_m']:.2f} m")
+            print(f"[{i:>3}/{len(todo)}] {label:<36s} "
+                  f"{doc['counts']['turns']:>3} turns, {doc['counts']['segments']:>3} segments, "
+                  f"{doc['geometry']['lap_length_m']:>6.0f} m, "
+                  f"ref {doc['reference_lap']['session']}, "
+                  f"sessions {','.join(doc['sessions_covered'])}")
         except Exception as exc:                            # noqa: BLE001
-            failures.append({"session": label, "error": f"{type(exc).__name__}: {exc}"[:240]})
-            print(f"[{i:>3}/{len(todo)}] {label:<40s} FAILED  "
-                  f"{type(exc).__name__}: {exc}"[:160], file=sys.stderr)
+            failures.append({"circuit": label, "error": f"{type(exc).__name__}: {exc}"[:240]})
+            print(f"[{i:>3}/{len(todo)}] {label:<36s} FAILED  {type(exc).__name__}: {exc}"[:160],
+                  file=sys.stderr)
             if verbose:
                 traceback.print_exc()
 
@@ -311,46 +342,39 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool,
         print("GEOMETRY sanity")
         worst = max(d["geometry"]["closure_error_m"] for d in done)
         gap = max(d["geometry"].get("slice_gap_m", 0.0) for d in done)
-        print(f"  worst closure error : {worst:.2f} m beyond the slice gap "
-              f"(>20 m means the smoothing displaced the geometry)")
-        print(f"  worst slice gap     : {gap:.1f} m — arc the telemetry lap does "
-              f"not cover; compare with the length delta below")
+        print(f"  worst closure error : {worst:.2f} m beyond the slice gap")
+        print(f"  worst slice gap     : {gap:.1f} m")
         scales = [d["geometry"]["metres_per_xy_unit"] for d in done]
-        print(f"  derived X/Y scale   : {min(scales):.5f} - {max(scales):.5f} m/unit "
-              f"(should be consistent across circuits)")
-        print()
+        print(f"  derived X/Y scale   : {min(scales):.5f} - {max(scales):.5f} m/unit")
         failed = [d for d in done if not d["physics_check"]["passes"]]
         print()
         print("PHYSICS invariants")
         print(f"  circuits failing : {len(failed)} / {len(done)}")
-        if failed:
-            print("  A corner above the car's lateral limit, or a straight containing a")
-            print("  corner radius, means the curvature is noise-contaminated — widen")
-            print("  smooth_window_m or lower poly_order before trusting the segments.")
         print()
-        print("CORNER COUNT per circuit  (measured vs published)")
+        print("TURN COUNT per circuit  (measured vs published)")
         for d in done:
             r = d.get("published_reference")
+            c = d["counts"]
             tail = "  (no verified reference)"
             if r and r.get("applicable"):
-                tail = (f"  vs published {r['published_turns']} turns "
-                        f"({r['corner_delta']:+d}), length {r['length_delta_pct']:+.2f}%")
-            c = d["counts"]
-            print(f"  {d['season']} {d['event']:<30s} {c.get('turns', 0):>3} turns "
-                  f"= {c.get('corners',0)} corners ({c.get('low_speed_corner',0)}L/"
-                  f"{c.get('medium_speed_corner',0)}M/{c.get('high_speed_corner',0)}H)"
-                  f" + {c.get('kinks',0)} kinks" + tail)
+                tail = (f"  vs published {r['published_turns']} ({r['corner_delta']:+d}), "
+                        f"length {r['length_delta_pct']:+.2f}%")
+            phys = "PASS" if d["physics_check"]["passes"] else "fail"
+            print(f"  {d['season']} {d['event']:<28s} {c.get('turns',0):>3} = "
+                  f"{c.get('corners',0)} corners + {c.get('kinks',0)} kinks  "
+                  f"[{phys}]" + tail)
 
     silver.mkdir(parents=True, exist_ok=True)
     (silver / "segment_report.json").write_text(json.dumps({
         "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "sessions": [{k: d[k] for k in ("season", "event", "session", "counts",
-                                        "geometry", "threshold_sweep_corner_count",
-                                        "reference_lap")} for d in done],
+        "circuits": [{k: d[k] for k in ("season", "event", "event_slug", "sessions_covered",
+                                        "counts", "geometry", "physics_check",
+                                        "threshold_sweep_corner_count", "reference_lap")}
+                     for d in done],
         "failures": failures,
     }, indent=1))
     print()
-    print(f"segmented {len(done)} session(s), {len(failures)} failure(s)")
+    print(f"segmented {len(done)} circuit(s), {len(failures)} failure(s)")
     return 1 if failures and not done else 0
 
 

@@ -35,10 +35,19 @@ LAP_CONTEXT = [
 ]
 
 
-def build_session(bronze_dir: Path, silver_dir: Path, verbose: bool = False) -> pd.DataFrame:
+# A lap whose telemetry covers materially less (or more) of the circuit than
+# the reference is not a lap, it is a fragment. Rescaling a half-lap to full
+# length stretches half a circuit across the whole and every segment on it is
+# fiction: the first 19-session build carried rescale factors up to 1.82 and a
+# 92 s per-segment delta because of exactly this.
+COVERAGE_MIN, COVERAGE_MAX = 0.95, 1.05
+
+
+def build_session(bronze_dir: Path, track_json: Path, verbose: bool = False
+                  ) -> tuple[pd.DataFrame, dict]:
     laps = pd.read_parquet(bronze_dir / "laps.parquet")
     tel = pd.read_parquet(bronze_dir / "telemetry.parquet")
-    track = json.loads((silver_dir / "track.json").read_text())
+    track = json.loads(track_json.read_text())
 
     segments = track["segments"]
     lap_len = float(track["geometry"]["lap_length_m"])
@@ -46,16 +55,24 @@ def build_session(bronze_dir: Path, silver_dir: Path, verbose: bool = False) -> 
 
     by_lap = dict(tuple(tel.groupby("lap_uid")))
     rows: list[pd.DataFrame] = []
+    skipped = {"too_few_samples": 0, "coverage": 0}
 
     for _, lap in laps.iterrows():
         uid = str(lap["lap_uid"])
         lt = by_lap.get(uid)
         if lt is None or len(lt) < 20:
+            skipped["too_few_samples"] += 1
+            continue
+        raw_len = float(pd.to_numeric(lt["distance_m"], errors="coerce").max())
+        coverage = raw_len / lap_len if lap_len else 0.0
+        if not (COVERAGE_MIN <= coverage <= COVERAGE_MAX):
+            skipped["coverage"] += 1
             continue
         lt = segment_features.align_distance(lt.sort_values("distance_m"), lap_len)
 
         seg_df = segment_features.features_for_lap(lt, segments, lap_len)
         seg_df["lap_distance_scale"] = float(lt["distance_scale"].iloc[0])
+        seg_df["lap_telemetry_coverage"] = round(coverage, 4)
         if not len(seg_df):
             continue
 
@@ -76,7 +93,7 @@ def build_session(bronze_dir: Path, silver_dir: Path, verbose: bool = False) -> 
 
         rows.append(seg_df)
 
-    return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
+    return (pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()), skipped
 
 
 def add_targets(df: pd.DataFrame, gap_tolerance_s: float = 0.05,
@@ -148,12 +165,15 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
     silver = paths.lake_dir(scope_path, scope) / "silver"
     gold = paths.lake_dir(scope_path, scope) / "gold"
 
+    # Tracks are per circuit (silver/{season}/{event}); sessions are per
+    # session (bronze/{season}/{event}/{session}). Every session of a weekend
+    # reads the same track definition.
     sessions = []
-    for track_json in sorted(silver.rglob("track.json")):
-        rel = track_json.parent.relative_to(silver)
-        b = bronze / rel
-        if (b / "laps.parquet").exists():
-            sessions.append((b, track_json.parent))
+    for sj in sorted(bronze.rglob("session.json")):
+        meta = json.loads(sj.read_text())
+        tj = silver / str(meta["season"]) / meta["event_slug"] / "track.json"
+        if tj.exists():
+            sessions.append((sj.parent, tj))
     if limit:
         sessions = sessions[:limit]
 
@@ -164,17 +184,22 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
     print()
 
     frames, failures = [], []
-    for i, (b, s) in enumerate(sessions, 1):
+    skipped_total = {"too_few_samples": 0, "coverage": 0}
+    for i, (b, tj) in enumerate(sessions, 1):
         label = "/".join(b.parts[-3:])
         try:
-            df = build_session(b, s, verbose)
+            df, skipped = build_session(b, tj, verbose)
+            for k, v in skipped.items():
+                skipped_total[k] += v
             if not len(df):
                 failures.append({"session": label, "error": "no usable laps"})
                 continue
             frames.append(df)
             print(f"[{i:>3}/{len(sessions)}] {label:<40s} {len(df):>7} rows  "
                   f"{df['lap_uid'].nunique():>4} laps x "
-                  f"{df['segment_index'].nunique():>3} segments")
+                  f"{df['segment_index'].nunique():>3} segments"
+                  + (f"  (skipped {skipped['coverage']} partial-coverage laps)"
+                     if skipped["coverage"] else ""))
         except Exception as exc:                            # noqa: BLE001
             failures.append({"session": label, "error": f"{type(exc).__name__}: {exc}"[:200]})
             print(f"[{i:>3}/{len(sessions)}] {label:<40s} FAILED  {exc}"[:150],
@@ -198,6 +223,9 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
     print()
     print(f"FEATURE STORE   {len(feat):,} rows, {len(feat.columns)} columns")
     print(f"  laps          : {feat['lap_uid'].nunique():,}")
+    print(f"  laps skipped  : {skipped_total['coverage']} partial telemetry coverage "
+          f"(outside {COVERAGE_MIN:.0%}-{COVERAGE_MAX:.0%} of the circuit), "
+          f"{skipped_total['too_few_samples']} too few samples")
     print(f"  drivers       : {feat['driver'].nunique()}")
     print(f"  segment kinds : " + ", ".join(
         f"{k}={v}" for k, v in feat["segment_kind"].value_counts().items()))
@@ -253,23 +281,13 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
     else:
         print("  not checkable (missing columns)")
 
-    if "lap_distance_scale" in feat:
-        sc = feat.groupby("lap_uid")["lap_distance_scale"].first()
-        spread = float(sc.max() / sc.min() - 1) if sc.min() else 0.0
-        lap_len = float(feat.groupby(["event", "session"])["segment_length_m"]
-                        .apply(lambda g: g.groupby(level=0).first().sum()).max()) \
-            if len(feat) else 0.0
-        # Approximate the circuit length from one lap's segments, not from the
-        # whole column — summing 41,000 rows of segment lengths produced a
-        # nonsense 4,741 m drift figure in the first version.
-        one = feat.drop_duplicates(subset=["event", "session", "segment_index"])
-        lap_len = float(one.groupby(["event", "session"])["segment_length_m"].sum().max())
+    if "lap_telemetry_coverage" in feat:
+        cov = feat.groupby("lap_uid")["lap_telemetry_coverage"].first()
         print()
-        print("DISTANCE AXIS alignment  (each lap integrates its own, and they disagree)")
-        print(f"  rescale factor : {sc.min():.4f} - {sc.max():.4f}")
-        print(f"  raw spread     : {spread*100:.2f}% over a ~{lap_len:.0f} m lap — before")
-        print(f"                   rescaling this moved boundaries by up to "
-              f"~{spread*lap_len:.0f} m")
+        print("DISTANCE AXIS alignment  (each lap integrates its own; rescaled to the circuit)")
+        print(f"  coverage of surviving laps : {cov.min():.3f} - {cov.max():.3f} "
+              f"(gate {COVERAGE_MIN}-{COVERAGE_MAX})")
+        print(f"  rescale applied            : up to {max(abs(1-cov.min()), abs(1-cov.max()))*100:.1f}%")
 
     # ---- sparsity, but only where the column is supposed to exist ---------
     print()

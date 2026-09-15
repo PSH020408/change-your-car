@@ -277,7 +277,7 @@ def test_physics_check_flags_a_corner_over_the_grip_limit():
 def test_physics_check_flags_a_straight_that_hides_a_corner():
     seg = S.Segment(index=0, kind="straight", start_m=0, end_m=660, length_m=660,
                     mean_curvature_1pm=0.0, peak_curvature_1pm=0.0,
-                    min_radius_m=21.4, direction="straight")
+                    min_radius_m=21.4, interior_min_radius_m=21.4, direction="straight")
     rep = S.check_physics([seg], 0.0035)
     assert not rep["passes"]
     assert rep["straights_hiding_a_corner"][0]["radius_m"] == 21.4
@@ -303,7 +303,7 @@ def test_a_straight_at_the_classification_boundary_is_not_a_failure():
     """
     seg = S.Segment(index=8, kind="straight", start_m=0, end_m=100, length_m=100,
                     mean_curvature_1pm=0.003, peak_curvature_1pm=0.0036,
-                    min_radius_m=280.9, direction="straight")
+                    min_radius_m=280.9, interior_min_radius_m=280.9, direction="straight")
     rep = S.check_physics([seg], 0.0035)
     assert rep["passes"]
     assert rep["straights_hiding_a_corner"] == []
@@ -400,13 +400,14 @@ def test_one_marginal_straight_does_not_fail_a_whole_circuit():
     circuit over a single 263 m radius makes the alarm worthless."""
     segs = [S.Segment(index=i, kind="straight", start_m=i*100, end_m=i*100+80,
                       length_m=80, mean_curvature_1pm=0.0, peak_curvature_1pm=0.0,
-                      min_radius_m=900.0, direction="straight") for i in range(15)]
-    segs[8].min_radius_m = 263.0
+                      min_radius_m=900.0, interior_min_radius_m=900.0,
+                      direction="straight") for i in range(15)]
+    segs[8].interior_min_radius_m = 263.0
     rep = S.check_physics(segs, 0.0025)
     assert rep["passes"], "one borderline straight in fifteen is not contamination"
 
-    segs[3].min_radius_m = 21.0
-    segs[5].min_radius_m = 30.0
+    segs[3].interior_min_radius_m = 21.0
+    segs[5].interior_min_radius_m = 30.0
     assert not S.check_physics(segs, 0.0025)["passes"]
 
 
@@ -415,3 +416,44 @@ def test_over_g_always_fails_regardless_of_budget():
                     length_m=100, mean_curvature_1pm=0.02, peak_curvature_1pm=0.02,
                     min_radius_m=44.5, direction="right", apex_speed_kph=233.0)
     assert not S.check_physics([seg], 0.0025)["passes"]
+
+
+# ------------------------------------------ smoothing bleed vs hidden corner
+def test_a_short_straight_between_corners_is_not_judged():
+    """The window bleeds ~window/2 of corner curvature into the adjacent
+    straight, so a straight shorter than the window has no interior to judge
+    and cannot hide a corner longer than itself. 17 of 19 circuits failed the
+    invariant on exactly this before interior radii existed."""
+    seg = S.Segment(index=1, kind="straight", start_m=0, end_m=60, length_m=60,
+                    mean_curvature_1pm=0.001, peak_curvature_1pm=0.006,
+                    min_radius_m=160.0, interior_min_radius_m=None, direction="straight")
+    rep = S.check_physics([seg], 0.0025)
+    assert rep["passes"]
+    assert rep["straights_hiding_a_corner"] == []
+
+
+def test_a_long_straight_is_judged_on_its_interior_not_its_ends():
+    bleed_only = S.Segment(index=1, kind="straight", start_m=0, end_m=400, length_m=400,
+                           mean_curvature_1pm=0.0005, peak_curvature_1pm=0.006,
+                           min_radius_m=160.0, interior_min_radius_m=1500.0,
+                           direction="straight")
+    assert S.check_physics([bleed_only], 0.0025)["passes"]
+
+    really_hiding = S.Segment(index=2, kind="straight", start_m=0, end_m=400, length_m=400,
+                              mean_curvature_1pm=0.004, peak_curvature_1pm=0.02,
+                              min_radius_m=50.0, interior_min_radius_m=50.0,
+                              direction="straight")
+    assert not S.check_physics([really_hiding], 0.0025)["passes"]
+
+
+def test_build_segments_records_an_interior_radius_for_long_straights():
+    frame, length, raw_d, raw_v = _oval(radius=120.0, straight=900.0)
+    geo = G.build(frame, lap_distance_m=length, step_m=10.0)
+    cfg = {"curvature_threshold_1pm": 0.0025, "min_gap_m": 30.0,
+           "min_segment_len_m": 40.0, "smooth_window_m": 90.0, "corner_speed_bins": {}}
+    segs = S.build_segments(geo, cfg, raw_distance_m=raw_d, raw_speed_kph=raw_v)
+    straights = [s for s in segs if s.kind == "straight"]
+    assert straights
+    for st in straights:
+        assert st.interior_min_radius_m is not None
+        assert st.interior_min_radius_m > 400.0, "a 900 m straight's interior is straight"

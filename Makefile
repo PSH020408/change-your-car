@@ -17,8 +17,12 @@ dev-fe:
 # --- P0.5 Reconnaissance -----------------------------------------------------
 # Answer "what do we actually have?" before designing features.
 recon:
-	cd backend && .venv/bin/python -m pipeline.recon.survey --scope configs/scope.yaml --out ../docs/recon
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.recon.survey --scope configs/scope.yaml --out ../docs/recon 2>&1 | tee ../data/logs/recon.log
 
+# Every heavy target above/below writes its full output to data/logs/<target>.log
+# as well as the terminal, so a run can be read back (by Claude, via the
+# project folder) instead of pasted.
 # Background cache warming — resumable, rate-limit aware. Run it and forget it.
 warm-bg:
 	cd backend && nohup .venv/bin/python -m pipeline.ingest.warm_cache \
@@ -35,13 +39,16 @@ warm-status:
 # Reads only what warm_cache has already downloaded, so it makes ZERO network
 # calls and can run while the background download is still going.
 ingest-force:
-	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --force --verbose
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --force --verbose 2>&1 | tee ../data/logs/ingest-force.log
 
 ingest:
-	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml 2>&1 | tee ../data/logs/ingest.log
 
 ingest-pilot:
-	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --pilot --verbose
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --pilot --verbose 2>&1 | tee ../data/logs/ingest-pilot.log
 
 ingest-one:
 	cd backend && .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --limit 1 --verbose
@@ -54,13 +61,16 @@ print(f\"sessions {t['sessions']}  laps {t['laps']:,}  samples {t['telemetry_row
 
 # --- P2 Segmentation ---------------------------------------------------------
 segment:
-	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml 2>&1 | tee ../data/logs/segment.log
 
 segment-all:
-	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --verbose
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --verbose 2>&1 | tee ../data/logs/segment-all.log
 
 segment-calibrate:
-	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --force --verbose --calibrate
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --force --verbose --calibrate 2>&1 | tee ../data/logs/segment-calibrate.log
 
 segment-one:
 	cd backend && .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --limit 1 --force --verbose
@@ -77,22 +87,27 @@ silver-clean:
 
 # --- P2-5..P2-7 Feature store ------------------------------------------------
 features:
-	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --verbose
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --verbose 2>&1 | tee ../data/logs/features.log
 
 physics-check:
-	cd backend && .venv/bin/python -m pipeline.physics.calibrate --gold ../data/gold/features.parquet
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.physics.calibrate --gold ../data/gold/features.parquet 2>&1 | tee ../data/logs/physics-check.log
 
 features-one:
 	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --limit 1 --verbose
 
 train:
-	cd backend && .venv/bin/python -m pipeline.models.train --config configs/model.yaml
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.models.train --config configs/model.yaml 2>&1 | tee ../data/logs/train.log
 
 train-quick:
-	cd backend && .venv/bin/python -m pipeline.models.train --config configs/model.yaml --quick
+	@mkdir -p data/logs
+	cd backend && .venv/bin/python -m pipeline.models.train --config configs/model.yaml --quick 2>&1 | tee ../data/logs/train-quick.log
 
 test:
-	cd backend && .venv/bin/pytest -q
+	@mkdir -p data/logs
+	cd backend && .venv/bin/pytest -q 2>&1 | tee ../data/logs/test.log
 
 lint:
 	cd backend && .venv/bin/ruff check .

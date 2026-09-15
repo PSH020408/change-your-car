@@ -64,7 +64,10 @@ acceptance:
   # two consecutive clean laps of the SAME driver on the SAME tyres differ:
   # that difference is driver execution and track noise, invisible to any
   # pre-lap feature, and it is the floor. Judged against it instead:
-  lap_mae_vs_noise_floor: 1.25           # clean-air push counterfactual MAE <= 1.25 x floor
+  # Counterfactual vs the driver's REPRESENTATIVE (median) clean push lap,
+  # the HUD's default baseline. Against the FASTEST lap every error carries
+  # that lap's own luck (the best of 20 draws), which no model can predict.
+  lap_mae_vs_noise_floor: 1.25           # clean-air push counterfactual MAE <= 1.25 x consecutive-pair floor
   lap_skill_min: 0.35                    # ...and explains >= 35% of lap-to-lap change (1 - err / 'no change')
   unseen_track_lap_skill_min: 0.25       # holdout event: >= 25%
   coverage_80: [0.70, 0.90]              # after conformal calibration, on the holdout event

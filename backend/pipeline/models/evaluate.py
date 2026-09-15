@@ -60,16 +60,24 @@ def clean_push_mask(df: pd.DataFrame, cfg: dict) -> np.ndarray:
     return ok
 
 
-def counterfactual_lap_metrics(df: pd.DataFrame, y: np.ndarray, q: pd.DataFrame) -> dict:
+def counterfactual_lap_metrics(df: pd.DataFrame, y: np.ndarray, q: pd.DataFrame,
+                               baseline: str = "median") -> dict:
     """Error of the quantity the HUD actually shows.
 
     The simulator takes a REAL lap as baseline and shows how it would change
     under other conditions: shown = actual_baseline + (p(new) - p(baseline)).
     Whatever a lap carries that no pre-lap feature can know - traffic, a
     management phase, damage - is in both p terms and cancels. So the error
-    that matters is the error of the DIFFERENCE, measured here between every
-    lap and the same driver's fastest lap of that session, per segment, then
-    summed to the lap.
+    that matters is the error of the DIFFERENCE, per segment, summed to the
+    lap, between every lap and the same driver's baseline lap of that session.
+
+    baseline="median": the driver's REPRESENTATIVE lap (median lap time) -
+    the HUD's default, and the honest one: no selection bias, so the
+    consecutive-lap noise floor applies to it directly.
+    baseline="best": the driver's fastest lap. Reported for transparency,
+    but the fastest of 20 laps is the luckiest of 20 noise draws (~ -1.9
+    sigma), an offset no model can predict; measuring against it inflates
+    every error by that luck.
     """
     d = pd.DataFrame({
         "key": df["season"].astype(str) + "|" + df["event_slug"].astype(str) + "|" + df["session"].astype(str)
@@ -77,8 +85,14 @@ def counterfactual_lap_metrics(df: pd.DataFrame, y: np.ndarray, q: pd.DataFrame)
         "lap": df["lap_uid"].to_numpy(), "seg": df["segment_index"].to_numpy(),
         "lt": pd.to_numeric(df["lap_time_s"], errors="coerce").to_numpy(),
         "y": np.asarray(y, float), "p": q["q50"].to_numpy()})
-    best = d.groupby("key")["lt"].transform("min")
-    base = d[d["lt"] == best].drop_duplicates(["key", "seg"])[["key", "seg", "lap", "y", "p"]] \
+    laps = d.drop_duplicates(["key", "lap"])[["key", "lap", "lt"]].dropna()
+    if baseline == "best":
+        pick = laps.loc[laps.groupby("key")["lt"].idxmin()]
+    else:
+        med = laps.groupby("key")["lt"].transform("median")
+        pick = laps.assign(_d=(laps["lt"] - med).abs()).sort_values("_d").drop_duplicates("key")
+    base_laps = set(pick["lap"])
+    base = d[d["lap"].isin(base_laps)].drop_duplicates(["key", "seg"])[["key", "seg", "lap", "y", "p"]] \
             .rename(columns={"lap": "base_lap", "y": "y_b", "p": "p_b"})
     m = d.merge(base, on=["key", "seg"], how="inner")
     m = m[m["lap"] != m["base_lap"]]
@@ -177,7 +191,9 @@ def gates(metrics: dict, cfg: dict) -> dict[str, bool]:
     def cf(m: dict) -> dict:
         return m.get("clean_push") or {"cf_lap_mae_s": m.get("cf_lap_mae_s", np.inf),
                                        "cf_lap_mae_naive_s": m.get("cf_lap_mae_naive_s", np.nan)}
-    floor = cv.get("noise_floor_lap_s", np.nan)
+    # the counterfactual subtracts two real laps, so its floor is the PAIR
+    # difference, not the single-lap sigma
+    floor = cv.get("consecutive_pair_mae_s", np.nan)
     ratio = float(a.get("lap_mae_vs_noise_floor", 1.25))
     out = {
         "segment_mae": cv["segment_mae_s"] <= float(a["segment_mae_s"]),

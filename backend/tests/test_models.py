@@ -117,7 +117,7 @@ def test_coverage_and_lap_sum_metrics():
 
 def test_gates_read_the_right_numbers():
     metrics = {"cv": {"segment_mae_s": 0.1, "lap_mae_s": 1.5, "cf_lap_mae_s": 0.2, "cf_lap_mae_naive_s": 0.5,
-                      "coverage_80": 0.5, "coverage_80_calibrated": 0.8, "noise_floor_lap_s": 0.18},
+                      "coverage_80": 0.5, "coverage_80_calibrated": 0.8, "consecutive_pair_mae_s": 0.25},
                "holdout": {"lap_mae_s": 0.9, "cf_lap_mae_s": 0.4, "cf_lap_mae_naive_s": 0.6, "coverage_80_calibrated": 0.78},
                "ridge": {"segment_mae_s": 0.2},
                "probes": {"tyre_life": {"mean_delta_s": 0.05}, "lap_number": {"mean_delta_s": -0.1}}}
@@ -233,3 +233,23 @@ def test_noise_floor_is_the_consecutive_lap_difference_over_root_two():
     assert f["consecutive_pair_mae_s"] == pytest.approx(0.3)
     assert f["noise_floor_lap_s"] == pytest.approx(0.3 / np.sqrt(2))
     assert E.skill({"cf_lap_mae_s": 0.6, "cf_lap_mae_naive_s": 1.2}) == pytest.approx(0.5)
+
+
+def test_counterfactual_baseline_median_lap_has_no_selection_bias():
+    """30 drivers x 20 identical laps that differ only by luck. A model that
+    predicts the (identical) truth exactly is charged the fastest lap's luck
+    when measured against it, and almost nothing against the median lap."""
+    rng = np.random.default_rng(5)
+    rows = []
+    for drv in range(30):
+        for lap in range(20):
+            luck = rng.normal(0, 0.1)
+            for seg in range(4):
+                rows.append(dict(season=2022, event_slug="e", session="R", driver=f"D{drv}", lap_uid=f"{drv}-{lap}",
+                                 segment_index=seg, lap_time_s=90 + 4 * luck, y=luck))
+    df = pd.DataFrame(rows)
+    y = df["y"].to_numpy(float)
+    q = pd.DataFrame({"q10": np.full(len(df), -0.1), "q50": np.zeros(len(df)), "q90": np.full(len(df), 0.1)})
+    vs_best = E.counterfactual_lap_metrics(df, y, q, "best")["cf_lap_mae_s"]
+    vs_med = E.counterfactual_lap_metrics(df, y, q, "median")["cf_lap_mae_s"]
+    assert vs_best > 1.8 * vs_med, (vs_best, vs_med)

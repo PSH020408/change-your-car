@@ -38,12 +38,36 @@ recon:
     - { season: 2025, event: "Monza",                session: "Q" }
     - { season: 2025, event: "Bahrain Grand Prix",   session: "R" }
 
-# What actually enters training (D8). Practice is downloaded but excluded:
-# fuel loads are unknown, so fuel-corrected pace is unreliable. FP3 is the
-# closest to qualifying trim and is the first expansion candidate (P8-6).
+# ---------------------------------------------------------------------------
+# What actually enters training.
+#
+# Six circuits x four seasons x (Q + R) = 48 sessions, chosen to SPAN the aero
+# spectrum rather than to maximise row count. A model that has seen Monza and
+# Monaco has seen the two ends of the downforce trade-off; a model that has
+# seen forty medium-downforce circuits has seen one point forty times.
+#
+#   Monza        minimum downforce, drag-dominated, highest top speeds
+#   Spa          mixed: long straights AND high-speed corners, elevation
+#   Silverstone  high-speed corner load, downforce-dominated
+#   Hungaroring  low-speed, maximum downforce, high track temperature
+#   Monaco       slowest, street surface, mechanical grip dominates
+#   Bahrain      traction and tyre thermal limited, abrasive, night running
+#
+# Practice is downloaded but excluded: fuel loads are unknown, so
+# fuel-corrected pace is unreliable. Scope can widen later without
+# re-downloading anything — that is the point of collecting broadly (D8).
+# ---------------------------------------------------------------------------
 train:
-  sessions: ["Q", "SQ", "R", "S"]
-  expansion_candidates: ["FP3"]
+  sessions: ["Q", "R"]
+  seasons: [2022, 2023, 2024, 2025]
+  events:
+    - Monza
+    - Spa-Francorchamps
+    - Silverstone
+    - Hungaroring
+    - Monaco
+    - Bahrain Grand Prix
+  expansion_candidates: ["FP3", "S", "SQ"]
 
 # Modelling pilot — the slice P1-P5 are built and validated against
 pilot:

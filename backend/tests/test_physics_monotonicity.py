@@ -199,3 +199,24 @@ def test_interval_contains_the_nominal_and_widens_for_grade_c():
 def test_baseline_setup_is_exactly_zero_everywhere():
     out = D.lap_physics_delta(_lap(), M.SetupInput(), session="Q")
     assert np.allclose(out[["physics_delta_s", "physics_delta_lo_s", "physics_delta_hi_s"]].to_numpy(), 0.0)
+
+
+def test_circuit_roughness_is_looked_up_and_defaults_cleanly():
+    assert M.circuit_roughness("monaco_grand_prix") > M.circuit_roughness("bahrain_grand_prix")
+    assert M.circuit_roughness("no_such_circuit") == M.default_config().raw["suspension"]["default_roughness"]
+
+
+def test_soft_suspension_gains_at_monaco_and_loses_at_bahrain():
+    soft = M.SetupInput(suspension=0.2)
+    mon = M.physics_state(soft, roughness=M.circuit_roughness("monaco_grand_prix"))
+    bah = M.physics_state(soft, roughness=M.circuit_roughness("bahrain_grand_prix"))
+    assert mon.mech_grip_pct > 0 > bah.mech_grip_pct
+
+
+def test_no_magic_numbers_left_in_the_segment_layer():
+    """Every coefficient the segment layer uses must come from physics.yaml
+    with a grade — the kink weight and the corner drag share were the last
+    two hiding in code."""
+    grades = M.default_config().grades()
+    assert grades["aero.kink_grip_weight"] == "C"
+    assert grades["aero.corner_drag_share"] == "C"

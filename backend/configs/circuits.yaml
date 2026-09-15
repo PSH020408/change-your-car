@@ -41,3 +41,22 @@ bahrain_grand_prix:
 
 # Add the remaining pilot circuits only once each figure has been checked
 # against a primary source. An empty entry is better than a guessed one.
+
+# ---------------------------------------------------------------------------
+# P3 — surface roughness for the suspension modifier (grade C, 0 smooth .. 1
+# bumpy/kerb-heavy). Street circuits and old-surface tracks high; modern
+# resurfaced permanent circuits low. Unlisted circuits take
+# physics.yaml suspension.default_roughness (0.5). Judgement values from
+# the era's commentary on bumps and kerb use, not measured.
+# ---------------------------------------------------------------------------
+roughness:
+  monaco_grand_prix: 0.90
+  saudi_arabian_grand_prix: 0.70
+  miami_grand_prix: 0.75
+  emilia_romagna_grand_prix: 0.65
+  australian_grand_prix: 0.55
+  hungarian_grand_prix: 0.50
+  italian_grand_prix: 0.45
+  belgian_grand_prix: 0.40
+  british_grand_prix: 0.35
+  bahrain_grand_prix: 0.30

@@ -423,6 +423,25 @@ def sector_boundaries_from_times(
             float(np.interp(sector1_s + sector2_s, t, d))]
 
 
+def median_sector_boundaries(per_lap: list[list[float]], lap_length_m: float) -> list[float]:
+    """One sector boundary pair from many laps' pairs, robust to the odd bad lap.
+
+    Each lap's boundaries were mapped onto the ensemble axis already. A value
+    that wrapped past the timing line (sector 3 ending at 5 m instead of
+    5,270 m) is unwrapped toward the first lap before the median, so a
+    boundary near distance zero cannot be averaged with its own wrap.
+    """
+    rows = [b for b in per_lap if len(b) == 2 and all(np.isfinite(b))]
+    if not rows:
+        return []
+    arr = np.asarray(rows, dtype=float)
+    ref = arr[0]
+    arr = np.where(arr - ref > lap_length_m / 2, arr - lap_length_m,
+                   np.where(ref - arr > lap_length_m / 2, arr + lap_length_m, arr))
+    med = np.median(arr, axis=0) % lap_length_m
+    return [float(med[0]), float(med[1])]
+
+
 # --------------------------------------------------------------- invariants
 def check_physics(segments: list[Segment], corner_threshold_1pm: float,
                   max_lateral_g: float = 6.5,

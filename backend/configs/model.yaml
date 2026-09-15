@@ -1,30 +1,56 @@
-target:
-  primary: segment_time_delta_s      # per-segment time vs. session reference
-  secondary: [segment_mean_speed_kph, segment_apex_speed_kph]
+# ---------------------------------------------------------------------------
+# P4 — ML delta model. Two levels (decision 2026-09-15, claude/PROJECT-STATE.md G):
+#
+#   level 1  segment_delta_s vs the SESSION reference        <- tyre, fuel, driver, chassis
+#   level 2  session reference vs the CIRCUIT's best         <- temperature, session type, season
+#
+# The level-1 target is normalised per session, so anything constant within a
+# session (track temperature, weather) cannot be learned there; level 2 is
+# where it lives. Setup is NOT here at all — it is the physics layer (P3).
+# ---------------------------------------------------------------------------
 
-split:
-  strategy: grouped                  # never leak a lap across folds
-  group_by: [season, event, driver]
-  holdout_events: [Monza]            # unseen-track generalisation check
-  era_seasons: [2022, 2023, 2024, 2025]   # ground-effect only; 2021 excluded
-  n_folds: 5
+data:
+  gold: ../data/gold/features.parquet
+  train_conditions: [dry]
+  effort_classes: [push, moderate]      # cruise laps are not what the HUD simulates
+  gap_tolerance_s: 0.05                 # a segment with a telemetry hole has an understated time
+  exclude_unstable_races: true          # physics-check #2: SC / red-flag races have no rhythm
+  holdout_event: miami_grand_prix       # never touched by CV; the "unseen track" number
 
-model:
-  type: xgboost                      # xgboost | lightgbm
+features:
+  # Only things known BEFORE the lap is driven. Anything measured on the lap
+  # itself (speeds, brake points, throttle, DRS, pace ratios, the lap time)
+  # is an outcome and is refused by FeatureSpec — see dataset.LEAKAGE.
+  numeric: [tyre_life, lap_number, stint, track_temp_c, air_temp_c, effort_index,
+            segment_length_m, segment_min_radius_m, segment_reference_s]
+  categorical: [segment_kind, session, compound, fresh_tyre, driver, chassis, season,
+                segment_sector, segment_is_kink]
+
+level1:
+  backend: auto                          # lightgbm | xgboost | sklearn (auto = first available)
+  quantiles: [0.1, 0.5, 0.9]
+  n_folds: 5                             # GroupKFold on (season, event)
   params:
-    n_estimators: 800
-    max_depth: 6
+    n_estimators: 600
     learning_rate: 0.03
+    num_leaves: 63
+    min_child_samples: 50
     subsample: 0.8
     colsample_bytree: 0.8
-    reg_lambda: 1.5
-    objective: reg:squarederror
+    reg_lambda: 1.0
 
-baseline:
-  type: ridge                        # physics-linear lower bound to beat
+level2:
+  ridge_alpha: 1.0
+  bootstrap: 200                         # over sessions -> coefficient intervals
 
 acceptance:
-  sector_delta_mae_s: 0.15           # per-sector MAE gate
-  lap_delta_mae_s: 0.30              # full-lap MAE gate
-  unseen_track_mae_s: 0.45           # holdout-event gate
-  monotonicity_checks: true          # more wing => more corner speed, less top speed
+  segment_mae_s: 0.15                    # roadmap gate, per segment (CV, q50)
+  lap_mae_s: 0.30                        # roadmap gate, lap = sum of its segments
+  unseen_track_lap_mae_s: 0.45           # holdout event
+  coverage_80: [0.70, 0.90]              # share of truths inside [q10, q90]; nominal 0.80
+  beat_ridge: true                       # the GBM must beat the linear baseline on segment MAE
+  monotonic:
+    tyre_life_up_slower: true            # +5 laps on the tyre -> delta up
+    lap_number_up_faster_in_race: true   # +10 race laps (fuel burnt) -> delta down
+
+registry: ../data/artifacts/models

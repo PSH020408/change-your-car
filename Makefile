@@ -88,6 +88,9 @@ features-one:
 train:
 	cd backend && .venv/bin/python -m pipeline.models.train --config configs/model.yaml
 
+train-quick:
+	cd backend && .venv/bin/python -m pipeline.models.train --config configs/model.yaml --quick
+
 test:
 	cd backend && .venv/bin/pytest -q
 

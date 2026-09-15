@@ -48,7 +48,8 @@ class Segment:
     mean_curvature_1pm: float
     peak_curvature_1pm: float
     min_radius_m: float
-    direction: str            # left | right | straight
+    interior_min_radius_m: float | None = None   # excluding window/2 at each end
+    direction: str = "straight"   # left | right | straight
     apex_speed_kph: float | None = None      # corners only — a straight has no apex
     min_speed_kph: float | None = None
     max_speed_kph: float | None = None
@@ -224,6 +225,12 @@ def build_segments(
     raw_speed_kph: np.ndarray | None = None,
 ) -> list[Segment]:
     step = geo.grid_step_m
+    # The smoothing window bleeds a corner's curvature ~window/2 into the
+    # straight on either side. A straight's radius measured over its whole
+    # length therefore always looks "corner-ish" near its ends, which is how
+    # 17 of 19 circuits failed the hidden-corner invariant. The interior
+    # radius excludes that bleed zone and is what the invariant checks.
+    bleed_pts = int(round(float(cfg.get("smooth_window_m", 90.0)) / 2.0 / step))
     threshold = float(cfg.get("curvature_threshold_1pm", 0.0035))
     mask = corner_mask(
         geo.curvature_1pm, step, threshold,
@@ -257,6 +264,14 @@ def build_segments(
         thresh_k = float(np.quantile(absk, 0.90))
         peak_i = int(np.argmin(np.abs(absk - thresh_k)))
         peak = float(k[peak_i])
+        # None means "too short to have an interior", never "perfectly
+        # straight" — a perfectly straight interior is a very large radius.
+        interior = absk[bleed_pts:len(absk) - bleed_pts] if len(absk) > 2 * bleed_pts + 2 else None
+        if interior is None:
+            interior_r = None
+        else:
+            q = float(np.quantile(interior, 0.90))
+            interior_r = round(1.0 / q, 1) if q > 1e-9 else 99999.0
 
         apex = entry = exit_ = vmax = None
         if raw_distance_m is not None and raw_speed_kph is not None:
@@ -275,6 +290,7 @@ def build_segments(
             mean_curvature_1pm=round(float(np.mean(k)), 6),
             peak_curvature_1pm=round(peak, 6),
             min_radius_m=round(1.0 / thresh_k, 1) if thresh_k > 1e-9 else 99999.0,
+            interior_min_radius_m=interior_r,
             direction=direction,
             apex_speed_kph=round(apex, 1) if (is_corner and apex is not None) else None,
             min_speed_kph=round(apex, 1) if apex is not None else None,
@@ -347,6 +363,9 @@ def _merge_wrap(segments: list[Segment], mask: np.ndarray,
         peak_curvature_1pm=max(last.peak_curvature_1pm, first.peak_curvature_1pm,
                                key=abs),
         min_radius_m=min(last.min_radius_m, first.min_radius_m),
+        interior_min_radius_m=min([v for v in (last.interior_min_radius_m,
+                                               first.interior_min_radius_m)
+                                   if v is not None], default=None),
         direction=last.direction,
         apex_speed_kph=min([v for v in (last.apex_speed_kph, first.apex_speed_kph)
                             if v is not None], default=None),
@@ -437,11 +456,16 @@ def check_physics(segments: list[Segment], corner_threshold_1pm: float,
             if g > max_lateral_g:
                 over_g.append({"index": s.index, "lateral_g": round(g, 1),
                                "radius_m": r, "apex_kph": s.apex_speed_kph})
-        elif s.min_radius_m and s.min_radius_m < corner_radius:
-            row = {"index": s.index, "radius_m": s.min_radius_m,
-                   "length_m": s.length_m,
-                   "pct_of_threshold": round(100.0 * s.min_radius_m / corner_radius)}
-            (hidden if s.min_radius_m < material_radius else borderline).append(row)
+        elif s.kind == "straight":
+            # Judge on the interior where one exists; a straight too short to
+            # have an interior beyond the bleed zone cannot hide a corner
+            # longer than itself and is not judged at all.
+            r = s.interior_min_radius_m
+            if r is None or r >= corner_radius:
+                continue
+            row = {"index": s.index, "radius_m": r, "length_m": s.length_m,
+                   "pct_of_threshold": round(100.0 * r / corner_radius)}
+            (hidden if r < material_radius else borderline).append(row)
 
     n_corner = sum(1 for s in segments if is_corner_kind(s.kind))
     n_straight = sum(1 for s in segments if s.kind == "straight")

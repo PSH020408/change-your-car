@@ -63,7 +63,7 @@ DEFAULT_SMOOTH_WINDOW_M = 90.0
 DEFAULT_POLY_ORDER = 2
 
 
-def auto_window_m(lap_length_m: float, lo: float = 45.0, hi: float = 120.0) -> float:
+def auto_window_m(lap_length_m: float, lo: float = 30.0, hi: float = 90.0) -> float:
     """A starting window scaled to the circuit, when none is configured.
 
     One global window cannot serve every circuit. Feature spacing scales with
@@ -76,7 +76,13 @@ def auto_window_m(lap_length_m: float, lo: float = 45.0, hi: float = 120.0) -> f
     to pick the window and then citing the turn count as validation would be
     circular. Per-circuit overrides in configs/circuits.yaml take precedence.
     """
-    return float(np.clip(lap_length_m / 60.0, lo, hi))
+    # lap/60 came from the synthetic-circle sweep and was too wide for real
+    # circuits: on the 19-session calibration grids, 40-50 m matched published
+    # turn counts where 90 m found two-thirds of them. The synthetic test
+    # optimised noise rejection on a curve with no features to resolve — the
+    # wrong objective. lap/100 puts Bahrain and Melbourne near 53 m, Spa at
+    # 70 m, Monaco at the 30 m floor.
+    return float(np.clip(lap_length_m / 100.0, lo, hi))
 
 
 @dataclass

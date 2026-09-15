@@ -67,10 +67,13 @@ segment-one:
 
 track-status:
 	@python3 -c "import json,glob;\
-fs=sorted(glob.glob('data/silver/**/track.json',recursive=True));\
+fs=sorted(glob.glob('data/silver/*/*/track.json'));\
 print(f'{len(fs)} circuit(s) segmented');\
-[print(f\"  {d['season']} {d['event']:<30s} {d['counts']['corners']:>3} corners  {d['geometry']['lap_length_m']:>7.0f} m\") for d in (json.load(open(f)) for f in fs)]" \
+[print(f\"  {d['season']} {d['event']:<30s} {d['counts']['turns']:>3} turns  {d['geometry']['lap_length_m']:>7.0f} m  ref {d['reference_lap']['session']}\") for d in (json.load(open(f)) for f in fs)]" \
 	2>/dev/null || echo "no silver tracks yet — run 'make segment'"
+
+silver-clean:
+	rm -rf data/silver
 
 # --- P2-5..P2-7 Feature store ------------------------------------------------
 features:

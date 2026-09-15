@@ -29,7 +29,9 @@ monaco_grand_prix:
     Monaco's corners into each other, which is exactly what happened: the
     global 90 m window found 8 turns instead of 19.
   segmentation:
-    smooth_window_m: 50.0
+    smooth_window_m: 30.0
+    min_segment_len_m: 25.0
+    min_gap_m: 15.0
 
 bahrain_grand_prix:
   layout_from: 2005

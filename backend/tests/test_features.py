@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pipeline.features import driver_style, effort, segment_features, setup_proxy
+from pipeline.features import driver_style, effort, run as frun, segment_features, setup_proxy
 
 
 def _lap(n: int = 60, speed=250.0, throttle=100, brake=False, t0: float = 0.0,
@@ -157,3 +157,84 @@ def test_a_bias_from_too_few_segments_is_blanked_not_trusted():
     bias = driver_style.driver_bias(thin, min_samples=20)
     zcols = [c for c in bias.columns if c.startswith("bias_")]
     assert bias[zcols].isna().all().all()
+
+
+# ------------------------------------------------- distance-axis alignment
+def test_each_lap_is_rescaled_onto_the_reference_axis():
+    """add_distance integrates speed x dt, so every lap gets its own length.
+
+    Segments are defined on the reference lap's axis; a 2% disagreement puts a
+    boundary ~90 m away from where it belongs, which is a quarter of a 380 m
+    corner. The difference then lands in the target as if a driver caused it.
+    """
+    short = _lap(100, step=10.0)                       # 990 m
+    long_ = _lap(100, step=10.2)                       # 1009.8 m
+    a = segment_features.align_distance(short, 1000.0)
+    b = segment_features.align_distance(long_, 1000.0)
+    assert abs(a["distance_m"].max() - 1000.0) < 1e-6
+    assert abs(b["distance_m"].max() - 1000.0) < 1e-6
+    assert a["distance_scale"].iloc[0] != b["distance_scale"].iloc[0]
+
+
+def test_alignment_keeps_segment_boundaries_comparable_between_laps():
+    seg = _seg(kind="low_speed_corner", start=400.0, end=600.0)
+    short = segment_features.align_distance(_lap(100, step=10.0), 1000.0)
+    long_ = segment_features.align_distance(_lap(100, step=10.2), 1000.0)
+    n_short = len(segment_features.segment_slice(short, seg["start_m"], seg["end_m"], 1000.0))
+    n_long = len(segment_features.segment_slice(long_, seg["start_m"], seg["end_m"], 1000.0))
+    assert abs(n_short - n_long) <= 1, "the same segment must collect the same samples"
+
+
+# ------------------------------------------------------------- the target
+def _target_frame(times, gaps=None, effort_class="push"):
+    n = len(times)
+    return pd.DataFrame({
+        "season": 2024, "event": "X", "session": "Q", "segment_index": 0,
+        "lap_uid": [f"l{i}" for i in range(n)],
+        "segment_time_s": times,
+        "segment_time_gap_s": gaps if gaps is not None else [0.0] * n,
+        "lap_effort_class": effort_class,
+    })
+
+
+def test_a_lap_with_a_gap_cannot_set_the_reference():
+    """The gap interval is excluded from the integration on purpose, so such a
+    lap's time is UNDERSTATED. Letting it win the minimum measures every
+    honest lap against a time nobody drove."""
+    df = _target_frame([2.70, 2.72, 2.75, 1.10], gaps=[0.0, 0.0, 0.0, 1.6])
+    out = frun.add_targets(df)
+    assert out["segment_reference_s"].iloc[0] > 2.5
+    assert (out["segment_delta_s"] < 1.0).all()
+
+
+def test_the_reference_is_a_low_quantile_not_a_bare_minimum():
+    """min over 88 laps is the most outlier-sensitive statistic available."""
+    df = _target_frame([2.70] * 40 + [2.10])
+    out = frun.add_targets(df)
+    assert out["segment_reference_s"].iloc[0] > 2.10
+
+
+def test_cruise_laps_do_not_define_the_best():
+    push = _target_frame([2.70, 2.72], effort_class="push")
+    cruise = _target_frame([4.50, 4.60], effort_class="cruise")
+    cruise["lap_uid"] = ["c0", "c1"]
+    out = frun.add_targets(pd.concat([push, cruise], ignore_index=True))
+    assert out["segment_reference_s"].iloc[0] < 3.0
+    assert out.loc[out["lap_uid"] == "c0", "segment_delta_s"].iloc[0] > 1.0
+
+
+# ---------------------------------------------------------- the invariant
+def test_segment_times_summing_to_the_lap_is_checked():
+    """A broken target is invisible until something asserts the total."""
+    good = pd.DataFrame({
+        "lap_uid": ["a"] * 4 + ["b"] * 4,
+        "segment_time_s": [20.0, 20.0, 20.0, 18.0] + [20.0, 20.0, 20.0, 19.0],
+        "lap_time_s": [78.0] * 4 + [79.0] * 4,
+    })
+    assert frun.check_segment_times_sum_to_the_lap(good)["passes"]
+
+    broken = good.copy()
+    broken.loc[broken["lap_uid"] == "a", "segment_time_s"] = 12.0   # sums to 48
+    rep = frun.check_segment_times_sum_to_the_lap(broken)
+    assert not rep["passes"]
+    assert rep["laps_over_1pct"] >= 1

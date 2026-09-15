@@ -63,8 +63,12 @@ print(f'{len(fs)} circuit(s) segmented');\
 [print(f\"  {d['season']} {d['event']:<30s} {d['counts']['corners']:>3} corners  {d['geometry']['lap_length_m']:>7.0f} m\") for d in (json.load(open(f)) for f in fs)]" \
 	2>/dev/null || echo "no silver tracks yet — run 'make segment'"
 
+# --- P2-5..P2-7 Feature store ------------------------------------------------
 features:
-	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml
+	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --verbose
+
+features-one:
+	cd backend && .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --limit 1 --verbose
 
 train:
 	cd backend && .venv/bin/python -m pipeline.models.train --config configs/model.yaml

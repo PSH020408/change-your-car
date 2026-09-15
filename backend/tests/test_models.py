@@ -38,7 +38,7 @@ def _gold(n_events: int = 6, laps_per: int = 40, seed: int = 0) -> pd.DataFrame:
 
 def _cfg() -> dict:
     return {"data": {"train_conditions": ["dry"], "effort_classes": ["push", "moderate"], "gap_tolerance_s": 0.05},
-            "features": {"numeric": ["tyre_life", "lap_number", "stint", "track_temp_c", "air_temp_c", "lap_effort_index",
+            "features": {"numeric": ["tyre_life", "lap_number", "stint", "track_temp_c", "air_temp_c", "lap_effort_index", "gap_ahead_s",
                                      "segment_length_m", "segment_min_radius_m", "segment_reference_s"],
                          "categorical": ["segment_kind", "session", "compound", "fresh_tyre", "driver", "chassis",
                                          "season", "segment_sector", "segment_is_kink"]},
@@ -212,3 +212,10 @@ def test_counterfactual_error_cancels_a_per_lap_offset():
     q2 = pd.DataFrame({"q10": y2 + 0.4, "q50": y2 + 0.5, "q90": y2 + 0.6})
     assert E.lap_metrics(df["lap_uid"], y2, q2)["lap_mae_s"] == pytest.approx(2.0)
     assert E.counterfactual_lap_metrics(df, y2, q2)["cf_lap_mae_s"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_clean_push_mask_keeps_clean_air_push_laps_only():
+    df = pd.DataFrame({"lap_effort_class": ["push", "push", "moderate", "push"],
+                       "gap_ahead_s": [10.0, 1.0, 10.0, np.nan]})
+    m = E.clean_push_mask(df, {"data": {"clean_air_gap_s": 2.5, "gate_effort": ["push"]}})
+    assert m.tolist() == [True, False, False, True]

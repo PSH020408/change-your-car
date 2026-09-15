@@ -44,6 +44,10 @@ def _report(title: str, m: dict) -> None:
         print(f"  {'':<10} COUNTERFACTUAL lap MAE {m['cf_lap_mae_s']:.3f} s  (median {m['cf_lap_median_ae_s']:.3f},"
               f" 'no change' would score {m['cf_lap_mae_naive_s']:.3f})   segment {m['cf_segment_mae_s']:.3f} s"
               f"   {m['cf_laps']:,} laps vs their driver's best")
+    cp = m.get("clean_push") or {}
+    if cp:
+        print(f"  {'':<10} CLEAN-AIR PUSH counterfactual lap MAE {cp['cf_lap_mae_s']:.3f} s  (median {cp['cf_lap_median_ae_s']:.3f},"
+              f" 'no change' {cp['cf_lap_mae_naive_s']:.3f})   {cp['cf_laps']:,} laps   <- the gate population")
 
 
 def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
@@ -101,10 +105,12 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
     # holdout event, which the calibration never saw.
     margin = Q.conformal_margin(y, oof, 0.8)
     oof_cal = oof.copy(); oof_cal["q10"] -= margin; oof_cal["q90"] += margin
+    clean = E.clean_push_mask(train, cfg)
     cv = {**E.segment_metrics(y, oof), **E.lap_metrics(train["lap_uid"], y, oof),
           **E.counterfactual_lap_metrics(train, y, oof),
           "coverage_80_calibrated": E.segment_metrics(y, oof_cal)["coverage_80"],
-          "conformal_margin_s": margin}
+          "conformal_margin_s": margin,
+          "clean_push": E.counterfactual_lap_metrics(train[clean], y[clean], oof[clean]) if clean.sum() > 100 else {}}
     metrics: dict = {"cv": cv, "backend": backend, "n_train_rows": int(len(X)),
                      "n_train_laps": int(train["lap_uid"].nunique()), "quick": quick}
     print("\nOUT-OF-GROUP (GroupKFold on season|event)")
@@ -148,9 +154,11 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
         Xh, yh = spec.transform(hold), hold["segment_delta_s"].to_numpy(float)
         ph = final.predict(Xh)                                   # calibrated bands
         raw = ph.copy(); raw["q10"] += margin; raw["q90"] -= margin
+        clean_h = E.clean_push_mask(hold, cfg)
         ho = {**E.segment_metrics(yh, raw), **E.lap_metrics(hold["lap_uid"], yh, ph),
               **E.counterfactual_lap_metrics(hold, yh, ph),
-              "coverage_80_calibrated": E.segment_metrics(yh, ph)["coverage_80"]}
+              "coverage_80_calibrated": E.segment_metrics(yh, ph)["coverage_80"],
+              "clean_push": E.counterfactual_lap_metrics(hold[clean_h], yh[clean_h], ph[clean_h]) if clean_h.sum() > 100 else {}}
         metrics["holdout"] = {**ho, "event": str(hold_slug)}
         print(f"\nUNSEEN TRACK  ({hold_slug}, never in training, never in calibration)")
         _report("GBM q50", ho)

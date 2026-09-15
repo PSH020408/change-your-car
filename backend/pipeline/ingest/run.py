@@ -124,6 +124,9 @@ def prepare_laps(laps: pd.DataFrame, sess: loader.LoadedSession,
         df[flag] = df[trap].isna() if trap in df else True
 
     df["condition"] = filters.tag_conditions(df, cond_cfg)
+    # traffic at the line, from EVERY crossing in the session, before any
+    # lap is filtered away
+    df[["gap_ahead_s", "gap_behind_s"]] = filters.gap_to_neighbours(df)
     df["track_status_flag"] = filters.tag_track_status(
         df, excluded_status or ["4", "5", "6", "7"])
     return metadata.annotate(df, sess.season, cmap)

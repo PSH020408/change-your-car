@@ -51,6 +51,8 @@ LAP_COLUMNS: dict[str, str] = {
     "sector2_s": "sector2_s",
     "sector3_s": "sector3_s",
     "lap_start_s": "lap_start_s",
+    "gap_ahead_s": "gap_ahead_s",
+    "gap_behind_s": "gap_behind_s",
     "Position": "position",
     "IsPersonalBest": "is_personal_best",
     # speed traps (setup proxies)

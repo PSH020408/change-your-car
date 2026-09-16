@@ -6,7 +6,7 @@ const barlow = Barlow({ subsets: ["latin"], weight: ["400", "500", "600"], varia
 const plex = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-plex-mono" });
 
 export const metadata: Metadata = {
-  title: "F1 Virtual Sim",
+  title: "Change Your F***ing Car — F1 Virtual Sim",
   description: "Setup and conditions simulator on real ground-effect-era telemetry",
 };
 

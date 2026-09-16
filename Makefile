@@ -1,4 +1,4 @@
-.PHONY: expand segment-fix segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
+.PHONY: expand ingest-only segment-fix segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
 
 setup: setup-be setup-fe
 
@@ -63,6 +63,11 @@ ingest-force:
 ingest:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml 2>&1 | tee ../data/logs/ingest.log
+
+# Named redo, e.g. make ingest-only ONLY=2024/azerbaijan_grand_prix/R
+ingest-only:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --verbose --only "$(ONLY)" 2>&1 | tee ../data/logs/ingest-only.log
 
 ingest-pilot:
 	@mkdir -p data/logs

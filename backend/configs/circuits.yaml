@@ -58,6 +58,7 @@ dutch_grand_prix:
   segmentation:
     smooth_window_m: 100.0
     curvature_threshold_1pm: 0.0035
+    min_gap_m: 14.0      # = auto window/3, what the calibration grid was run with
 
 azerbaijan_grand_prix:
   layout_from: 2016
@@ -68,6 +69,7 @@ azerbaijan_grand_prix:
   segmentation:
     smooth_window_m: 80.0
     curvature_threshold_1pm: 0.0015
+    min_gap_m: 20.0      # = auto window/3, what the calibration grid was run with
 
 united_states_grand_prix:
   layout_from: 2012
@@ -80,6 +82,7 @@ united_states_grand_prix:
   segmentation:
     smooth_window_m: 50.0
     curvature_threshold_1pm: 0.0045
+    min_gap_m: 18.0      # = auto window/3, what the calibration grid was run with
 
 austrian_grand_prix:
   layout_from: 2016
@@ -89,6 +92,7 @@ austrian_grand_prix:
   note: 65 m at the global threshold -> exactly 10, passes.
   segmentation:
     smooth_window_m: 65.0
+    min_gap_m: 14.0      # = auto window/3, what the calibration grid was run with
 
 japanese_grand_prix:
   layout_from: 2003
@@ -98,6 +102,7 @@ japanese_grand_prix:
   note: 80 m at the global threshold -> exactly 18, passes.
   segmentation:
     smooth_window_m: 80.0
+    min_gap_m: 19.0      # = auto window/3, what the calibration grid was run with
 
 # Add further circuits only once each figure has been checked against a
 # primary source. An empty entry is better than a guessed one.

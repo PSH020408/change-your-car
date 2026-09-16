@@ -168,6 +168,10 @@ def build_all(lake: Path, out: Path, verbose: bool = True) -> dict:
         except Exception as exc:                   # noqa: BLE001
             print(f"  FAILED {season}/{slug}/{ses}: {type(exc).__name__}: {exc}")
             continue
+        if not doc["drivers"]:
+            # a session with no usable lap (e.g. every lap filtered) must not become an empty menu entry
+            print(f"  skipped {season}/{slug}/{ses}: no drivers with a usable lap")
+            continue
         d = out / season / slug
         d.mkdir(parents=True, exist_ok=True)
         (d / f"{ses}.json").write_text(json.dumps(doc, separators=(",", ":")))

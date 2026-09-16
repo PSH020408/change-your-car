@@ -212,8 +212,13 @@ def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
                 num = laps["DriverNumber"].astype(str).str.strip()
                 laps.loc[blank, "Team"] = num[blank].map(lambda n: fill.get(n, {}).get("team"))
                 if "Driver" in laps:
-                    numeric_abbr = laps["Driver"].astype(str).str.fullmatch(r"\d+")
-                    laps.loc[numeric_abbr, "Driver"] = num[numeric_abbr].map(lambda n: fill.get(n, {}).get("driver"))
+                    # the minimal list leaves Driver EMPTY (not the car number as first assumed):
+                    # 973 laps with the same blank abbreviation collapsed into one lap_uid per lap
+                    # number and the telemetry merge multiplied the session 18x. Fill anything
+                    # that is not a proper 3-letter abbreviation.
+                    abbr = laps["Driver"].astype(str).str.strip()
+                    bad = abbr.isna() | ~abbr.str.fullmatch(r"[A-Z]{3}")
+                    laps.loc[bad, "Driver"] = num[bad].map(lambda n: fill.get(n, {}).get("driver"))
                 still = laps["Team"].isna() | (laps["Team"].astype(str).str.strip() == "")
                 print(f"    note: {int(blank.sum())} lap row(s) had no team; {int(blank.sum() - still.sum())} "
                       f"recovered from sibling sessions, {int(still.sum())} dropped")
@@ -231,6 +236,10 @@ def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
 
     df = prepare_laps(laps, sess, event_slug, cmap, scope.get("conditions", {}),
                       scope["lap_filters"].get("exclude_track_status"))
+    dup = int(df["lap_uid"].duplicated().sum())
+    if dup:
+        raise ValueError(f"{dup} duplicate lap_uid(s) — driver abbreviations are missing or not unique; "
+                         f"refusing to write a session whose merges would multiply rows")
     tel = LazyTelemetry(df)
 
     kept, report = filters.apply_chain(  # noqa: E501

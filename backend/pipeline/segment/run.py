@@ -381,7 +381,7 @@ def _compare_reference(ref: dict | None, season: int,
 
 
 def run(scope_path: Path, limit: int | None, force: bool, verbose: bool,
-        calibrate: bool = False) -> int:
+        calibrate: bool = False, only: set[str] | None = None, failed_only: bool = False) -> int:
     scope = paths.load_scope(scope_path)
     bronze = paths.bronze_dir(scope_path, scope)
     silver = silver_dir(scope_path, scope)
@@ -396,7 +396,19 @@ def run(scope_path: Path, limit: int | None, force: bool, verbose: bool,
     todo = []
     for (season, slug), sessions in sorted(circuits.items()):
         out = silver / str(season) / slug
-        if (out / "track.json").exists() and not force:
+        tj = out / "track.json"
+        if only and not ({slug, f"{season}/{slug}"} & only):
+            continue
+        if failed_only:
+            # re-run only circuits whose last segmentation failed its own physics check
+            if not tj.exists():
+                continue
+            try:
+                if json.loads(tj.read_text()).get("physics_check", {}).get("passes", True):
+                    continue
+            except (OSError, json.JSONDecodeError):
+                continue
+        elif tj.exists() and not force:
             continue
         todo.append(((season, slug), sessions, out))
     if limit:
@@ -476,9 +488,15 @@ def main() -> None:
     p.add_argument("--verbose", "-v", action="store_true")
     p.add_argument("--calibrate", action="store_true",
                    help="sweep smoothing window x curvature threshold per circuit")
+    p.add_argument("--only", type=str, default=None,
+                   help="comma-separated event slugs (or season/slug) to segment, forcing a redo")
+    p.add_argument("--failed-only", action="store_true",
+                   help="redo only circuits whose track.json physics_check failed")
     a = p.parse_args()
+    only = {x.strip() for x in a.only.split(",") if x.strip()} if a.only else None
     try:
-        sys.exit(run(a.scope, a.limit, a.force, a.verbose, a.calibrate))
+        sys.exit(run(a.scope, a.limit, a.force or bool(only) or a.failed_only, a.verbose, a.calibrate,
+                     only=only, failed_only=a.failed_only))
     except KeyboardInterrupt:
         sys.exit(130)
     except Exception:                                       # noqa: BLE001

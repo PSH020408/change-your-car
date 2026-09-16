@@ -33,3 +33,4 @@ data/artifacts/
 .vscode/
 backend/data/
 data/logs/
+frontend/tsconfig.tsbuildinfo

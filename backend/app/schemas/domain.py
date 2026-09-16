@@ -1,148 +1,218 @@
-"""Wire contract shared by backend and frontend.
+"""Wire contract shared by backend and frontend — the single source of truth.
 
-This module is the single source of truth for the API shape: the Next.js
-client mirrors it in `frontend/src/lib/types.ts`.
+The Next.js client mirrors this in `frontend/src/lib/types.ts`. Anything the
+HUD draws is here; anything not here the HUD cannot know.
+
+Sliders follow the P3 physics layer: six setup controls + three environment
+controls (claude/P3-SCOPE.md). Camber, toe, brake bias and differential were
+cut — no public data can verify them.
 """
+from __future__ import annotations
+
 from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 
-# --------------------------------------------------------------------------
-# Setup & environment inputs
-# --------------------------------------------------------------------------
+# ----------------------------------------------------------------- inputs
 class Weather(str, Enum):
     DRY = "dry"
-    INTERMEDIATE = "intermediate"
+    INTER = "inter"
     WET = "wet"
 
 
 class Compound(str, Enum):
-    SOFT = "soft"
-    MEDIUM = "medium"
-    HARD = "hard"
-    INTER = "intermediate"
-    WET = "wet"
+    SOFT = "SOFT"
+    MEDIUM = "MEDIUM"
+    HARD = "HARD"
+    INTERMEDIATE = "INTERMEDIATE"
+    WET = "WET"
 
 
 class CarSetup(BaseModel):
-    """Normalised setup sliders. All values are 0-1 unless stated."""
-
-    front_wing: float = Field(0.5, ge=0, le=1, description="0 = min drag, 1 = max downforce")
-    rear_wing: float = Field(0.5, ge=0, le=1)
-    ride_height_front_mm: float = Field(25.0, ge=15, le=60)
-    ride_height_rear_mm: float = Field(60.0, ge=40, le=110)
-    suspension_stiffness_front: float = Field(0.5, ge=0, le=1)
-    suspension_stiffness_rear: float = Field(0.5, ge=0, le=1)
-    camber_front_deg: float = Field(-3.2, ge=-4.5, le=-1.0)
-    camber_rear_deg: float = Field(-1.8, ge=-3.0, le=-0.5)
-    toe_front_deg: float = Field(0.05, ge=-0.3, le=0.3)
-    toe_rear_deg: float = Field(0.15, ge=-0.3, le=0.5)
-    brake_bias_pct: float = Field(56.0, ge=50, le=62)
-    diff_on_throttle: float = Field(0.5, ge=0, le=1)
+    """Normalised sliders, 0..1, 0.5 = the real car's setup for that weekend
+    (unknown to us, embodied in the baseline lap). Every output is relative."""
+    front_wing: float = Field(0.5, ge=0, le=1, description="0 = least downforce, 1 = most")
+    rear_wing: float = Field(0.5, ge=0, le=1, description="rear wing dominates drag")
+    ride_height: float = Field(0.5, ge=0, le=1, description="0 = lowest (bottoming risk), 1 = highest")
+    suspension: float = Field(0.5, ge=0, le=1, description="0 = soft, 1 = stiff")
+    suspension_split: float = Field(0.5, ge=0, le=1, description=">0.5 = stiffer front (understeer)")
+    fuel_kg: float | None = Field(None, ge=0, le=110, description="None = same as the baseline lap")
 
 
 class Environment(BaseModel):
-    track_temp_c: float = Field(35.0, ge=5, le=60)
-    air_temp_c: float = Field(24.0, ge=0, le=45)
+    """None = keep the baseline lap's value."""
+    track_temp_c: float | None = Field(None, ge=5, le=65)
+    air_temp_c: float | None = Field(None, ge=0, le=50)
     weather: Weather = Weather.DRY
-    track_evolution: float = Field(0.7, ge=0, le=1, description="0 = green, 1 = fully rubbered")
-    wind_kph: float = Field(8.0, ge=0, le=60)
-    compound: Compound = Compound.SOFT
-    fuel_kg: float = Field(15.0, ge=5, le=110)
+    compound: Compound | None = None
+    tyre_life: int | None = Field(None, ge=1, le=60, description="laps on the tyre")
+
+
+class BaselineRef(BaseModel):
+    season: int = Field(..., ge=2022, le=2025)
+    event: str = Field(..., description="event slug, e.g. bahrain_grand_prix")
+    session: Literal["Q", "R", "S", "SQ"] = "Q"
+    driver: str = Field(..., description="FastF1 3-letter code, e.g. VER")
+    lap: str = Field("representative", description="'representative' (median clean push lap, default), "
+                                                  "'fastest', or a lap_uid")
 
 
 class SimulationRequest(BaseModel):
-    season: int = Field(..., ge=2021, le=2025)
-    event: str
-    session: Literal["FP2", "FP3", "Q", "R"] = "Q"
-    driver: str = Field(..., description="FastF1 3-letter code, e.g. VER")
-    chassis: str = Field(..., description="e.g. RB20, SF-24, MCL38")
+    baseline: BaselineRef
     setup: CarSetup = CarSetup()
     environment: Environment = Environment()
 
 
-# --------------------------------------------------------------------------
-# Outputs
-# --------------------------------------------------------------------------
+# ---------------------------------------------------------------- outputs
 class SegmentKind(str, Enum):
     STRAIGHT = "straight"
+    KINK = "kink"
     LOW_SPEED_CORNER = "low_speed_corner"
     MEDIUM_SPEED_CORNER = "medium_speed_corner"
     HIGH_SPEED_CORNER = "high_speed_corner"
-    BRAKING = "braking"
 
 
-class SegmentDelta(BaseModel):
+class SegmentInfo(BaseModel):
+    """Static description of one segment of the circuit (from silver)."""
     index: int
     kind: SegmentKind
     start_m: float
     end_m: float
-    sector: Literal[1, 2, 3]
+    length_m: float
+    sector: int | None
+    min_radius_m: float | None
+    direction: str | None
+
+
+class SegmentDelta(BaseModel):
+    """Per segment: where the time comes from, with its uncertainty."""
+    index: int
+    kind: SegmentKind
+    sector: int | None
     baseline_time_s: float
-    simulated_time_s: float
-    delta_s: float
-    confidence: float = Field(..., ge=0, le=1)
+    ml_s: float = Field(..., description="tyre / temperature / conditions, level-1 model, q50 difference")
+    ml_lo_s: float
+    ml_hi_s: float
+    level2_s: float = Field(..., description="session-level temperature / session-type shift")
+    physics_s: float = Field(..., description="setup, physics layer, nominal")
+    physics_lo_s: float
+    physics_hi_s: float
+    total_s: float
+    total_lo_s: float
+    total_hi_s: float
+    achieved_s: float = Field(..., description="what the reconstructed trace actually carries")
+    refused_s: float = Field(..., description="part of the request the physics envelope refused (0 = none)")
 
 
 class TelemetryTrace(BaseModel):
     """Distance-indexed channels on the 20 m display grid.
 
-    Grid choice is measured, not assumed: car telemetry arrives at a fixed
-    240 ms period, so raw spatial spacing is ~20 m at 300 km/h and ~4 m in a
-    hairpin. A finer grid would interpolate detail that was never sampled.
-    See docs/recon/DECISIONS.md D1.
-
-    All arrays share the same length as `distance_m`.
+    The grid is measured, not assumed: telemetry arrives every 240 ms, so
+    raw spacing is ~20 m at 300 km/h and ~4 m in a hairpin. `interpolated`
+    marks display samples farther than 1.5 grid steps from a real one; the
+    HUD dims them so it never claims resolution the data does not have.
+    Brake is a boolean upstream (no pressure channel exists). DRS is open
+    only where the baseline lap really opened it — a track zone.
     """
-
     distance_m: list[float]
+    time_s: list[float]
     speed_kph: list[float]
     throttle_pct: list[float]
-
-    # FastF1 reports brake as a BOOLEAN, not a pressure. There is no brake
-    # pressure channel in the public data, so the HUD draws an on/off band
-    # rather than a pressure curve. (docs/recon/DECISIONS.md D5a)
     brake_on: list[bool]
-
     gear: list[int]
-
-    # DRS state is RACE-SITUATIONAL upstream (it needs a car within 1 s
-    # ahead), which is not a setup variable. The simulator therefore treats
-    # DRS as a track property: open inside the circuit's activation zones,
-    # closed elsewhere. Do not read this as an observed channel.
-    # (docs/recon/DECISIONS.md D5b)
     drs_open: list[bool]
-
-    # True where the sample was interpolated onto the display grid rather
-    # than measured. The HUD dims these spans so the page never claims
-    # resolution the data does not have.
     interpolated: list[bool]
 
 
-class PhysicsDelta(BaseModel):
-    downforce_delta_pct: float
-    drag_delta_pct: float
-    mechanical_grip_delta_pct: float
-    tyre_thermal_grip_delta_pct: float
-    balance_index: float = Field(..., description="<0 understeer, >0 oversteer")
+class LapMeta(BaseModel):
+    lap_uid: str
+    driver: str
+    team: str | None
+    chassis: str | None
+    power_unit: str | None
+    season: int
+    event: str
+    event_name: str
+    session: str
+    circuit: str | None
+    lap_number: int | None
+    lap_time_s: float
+    compound: str | None
+    tyre_life: int | None
+    fresh_tyre: bool | None
+    track_temp_c: float | None
+    air_temp_c: float | None
+    telemetry_quality: str | None
+    effort_class: str | None
+    gap_ahead_s: float | None
+    sector_times_s: list[float | None]
+
+
+class TrackMap(BaseModel):
+    view_box: str
+    path: str
+    sector_boundaries_m: list[float]
+    lap_length_m: float
+    published_turns: int | None
+    measured_turns: int
+
+
+class BaselineResponse(BaseModel):
+    lap: LapMeta
+    trace: TelemetryTrace
+    segments: list[SegmentInfo]
+    track: TrackMap
+    available_laps: list[dict]
+    integration_note: str
+
+
+class PhysicsState(BaseModel):
+    downforce_pct: float
+    drag_pct: float
+    mech_grip_pct: float
+    grip_multiplier: float
+    thermal_grip_pct: float
+    fuel_delta_kg: float
+    balance_index: float = Field(..., description="-1 understeer .. +1 oversteer")
+    warning: str | None
+
+
+class Grade(BaseModel):
+    control: str
+    grade: Literal["A", "B", "C"]
+    note: str
 
 
 class EngineerNote(BaseModel):
     severity: Literal["info", "warning", "critical"]
-    channel: Literal["balance", "tyre", "aero", "brakes", "traction"]
+    channel: Literal["balance", "tyre", "aero", "fuel", "weather", "model", "physics", "sectors"]
     message: str
     suggestion: str | None = None
 
 
-class SimulationResponse(BaseModel):
-    lap_delta_s: float
+class LapSummary(BaseModel):
+    baseline_lap_time_s: float
+    simulated_lap_time_s: float
+    delta_s: float
+    delta_lo_s: float
+    delta_hi_s: float
+    ml_s: float
+    level2_s: float
+    physics_s: float
+    refused_s: float
     sector_deltas_s: list[float]
+
+
+class SimulationResponse(BaseModel):
+    lap: LapSummary
     segments: list[SegmentDelta]
     baseline: TelemetryTrace
     simulated: TelemetryTrace
-    physics: PhysicsDelta
+    physics: PhysicsState
+    grades: list[Grade]
     engineer_log: list[EngineerNote]
     model_version: str
+    physics_version: str
     computed_ms: float

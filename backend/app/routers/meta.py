@@ -1,24 +1,30 @@
-"""Catalog endpoints: seasons, events, drivers, chassis."""
-from fastapi import APIRouter
+"""Catalog: what the docking screen can choose from (from the baseline store index)."""
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.core.state import get_engine
+from app.services.engine import Engine, NotFound
 
 router = APIRouter(prefix="/api/meta", tags=["meta"])
 
 
 @router.get("/seasons")
-def seasons() -> list[int]:
-    raise NotImplementedError("Phase 2 — backed by pipeline.ingest metadata table")
+def seasons(e: Engine = Depends(get_engine)) -> list[int]:
+    return e.seasons()
 
 
 @router.get("/events/{season}")
-def events(season: int) -> list[dict]:
-    raise NotImplementedError("Phase 2")
+def events(season: int, e: Engine = Depends(get_engine)) -> list[dict]:
+    return e.events(season)
 
 
-@router.get("/drivers/{season}")
-def drivers(season: int) -> list[dict]:
-    raise NotImplementedError("Phase 2")
+@router.get("/drivers/{season}/{event}/{session}")
+def drivers(season: int, event: str, session: str, e: Engine = Depends(get_engine)) -> list[dict]:
+    try:
+        return e.drivers(season, event, session)
+    except NotFound as exc:
+        raise HTTPException(404, str(exc))
 
 
 @router.get("/chassis/{season}")
-def chassis(season: int) -> list[dict]:
-    raise NotImplementedError("Phase 2 — chassis/PU mapping table")
+def chassis(season: int, e: Engine = Depends(get_engine)) -> list[dict]:
+    return e.chassis(season)

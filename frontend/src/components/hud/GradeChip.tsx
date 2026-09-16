@@ -2,8 +2,8 @@ import type { Grade } from "@/lib/types";
 
 const NOTE: Record<Grade, string> = {
   A: "learned from data (66 sessions); interval from the model",
-  B: "physics; coefficient size checked against our own data",
-  C: "physics; literature value only — wide band, cannot be verified with public data",
+  B: "physics, coefficient checked on our data; interval from that check",
+  C: "physics, literature value only; wide band, not verifiable with public data",
 };
 const CLS: Record<Grade, string> = {
   A: "text-grade-a bg-grade-abg border-grade-abd",

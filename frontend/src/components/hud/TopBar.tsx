@@ -13,7 +13,7 @@ function Select<T extends string | number>({ label, value, options, onChange, di
     <label className="flex flex-col gap-0.5 min-w-0">
       <span className="label">{label}</span>
       <select value={String(value)} disabled={disabled || options.length === 0} onChange={(e) => onChange(e.target.value)}
-        className="h-7 bg-hud-inset border border-hud-line2 rounded px-1.5 text-[12px] text-hud-text font-mono focus:outline-none focus:border-series-sim disabled:opacity-50 max-w-[220px] truncate">
+        className="h-7 bg-hud-inset border border-hud-line2 rounded px-1.5 text-[12px] text-hud-text font-mono focus:outline-none focus:border-series-sim disabled:opacity-50 max-w-[200px] truncate">
         {options.map((o) => <option key={String(o.value)} value={String(o.value)}>{o.label}</option>)}
       </select>
     </label>
@@ -67,7 +67,7 @@ export function TopBar({ baseline, error, busy }: { baseline?: BaselineResponse;
             .map((d) => ({ value: d.driver, label: d.chassis ? `${d.driver} · ${d.chassis}` : d.driver }))} />
         <Select label="lap" value={ref.lap} onChange={(v) => setRef({ lap: v })}
           options={[
-            { value: "representative", label: "representative (median push)" },
+            { value: "representative", label: "representative" },
             { value: "fastest", label: "fastest" },
             ...(baseline?.available_laps ?? []).map((l) => ({
               value: l.lap_uid,

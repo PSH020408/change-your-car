@@ -9,7 +9,7 @@ export function Slider({ label, grade, value, min = 0, max = 1, step = 0.01, dis
   const changed = Math.abs(value - 0.5) > 1e-9 && max === 1;
   return (
     <label className="block">
-      <div className="flex justify-between items-center mb-1.5">
+      <div className="flex justify-between items-center mb-1 text-[12.5px]">
         <span className="flex items-center gap-2 text-hud-soft">{label}<GradeChip grade={grade} /></span>
         <span className={`font-mono ${changed ? "text-series-sim" : "text-hud-soft"}`}>
           {display}{hint && <span className="text-hud-muted"> · {hint}</span>}

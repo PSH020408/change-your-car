@@ -82,7 +82,7 @@ export function DeltaPanel({ baseline, sim, hover, onHover }: {
       </div>
       {lap && Math.abs(lap.level2_s) > 0.0005 && (
         <div className="text-[10px] font-mono text-hud-dim -mt-1">
-          level 2 (session-wide temp shift) {fmtDelta(lap.level2_s)} s — <span className="text-status-warn">reported, not applied</span> (collinear air/track temps, see defect list)
+          level 2 (session-wide temp shift) {fmtDelta(lap.level2_s)} s — <span className="text-status-warn">reported, not applied</span> (refit on 184 sessions: no measurable session-wide temperature effect; in-range temps live in level 1)
         </div>
       )}
 

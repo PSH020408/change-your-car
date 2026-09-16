@@ -17,13 +17,14 @@ function Icon({ severity }: { severity: EngineerNote["severity"] }) {
 /** Rule-based notes from the backend (English by contract). Newest state, not a history. */
 export function EngineerLog({ notes, pending }: { notes?: EngineerNote[]; pending: boolean }) {
   return (
-    <section className="card p-3 flex flex-col gap-2 min-h-[120px]">
+    <section className="card p-3 flex flex-col gap-2 shrink-0 max-h-[360px]">
       <div className="flex items-center justify-between">
         <span className="label">engineer log</span>
         <span className="text-[10px] font-mono text-hud-dim">{notes ? `${notes.length} notes` : pending ? "…" : "idle"}</span>
       </div>
       {!notes && <div className="text-[11px] text-hud-dim">Notes appear once a simulation has run: balance warnings, tyre window, aero efficiency, fuel, weather, model confidence.</div>}
       {notes && notes.length === 0 && <div className="text-[11px] text-hud-dim">Nothing to flag — setup within the validated envelope.</div>}
+      <div className="flex flex-col gap-2 overflow-y-auto min-h-0 pr-1">
       {notes && notes.map((n, i) => (
         <div key={i} className="flex gap-2 text-[11.5px] leading-snug">
           <Icon severity={n.severity} />
@@ -34,6 +35,7 @@ export function EngineerLog({ notes, pending }: { notes?: EngineerNote[]; pendin
           </div>
         </div>
       ))}
+      </div>
     </section>
   );
 }

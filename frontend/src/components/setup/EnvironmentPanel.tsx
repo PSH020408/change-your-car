@@ -21,7 +21,7 @@ export function EnvironmentPanel({ lap }: { lap: LapMeta | undefined }) {
   const compound = (env.compound ?? (lap?.compound as Compound | null) ?? "MEDIUM") as Compound;
   const tyre = env.tyre_life ?? lap?.tyre_life ?? 1;
   return (
-    <div className="card p-3 flex flex-col gap-2 flex-1">
+    <div className="card p-3 flex flex-col gap-2 shrink-0">
       <span className="label">Environment</span>
       <Slider env label="Track temp" grade="A" value={track} min={10} max={60} step={1} display={`${track} °C`} hint={env.track_temp_c === null ? "session" : undefined}
         onChange={(v) => setEnv({ track_temp_c: v })} />

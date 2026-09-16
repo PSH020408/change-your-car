@@ -183,8 +183,16 @@ def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
     sess = loader.load_session(ff1, season, event, ses)
     event_slug = paths.slug(sess.event)
 
-    raw_teams = sorted(sess.laps["Team"].dropna().astype(str).unique()) \
-        if "Team" in sess.laps else []
+    laps = sess.laps
+    if "Team" in laps:
+        # 2024 Azerbaijan R carried lap rows with an empty team string; that is
+        # a feed glitch on a handful of rows, not an unmapped team. Drop the
+        # rows, say so, and keep the session.
+        blank = laps["Team"].isna() | (laps["Team"].astype(str).str.strip() == "")
+        if bool(blank.any()):
+            print(f"    note: {int(blank.sum())} lap row(s) with no team name dropped")
+            laps = laps[~blank]
+    raw_teams = sorted(laps["Team"].astype(str).unique()) if "Team" in laps else []
     unmapped = cmap.validate_coverage(season, raw_teams)
     if unmapped:
         raise ValueError(
@@ -192,7 +200,7 @@ def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
             f"Add them to configs/chassis.yaml — an unmapped team writes a null "
             f"chassis into bronze and becomes a missing one-hot at training time.")
 
-    df = prepare_laps(sess.laps, sess, event_slug, cmap, scope.get("conditions", {}),
+    df = prepare_laps(laps, sess, event_slug, cmap, scope.get("conditions", {}),
                       scope["lap_filters"].get("exclude_track_status"))
     tel = LazyTelemetry(df)
 

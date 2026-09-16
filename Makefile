@@ -1,4 +1,4 @@
-.PHONY: expand setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
+.PHONY: expand segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
 
 setup: setup-be setup-fe
 
@@ -85,6 +85,17 @@ segment:
 segment-all:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --verbose 2>&1 | tee ../data/logs/segment-all.log
+
+# Re-run only the circuits whose own physics check failed (hidden corners
+# inside straights) — with the calibration grid so a per-circuit override can
+# be chosen in circuits.yaml. Then `make segment-failed` applies it.
+segment-recheck:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --failed-only --calibrate --verbose 2>&1 | tee ../data/logs/segment-recheck.log
+
+segment-failed:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --failed-only --verbose 2>&1 | tee ../data/logs/segment-failed.log
 
 segment-calibrate:
 	@mkdir -p data/logs

@@ -20,15 +20,6 @@ function Select<T extends string | number>({ label, value, options, onChange, di
   );
 }
 
-function Meta({ k, v }: { k: string; v: string | number | null | undefined }) {
-  return (
-    <div className="flex flex-col min-w-0">
-      <span className="label">{k}</span>
-      <span className="text-[12px] font-mono text-hud-soft truncate">{v === null || v === undefined || v === "" ? "—" : v}</span>
-    </div>
-  );
-}
-
 /**
  * Docking bar: pick season → event → session → driver → lap, and read the
  * baseline lap's identity. Changing the reference resets setup/conditions
@@ -85,13 +76,17 @@ export function TopBar({ baseline, error, busy }: { baseline?: BaselineResponse;
           ]} />
       </div>
 
-      <div className="flex-1 grid grid-cols-6 gap-3 min-w-0 pl-4 border-l border-hud-line">
-        <Meta k="lap time" v={lap ? fmtLap(lap.lap_time_s) : undefined} />
-        <Meta k="team" v={lap?.team} />
-        <Meta k="chassis" v={lap?.chassis} />
-        <Meta k="tyre" v={lap ? `${lap.compound ?? "?"} · ${lap.tyre_life ?? "?"} laps` : undefined} />
-        <Meta k="track / air" v={lap ? `${lap.track_temp_c?.toFixed(0) ?? "?"} / ${lap.air_temp_c?.toFixed(0) ?? "?"} °C` : undefined} />
-        <Meta k="lap" v={lap ? `L${lap.lap_number ?? "?"} · ${lap.effort_class ?? ""} · ${lap.telemetry_quality ?? ""}` : undefined} />
+      <div className="flex-1 min-w-0 pl-4 border-l border-hud-line">
+        <div className="label">baseline lap</div>
+        {lap ? (
+          <div className="text-[11.5px] font-mono text-hud-soft whitespace-nowrap overflow-hidden text-ellipsis" title={lap.lap_uid}>
+            <span className="text-hud-text">{fmtLap(lap.lap_time_s)}</span>
+            <span className="text-hud-dim"> · </span>{lap.team ?? "—"}<span className="text-hud-dim"> · </span>{lap.chassis ?? "—"}
+            <span className="text-hud-dim"> · </span>{lap.compound ?? "?"} {lap.tyre_life ?? "?"}L
+            <span className="text-hud-dim"> · </span>{lap.track_temp_c?.toFixed(0) ?? "?"}/{lap.air_temp_c?.toFixed(0) ?? "?"} °C
+            <span className="text-hud-dim"> · </span>L{lap.lap_number ?? "?"} {lap.effort_class ?? ""} {lap.telemetry_quality ?? ""}
+          </div>
+        ) : <div className="text-[11.5px] font-mono text-hud-dim">—</div>}
       </div>
 
       <div className="flex items-center gap-2 shrink-0">

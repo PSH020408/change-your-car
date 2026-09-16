@@ -59,12 +59,12 @@ export function DeltaPanel({ baseline, sim, hover, onHover }: {
         <div>
           <div className="label">simulated lap</div>
           <div className="text-[30px] font-mono leading-none tabular-nums">{lap ? fmtLap(lap.simulated_lap_time_s) : fmtLap(base)}</div>
-          <div className="text-[10px] font-mono text-hud-dim mt-1">baseline {fmtLap(base)} · {baseline.lap.driver} {baseline.lap.session} {baseline.lap.season}</div>
+          <div className="text-[10px] font-mono text-hud-dim mt-1 whitespace-nowrap">baseline {fmtLap(base)} · {baseline.lap.driver} {baseline.lap.session} {baseline.lap.season}</div>
         </div>
         <div className="text-right">
           <div className="label">delta</div>
           <div className={`text-[30px] font-mono leading-none tabular-nums ${lap ? cls(lap.delta_s) : "text-hud-muted"}`}>{lap ? fmtDelta(lap.delta_s) : "—"}<span className="text-[13px] text-hud-muted ml-1">s</span></div>
-          <div className="text-[10px] font-mono text-hud-dim mt-1">{lap ? `band ${fmtDelta(lap.delta_lo_s)} … ${fmtDelta(lap.delta_hi_s)} (80 %)` : "waiting for simulation"}</div>
+          <div className="text-[10px] font-mono text-hud-dim mt-1 whitespace-nowrap">{lap ? `band ${fmtDelta(lap.delta_lo_s)} … ${fmtDelta(lap.delta_hi_s)} (80 %)` : "waiting for simulation"}</div>
         </div>
       </div>
 

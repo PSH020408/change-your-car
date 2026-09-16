@@ -46,7 +46,7 @@ export function DeltaPanel({ baseline, sim, hover, onHover }: {
   baseline: BaselineResponse; sim?: SimulationResponse; hover: number | null; onHover: (i: number | null) => void;
 }) {
   const [showAll, setShowAll] = useState(false);
-  const segs = sim?.segments ?? [];
+  const segs = useMemo(() => sim?.segments ?? [], [sim]);
   const scale = useMemo(() => Math.max(0.05, ...segs.map((s) => Math.max(Math.abs(s.total_lo_s), Math.abs(s.total_hi_s)))), [segs]);
   const top = useMemo(() => [...segs].sort((a, b) => Math.abs(b.total_s) - Math.abs(a.total_s)).slice(0, 7), [segs]);
   const lap = sim?.lap;

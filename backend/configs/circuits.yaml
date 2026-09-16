@@ -39,8 +39,68 @@ bahrain_grand_prix:
   turns: 15
   source: https://en.wikipedia.org/wiki/Bahrain_International_Circuit
 
-# Add the remaining pilot circuits only once each figure has been checked
-# against a primary source. An empty entry is better than a guessed one.
+# ---------------------------------------------------------------------------
+# 2026-09-16 expansion: seven circuits failed the hidden-corner physics check
+# with the auto-scaled window (lap/100). Overrides chosen from the calibration
+# grid (`make segment-recheck`): the cell that PASSES the physics invariants
+# and lands nearest the published turn count, in every season we hold.
+# ---------------------------------------------------------------------------
+
+dutch_grand_prix:
+  layout_from: 2021
+  length_km: 4.259
+  turns: 14
+  source: https://en.wikipedia.org/wiki/Circuit_Zandvoort
+  note: |
+    Banked T3 and T14 plus the tight T11/T12 chicane: at 42 m the grid found a
+    78 m-radius corner hiding inside a "straight". 100 m / 0.0035 gives 14
+    turns and passes in both 2022 and 2025.
+  segmentation:
+    smooth_window_m: 100.0
+    curvature_threshold_1pm: 0.0035
+
+azerbaijan_grand_prix:
+  layout_from: 2016
+  length_km: 6.003
+  turns: 20
+  source: https://en.wikipedia.org/wiki/Baku_City_Circuit
+  note: 90-degree old-town corners + a 2.2 km flat-out run; 80 m / 0.0015 -> 19 turns, passes.
+  segmentation:
+    smooth_window_m: 80.0
+    curvature_threshold_1pm: 0.0015
+
+united_states_grand_prix:
+  layout_from: 2012
+  length_km: 5.513
+  turns: 20
+  source: https://en.wikipedia.org/wiki/Circuit_of_the_Americas
+  note: |
+    The T3-T9 esses merge at any window; 50 m / 0.0045 is the only cell that
+    passes in both 2023 and 2025 (17 and 16 turns). Known under-count.
+  segmentation:
+    smooth_window_m: 50.0
+    curvature_threshold_1pm: 0.0045
+
+austrian_grand_prix:
+  layout_from: 2016
+  length_km: 4.318
+  turns: 10
+  source: https://en.wikipedia.org/wiki/Red_Bull_Ring
+  note: 65 m at the global threshold -> exactly 10, passes.
+  segmentation:
+    smooth_window_m: 65.0
+
+japanese_grand_prix:
+  layout_from: 2003
+  length_km: 5.807
+  turns: 18
+  source: https://en.wikipedia.org/wiki/Suzuka_International_Racing_Course
+  note: 80 m at the global threshold -> exactly 18, passes.
+  segmentation:
+    smooth_window_m: 80.0
+
+# Add further circuits only once each figure has been checked against a
+# primary source. An empty entry is better than a guessed one.
 
 # ---------------------------------------------------------------------------
 # P3 — surface roughness for the suspension modifier (grade C, 0 smooth .. 1

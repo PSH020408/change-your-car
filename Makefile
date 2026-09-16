@@ -1,4 +1,4 @@
-.PHONY: expand segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
+.PHONY: expand segment-fix segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
 
 setup: setup-be setup-fe
 
@@ -92,6 +92,12 @@ segment-all:
 segment-recheck:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --failed-only --calibrate --verbose 2>&1 | tee ../data/logs/segment-recheck.log
+
+# Apply the circuits.yaml overrides to EVERY season of the affected circuits
+# (an override is per circuit, so all its seasons must be cut the same way).
+segment-fix:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.segment.run --scope configs/scope.yaml --verbose --only dutch_grand_prix,azerbaijan_grand_prix,united_states_grand_prix,austrian_grand_prix,japanese_grand_prix 2>&1 | tee ../data/logs/segment-fix.log
 
 segment-failed:
 	@mkdir -p data/logs

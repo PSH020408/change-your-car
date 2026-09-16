@@ -27,6 +27,11 @@ car:
   aero_crossover_kph: {value: 150.0, u: 0.20, grade: B}
   # Effective friction of the tyre on the road at zero aero load.
   mu_mechanical: {value: 1.60, u: 0.15, grade: B}
+  # Power at the wheels for the traction limit in P5 (ICE + MGU-K deployed).
+  power_kw: {value: 780.0, u: 0.10, grade: B}
+  # Braking beyond the tyre limit is impossible; braking below it is the
+  # driver. Share of the lateral-grip limit reachable in pure braking.
+  brake_share_of_grip: {value: 1.0, u: 0.10, grade: C}
 
 aero:
   # Full slider range (0 -> 1) changes total downforce / drag by this much.

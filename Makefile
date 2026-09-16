@@ -103,6 +103,10 @@ train:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.models.train --config configs/model.yaml 2>&1 | tee ../data/logs/train.log
 
+reconstruct-demo:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.reconstruct.demo --season 2024 --event bahrain_grand_prix --session Q --driver VER 2>&1 | tee ../data/logs/reconstruct-demo.log
+
 train-quick:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.models.train --config configs/model.yaml --quick 2>&1 | tee ../data/logs/train-quick.log

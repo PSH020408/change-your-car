@@ -18,7 +18,15 @@ data/cache/
 data/bronze/
 data/silver/
 data/gold/
-data/artifacts/
+# artifacts: the lake is regenerable and stays out, but the deployed service needs
+# the baselines (93 MB of <1 MB JSONs) and the REGISTERED model (5.5 MB) — those
+# are committed so Render/Cloud Build can build straight from the repo.
+data/artifacts/*
+!data/artifacts/baselines/
+!data/artifacts/models/
+data/artifacts/models/*
+!data/artifacts/models/latest.json
+!data/artifacts/models/v2026.09.17-1/
 *.parquet
 *.feather
 

@@ -1,0 +1,305 @@
+{
+ "cv": {
+  "segment_mae_s": 0.06197433658863801,
+  "segment_median_ae_s": 0.03184111828476377,
+  "coverage_80": 0.7448575574727735,
+  "interval_width_median_s": 0.14661448303000071,
+  "pinball_q10": 0.011448596428641582,
+  "pinball_q50": 0.030987168294319006,
+  "pinball_q90": 0.019555326835242567,
+  "n": 2227881,
+  "lap_mae_s": 0.7204969625579547,
+  "lap_median_ae_s": 0.49706690710876744,
+  "lap_coverage_80_naive_sum": 0.975956406246121,
+  "laps": 80562,
+  "cf_segment_mae_s": 0.060236081472720714,
+  "cf_lap_mae_s": 0.6104078196829926,
+  "cf_lap_median_ae_s": 0.4620765124107813,
+  "cf_lap_mae_naive_s": 0.8269294025076105,
+  "cf_laps": 77524,
+  "coverage_80_calibrated": 0.8000005386284097,
+  "conformal_margin_s": 0.004565455638382298,
+  "clean_push": {
+   "cf_segment_mae_s": 0.04910834856380237,
+   "cf_lap_mae_s": 0.4740116965597215,
+   "cf_lap_median_ae_s": 0.3451572109148878,
+   "cf_lap_mae_naive_s": 0.6591223004125212,
+   "cf_laps": 24726
+  },
+  "clean_push_vs_best": {
+   "cf_segment_mae_s": 0.05325826881812732,
+   "cf_lap_mae_s": 0.6840540773488456,
+   "cf_lap_median_ae_s": 0.5118707858307581,
+   "cf_lap_mae_naive_s": 1.2032786338267412,
+   "cf_laps": 24726
+  },
+  "noise_floor_lap_s": 0.2396890020991909,
+  "consecutive_pair_mae_s": 0.33897143752034903,
+  "pairs": 15357
+ },
+ "backend": "lightgbm",
+ "n_train_rows": 2227881,
+ "n_train_laps": 80562,
+ "quick": false,
+ "ridge": {
+  "segment_mae_s": 0.07639514824313876,
+  "segment_median_ae_s": 0.04909583578199382,
+  "coverage_80": 0.0,
+  "interval_width_median_s": 0.0,
+  "pinball_q10": 0.038480863818555186,
+  "pinball_q50": 0.03819757412156938,
+  "pinball_q90": 0.03791428442458357,
+  "n": 2227881,
+  "lap_mae_s": 0.7874969248262443,
+  "lap_median_ae_s": 0.5931748779408099,
+  "lap_coverage_80_naive_sum": 0.0,
+  "laps": 80562,
+  "cf_segment_mae_s": 0.06657844874224068,
+  "cf_lap_mae_s": 0.638600152127462,
+  "cf_lap_median_ae_s": 0.48433615018136617,
+  "cf_lap_mae_naive_s": 0.8269294025076105,
+  "cf_laps": 77524
+ },
+ "naive_median": {
+  "segment_mae_s": 0.11352886725817044,
+  "segment_median_ae_s": 0.06831600000000004,
+  "coverage_80": 7.630569137220525e-06,
+  "interval_width_median_s": 0.0,
+  "pinball_q10": 0.03270854454272917,
+  "pinball_q50": 0.05676443362908522,
+  "pinball_q90": 0.08082032271544126,
+  "n": 2227881
+ },
+ "by_kind": {
+  "high_speed_corner": {
+   "mae_s": 0.0563,
+   "coverage_80": 0.7647,
+   "n": 113904
+  },
+  "kink": {
+   "mae_s": 0.0293,
+   "coverage_80": 0.7268,
+   "n": 446086
+  },
+  "low_speed_corner": {
+   "mae_s": 0.1112,
+   "coverage_80": 0.767,
+   "n": 305045
+  },
+  "medium_speed_corner": {
+   "mae_s": 0.0853,
+   "coverage_80": 0.7701,
+   "n": 225963
+  },
+  "straight": {
+   "mae_s": 0.0575,
+   "coverage_80": 0.739,
+   "n": 1136883
+  }
+ },
+ "by_session": {
+  "Q": {
+   "mae_s": 0.049,
+   "coverage_80": 0.7687,
+   "n": 195868
+  },
+  "R": {
+   "mae_s": 0.0632,
+   "coverage_80": 0.7426,
+   "n": 2032013
+  }
+ },
+ "by_effort": {
+  "moderate": {
+   "mae_s": 0.0659,
+   "coverage_80": 0.7444,
+   "n": 742043
+  },
+  "push": {
+   "mae_s": 0.06,
+   "coverage_80": 0.7451,
+   "n": 1485838
+  }
+ },
+ "cf_push": {
+  "cf_segment_mae_s": 0.05808434865535404,
+  "cf_lap_mae_s": 0.5724364233448286,
+  "cf_lap_median_ae_s": 0.42983204162439925,
+  "cf_lap_mae_naive_s": 0.8032758774000629,
+  "cf_laps": 50832
+ },
+ "cf_moderate": {
+  "cf_segment_mae_s": 0.06278669229659815,
+  "cf_lap_mae_s": 0.6520139932765303,
+  "cf_lap_median_ae_s": 0.5015634943628889,
+  "cf_lap_mae_naive_s": 0.816643489229575,
+  "cf_laps": 25765
+ },
+ "holdout": {
+  "segment_mae_s": 0.07798698501362221,
+  "segment_median_ae_s": 0.034139269080808735,
+  "coverage_80": 0.7454114225781846,
+  "interval_width_median_s": 0.15920394905698412,
+  "pinball_q10": 0.01429961263294075,
+  "pinball_q50": 0.038993492506811105,
+  "pinball_q90": 0.020667448222725936,
+  "n": 83904,
+  "lap_mae_s": 0.5803221844708811,
+  "lap_median_ae_s": 0.4495599822615324,
+  "lap_coverage_80_naive_sum": 0.9948817938094078,
+  "laps": 4103,
+  "cf_segment_mae_s": 0.07626764244640984,
+  "cf_lap_mae_s": 0.5495565772638494,
+  "cf_lap_median_ae_s": 0.44849656737601246,
+  "cf_lap_mae_naive_s": 0.7891740815809476,
+  "cf_laps": 3947,
+  "coverage_80_calibrated": 0.8070771357742181,
+  "clean_push": {
+   "cf_segment_mae_s": 0.05736128479432227,
+   "cf_lap_mae_s": 0.44335869465100636,
+   "cf_lap_median_ae_s": 0.32792590479447764,
+   "cf_lap_mae_naive_s": 0.5890067906224739,
+   "cf_laps": 1237
+  },
+  "clean_push_vs_best": {
+   "cf_segment_mae_s": 0.0647840377530497,
+   "cf_lap_mae_s": 0.7088376210360232,
+   "cf_lap_median_ae_s": 0.5834247001911292,
+   "cf_lap_mae_naive_s": 1.0423620856911882,
+   "cf_laps": 1237
+  },
+  "event": "miami_grand_prix"
+ },
+ "probes": {
+  "tyre_life": {
+   "col": "tyre_life",
+   "shift": 5.0,
+   "mean_delta_s": 0.004427289823752277,
+   "share_slower": 0.7875,
+   "n": 20000
+  },
+  "lap_number": {
+   "col": "lap_number",
+   "shift": 10.0,
+   "mean_delta_s": -0.012572543397560847,
+   "share_slower": 0.03605,
+   "n": 20000
+  }
+ },
+ "importance": [
+  {
+   "feature": "segment_reference_s",
+   "mae_increase_s": 0.04575
+  },
+  {
+   "feature": "segment_length_m",
+   "mae_increase_s": 0.02562
+  },
+  {
+   "feature": "segment_min_radius_m",
+   "mae_increase_s": 0.02496
+  },
+  {
+   "feature": "lap_number",
+   "mae_increase_s": 0.00978
+  },
+  {
+   "feature": "segment_kind",
+   "mae_increase_s": 0.00389
+  },
+  {
+   "feature": "chassis",
+   "mae_increase_s": 0.00386
+  },
+  {
+   "feature": "gap_ahead_s",
+   "mae_increase_s": 0.00337
+  },
+  {
+   "feature": "tyre_life",
+   "mae_increase_s": 0.00239
+  },
+  {
+   "feature": "session",
+   "mae_increase_s": 0.00214
+  },
+  {
+   "feature": "segment_is_kink",
+   "mae_increase_s": 0.00204
+  },
+  {
+   "feature": "segment_sector",
+   "mae_increase_s": 0.00204
+  },
+  {
+   "feature": "lap_effort_index",
+   "mae_increase_s": 0.00162
+  },
+  {
+   "feature": "air_temp_c",
+   "mae_increase_s": 0.00151
+  },
+  {
+   "feature": "driver",
+   "mae_increase_s": 0.00115
+  },
+  {
+   "feature": "track_temp_c",
+   "mae_increase_s": 0.00113
+  },
+  {
+   "feature": "season",
+   "mae_increase_s": 0.0001
+  },
+  {
+   "feature": "compound",
+   "mae_increase_s": 3e-05
+  },
+  {
+   "feature": "fresh_tyre",
+   "mae_increase_s": 1e-05
+  }
+ ],
+ "level2": [
+  {
+   "term": "intercept",
+   "coef_pct": 4.0758,
+   "lo": 3.3465,
+   "hi": 4.8729,
+   "distinguishable_from_0": true
+  },
+  {
+   "term": "is_race",
+   "coef_pct": 4.7482,
+   "lo": 4.0706,
+   "hi": 5.3877,
+   "distinguishable_from_0": true
+  },
+  {
+   "term": "season_idx",
+   "coef_pct": -0.9262,
+   "lo": -1.2502,
+   "hi": -0.5923,
+   "distinguishable_from_0": true
+  },
+  {
+   "term": "track_temp_per_c",
+   "coef_pct": 0.0015,
+   "lo": -0.0816,
+   "hi": 0.0841,
+   "distinguishable_from_0": false
+  }
+ ],
+ "gates": {
+  "segment_mae": true,
+  "clean_push_lap_within_noise_floor": false,
+  "clean_push_lap_skill": false,
+  "unseen_track_clean_push_lap_skill": false,
+  "coverage_80_calibrated": true,
+  "beats_ridge": true,
+  "tyre_life_up_slower": true,
+  "lap_number_up_faster_in_race": true
+ },
+ "version": "v2026.09.17-1",
+ "gates_passed": false
+}

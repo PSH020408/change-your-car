@@ -1,0 +1,7837 @@
+{
+ "seasons": {
+  "2022": {
+   "abu_dhabi_grand_prix": {
+    "event_name": "Abu Dhabi Grand Prix",
+    "circuit": "Yas Island",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 33.45,
+       "air_temp_c": 28.75
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 32.9,
+       "air_temp_c": 28.2
+      }
+     }
+    }
+   },
+   "australian_grand_prix": {
+    "event_name": "Australian Grand Prix",
+    "circuit": "Melbourne",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 29.2,
+       "air_temp_c": 23.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 36.2,
+       "air_temp_c": 27.0
+      }
+     }
+    }
+   },
+   "austrian_grand_prix": {
+    "event_name": "Austrian Grand Prix",
+    "circuit": "Spielberg",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 36.9,
+       "air_temp_c": 19.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 30.8,
+       "air_temp_c": 20.4
+      }
+     }
+    }
+   },
+   "azerbaijan_grand_prix": {
+    "event_name": "Azerbaijan Grand Prix",
+    "circuit": "Baku",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 34.5,
+       "air_temp_c": 24.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 45.8,
+       "air_temp_c": 25.3
+      }
+     }
+    }
+   },
+   "bahrain_grand_prix": {
+    "event_name": "Bahrain Grand Prix",
+    "circuit": "Sakhir",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 25.2,
+       "air_temp_c": 19.4
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 27.4,
+       "air_temp_c": 22.8
+      }
+     }
+    }
+   },
+   "belgian_grand_prix": {
+    "event_name": "Belgian Grand Prix",
+    "circuit": "Spa-Francorchamps",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 20.8,
+       "air_temp_c": 15.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "GAS",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 36.5,
+       "air_temp_c": 22.2
+      }
+     }
+    }
+   },
+   "british_grand_prix": {
+    "event_name": "British Grand Prix",
+    "circuit": "Silverstone",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 20.3,
+       "air_temp_c": 14.4
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 32.0,
+       "air_temp_c": 18.6
+      }
+     }
+    }
+   },
+   "canadian_grand_prix": {
+    "event_name": "Canadian Grand Prix",
+    "circuit": "Montr\u00e9al",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 18.2,
+       "air_temp_c": 12.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 41.8,
+       "air_temp_c": 21.4
+      }
+     }
+    }
+   },
+   "dutch_grand_prix": {
+    "event_name": "Dutch Grand Prix",
+    "circuit": "Zandvoort",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 39.2,
+       "air_temp_c": 27.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 33.2,
+       "air_temp_c": 22.6
+      }
+     }
+    }
+   },
+   "emilia_romagna_grand_prix": {
+    "event_name": "Emilia Romagna Grand Prix",
+    "circuit": "Imola",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 14.7,
+       "air_temp_c": 12.7
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 16.6,
+       "air_temp_c": 13.4
+      }
+     }
+    }
+   },
+   "french_grand_prix": {
+    "event_name": "French Grand Prix",
+    "circuit": "Le Castellet",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 54.6,
+       "air_temp_c": 30.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 55.6,
+       "air_temp_c": 30.3
+      }
+     }
+    }
+   },
+   "hungarian_grand_prix": {
+    "event_name": "Hungarian Grand Prix",
+    "circuit": "Budapest",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 30.4,
+       "air_temp_c": 22.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 26.5,
+       "air_temp_c": 18.3
+      }
+     }
+    }
+   },
+   "italian_grand_prix": {
+    "event_name": "Italian Grand Prix",
+    "circuit": "Monza",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 40.6,
+       "air_temp_c": 27.65
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 43.4,
+       "air_temp_c": 28.2
+      }
+     }
+    }
+   },
+   "japanese_grand_prix": {
+    "event_name": "Japanese Grand Prix",
+    "circuit": "Suzuka",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 26.6,
+       "air_temp_c": 19.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 18.3,
+       "air_temp_c": 15.9
+      }
+     }
+    }
+   },
+   "mexico_city_grand_prix": {
+    "event_name": "Mexico City Grand Prix",
+    "circuit": "Mexico City",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 49.099999999999994,
+       "air_temp_c": 25.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 38.5,
+       "air_temp_c": 24.4
+      }
+     }
+    }
+   },
+   "miami_grand_prix": {
+    "event_name": "Miami Grand Prix",
+    "circuit": "Miami",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 50.4,
+       "air_temp_c": 33.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 43.3,
+       "air_temp_c": 30.0
+      }
+     }
+    }
+   },
+   "monaco_grand_prix": {
+    "event_name": "Monaco Grand Prix",
+    "circuit": "Monaco",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 47.2,
+       "air_temp_c": 26.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 28.9,
+       "air_temp_c": 22.3
+      }
+     }
+    }
+   },
+   "sao_paulo_grand_prix": {
+    "event_name": "S\u00e3o Paulo Grand Prix",
+    "circuit": "S\u00e3o Paulo",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 27.2,
+       "air_temp_c": 19.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 42.6,
+       "air_temp_c": 22.5
+      }
+     }
+    }
+   },
+   "saudi_arabian_grand_prix": {
+    "event_name": "Saudi Arabian Grand Prix",
+    "circuit": "Jeddah",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 25.6,
+       "air_temp_c": 23.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAT",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 27.8,
+       "air_temp_c": 25.5
+      }
+     }
+    }
+   },
+   "singapore_grand_prix": {
+    "event_name": "Singapore Grand Prix",
+    "circuit": "Marina Bay",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 27.8,
+       "air_temp_c": 26.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 29.1,
+       "air_temp_c": 27.2
+      }
+     }
+    }
+   },
+   "spanish_grand_prix": {
+    "event_name": "Spanish Grand Prix",
+    "circuit": "Barcelona",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 47.6,
+       "air_temp_c": 34.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 49.3,
+       "air_temp_c": 36.8
+      }
+     }
+    }
+   },
+   "united_states_grand_prix": {
+    "event_name": "United States Grand Prix",
+    "circuit": "Austin",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 36.0,
+       "air_temp_c": 30.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LAT",
+       "LEC",
+       "MAG",
+       "MSC",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "STR",
+       "TSU",
+       "VER",
+       "VET",
+       "ZHO"
+      ],
+      "chassis": [
+       "A522",
+       "AMR22",
+       "AT03",
+       "C42",
+       "F1-75",
+       "FW44",
+       "MCL36",
+       "RB18",
+       "VF-22",
+       "W13"
+      ],
+      "temps": {
+       "track_temp_c": 36.2,
+       "air_temp_c": 29.6
+      }
+     }
+    }
+   }
+  },
+  "2023": {
+   "abu_dhabi_grand_prix": {
+    "event_name": "Abu Dhabi Grand Prix",
+    "circuit": "Yas Island",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 31.8,
+       "air_temp_c": 26.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 31.9,
+       "air_temp_c": 26.6
+      }
+     }
+    }
+   },
+   "australian_grand_prix": {
+    "event_name": "Australian Grand Prix",
+    "circuit": "Melbourne",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 23.6,
+       "air_temp_c": 15.4
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 31.0,
+       "air_temp_c": 17.8
+      }
+     }
+    }
+   },
+   "austrian_grand_prix": {
+    "event_name": "Austrian Grand Prix",
+    "circuit": "Spielberg",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 39.2,
+       "air_temp_c": 26.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 31.8,
+       "air_temp_c": 22.7
+      }
+     }
+    }
+   },
+   "azerbaijan_grand_prix": {
+    "event_name": "Azerbaijan Grand Prix",
+    "circuit": "Baku",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 30.85,
+       "air_temp_c": 19.4
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 40.7,
+       "air_temp_c": 25.3
+      }
+     }
+    }
+   },
+   "bahrain_grand_prix": {
+    "event_name": "Bahrain Grand Prix",
+    "circuit": "Sakhir",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 28.0,
+       "air_temp_c": 23.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 29.9,
+       "air_temp_c": 26.7
+      }
+     }
+    }
+   },
+   "belgian_grand_prix": {
+    "event_name": "Belgian Grand Prix",
+    "circuit": "Spa-Francorchamps",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 24.2,
+       "air_temp_c": 19.4
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 29.1,
+       "air_temp_c": 18.1
+      }
+     }
+    }
+   },
+   "british_grand_prix": {
+    "event_name": "British Grand Prix",
+    "circuit": "Silverstone",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 21.6,
+       "air_temp_c": 20.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 29.6,
+       "air_temp_c": 21.3
+      }
+     }
+    }
+   },
+   "canadian_grand_prix": {
+    "event_name": "Canadian Grand Prix",
+    "circuit": "Montr\u00e9al",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 18.5,
+       "air_temp_c": 16.55
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 30.8,
+       "air_temp_c": 19.1
+      }
+     }
+    }
+   },
+   "dutch_grand_prix": {
+    "event_name": "Dutch Grand Prix",
+    "circuit": "Zandvoort",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 22.5,
+       "air_temp_c": 17.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 25.7,
+       "air_temp_c": 17.1
+      }
+     }
+    }
+   },
+   "hungarian_grand_prix": {
+    "event_name": "Hungarian Grand Prix",
+    "circuit": "Budapest",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 44.3,
+       "air_temp_c": 26.3
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 48.1,
+       "air_temp_c": 29.2
+      }
+     }
+    }
+   },
+   "italian_grand_prix": {
+    "event_name": "Italian Grand Prix",
+    "circuit": "Monza",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 39.7,
+       "air_temp_c": 28.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 43.1,
+       "air_temp_c": 29.9
+      }
+     }
+    }
+   },
+   "japanese_grand_prix": {
+    "event_name": "Japanese Grand Prix",
+    "circuit": "Suzuka",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 36.3,
+       "air_temp_c": 25.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 38.7,
+       "air_temp_c": 27.3
+      }
+     }
+    }
+   },
+   "las_vegas_grand_prix": {
+    "event_name": "Las Vegas Grand Prix",
+    "circuit": "Las Vegas",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 16.9,
+       "air_temp_c": 15.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 17.8,
+       "air_temp_c": 18.1
+      }
+     }
+    }
+   },
+   "mexico_city_grand_prix": {
+    "event_name": "Mexico City Grand Prix",
+    "circuit": "Mexico City",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 44.3,
+       "air_temp_c": 25.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 45.0,
+       "air_temp_c": 26.4
+      }
+     }
+    }
+   },
+   "miami_grand_prix": {
+    "event_name": "Miami Grand Prix",
+    "circuit": "Miami",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 42.7,
+       "air_temp_c": 28.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 34.6,
+       "air_temp_c": 27.1
+      }
+     }
+    }
+   },
+   "monaco_grand_prix": {
+    "event_name": "Monaco Grand Prix",
+    "circuit": "Monaco",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 46.2,
+       "air_temp_c": 25.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 38.4,
+       "air_temp_c": 25.3
+      }
+     }
+    }
+   },
+   "qatar_grand_prix": {
+    "event_name": "Qatar Grand Prix",
+    "circuit": "Lusail",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 34.4,
+       "air_temp_c": 31.4
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 36.5,
+       "air_temp_c": 31.3
+      }
+     }
+    }
+   },
+   "sao_paulo_grand_prix": {
+    "event_name": "S\u00e3o Paulo Grand Prix",
+    "circuit": "S\u00e3o Paulo",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 38.3,
+       "air_temp_c": 29.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 47.4,
+       "air_temp_c": 20.4
+      }
+     }
+    }
+   },
+   "saudi_arabian_grand_prix": {
+    "event_name": "Saudi Arabian Grand Prix",
+    "circuit": "Jeddah",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 31.6,
+       "air_temp_c": 27.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 31.0,
+       "air_temp_c": 26.1
+      }
+     }
+    }
+   },
+   "singapore_grand_prix": {
+    "event_name": "Singapore Grand Prix",
+    "circuit": "Marina Bay",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 34.2,
+       "air_temp_c": 29.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 35.9,
+       "air_temp_c": 29.9
+      }
+     }
+    }
+   },
+   "spanish_grand_prix": {
+    "event_name": "Spanish Grand Prix",
+    "circuit": "Barcelona",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 24.7,
+       "air_temp_c": 20.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "DEV",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 30.3,
+       "air_temp_c": 22.1
+      }
+     }
+    }
+   },
+   "united_states_grand_prix": {
+    "event_name": "United States Grand Prix",
+    "circuit": "Austin",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 41.45,
+       "air_temp_c": 35.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A523",
+       "AMR23",
+       "AT04",
+       "C43",
+       "FW45",
+       "MCL60",
+       "RB19",
+       "SF-23",
+       "VF-23",
+       "W14"
+      ],
+      "temps": {
+       "track_temp_c": 41.3,
+       "air_temp_c": 30.4
+      }
+     }
+    }
+   }
+  },
+  "2024": {
+   "abu_dhabi_grand_prix": {
+    "event_name": "Abu Dhabi Grand Prix",
+    "circuit": "Yas Island",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "DOO",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 29.3,
+       "air_temp_c": 25.7
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "DOO",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 30.8,
+       "air_temp_c": 26.4
+      }
+     }
+    }
+   },
+   "australian_grand_prix": {
+    "event_name": "Australian Grand Prix",
+    "circuit": "Melbourne",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 34.7,
+       "air_temp_c": 18.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 38.7,
+       "air_temp_c": 21.2
+      }
+     }
+    }
+   },
+   "austrian_grand_prix": {
+    "event_name": "Austrian Grand Prix",
+    "circuit": "Spielberg",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 46.2,
+       "air_temp_c": 31.4
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 46.5,
+       "air_temp_c": 29.7
+      }
+     }
+    }
+   },
+   "azerbaijan_grand_prix": {
+    "event_name": "Azerbaijan Grand Prix",
+    "circuit": "Baku",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BEA",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 37.6,
+       "air_temp_c": 27.15
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BEA",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 43.4,
+       "air_temp_c": 26.5
+      }
+     }
+    }
+   },
+   "bahrain_grand_prix": {
+    "event_name": "Bahrain Grand Prix",
+    "circuit": "Sakhir",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 21.4,
+       "air_temp_c": 18.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 22.8,
+       "air_temp_c": 18.1
+      }
+     }
+    }
+   },
+   "belgian_grand_prix": {
+    "event_name": "Belgian Grand Prix",
+    "circuit": "Spa-Francorchamps",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 22.2,
+       "air_temp_c": 18.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 43.0,
+       "air_temp_c": 21.6
+      }
+     }
+    }
+   },
+   "british_grand_prix": {
+    "event_name": "British Grand Prix",
+    "circuit": "Silverstone",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 20.6,
+       "air_temp_c": 13.7
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 24.6,
+       "air_temp_c": 15.9
+      }
+     }
+    }
+   },
+   "canadian_grand_prix": {
+    "event_name": "Canadian Grand Prix",
+    "circuit": "Montr\u00e9al",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 30.9,
+       "air_temp_c": 20.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 26.0,
+       "air_temp_c": 17.9
+      }
+     }
+    }
+   },
+   "chinese_grand_prix": {
+    "event_name": "Chinese Grand Prix",
+    "circuit": "Shanghai",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 34.6,
+       "air_temp_c": 22.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 28.9,
+       "air_temp_c": 18.4
+      }
+     }
+    }
+   },
+   "dutch_grand_prix": {
+    "event_name": "Dutch Grand Prix",
+    "circuit": "Zandvoort",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 30.6,
+       "air_temp_c": 24.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 31.8,
+       "air_temp_c": 19.3
+      }
+     }
+    }
+   },
+   "emilia_romagna_grand_prix": {
+    "event_name": "Emilia Romagna Grand Prix",
+    "circuit": "Imola",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 41.8,
+       "air_temp_c": 24.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 42.0,
+       "air_temp_c": 25.5
+      }
+     }
+    }
+   },
+   "hungarian_grand_prix": {
+    "event_name": "Hungarian Grand Prix",
+    "circuit": "Budapest",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 30.1,
+       "air_temp_c": 24.3
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 45.2,
+       "air_temp_c": 29.1
+      }
+     }
+    }
+   },
+   "italian_grand_prix": {
+    "event_name": "Italian Grand Prix",
+    "circuit": "Monza",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 49.150000000000006,
+       "air_temp_c": 33.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 45.9,
+       "air_temp_c": 32.6
+      }
+     }
+    }
+   },
+   "japanese_grand_prix": {
+    "event_name": "Japanese Grand Prix",
+    "circuit": "Suzuka",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 26.7,
+       "air_temp_c": 17.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 35.3,
+       "air_temp_c": 21.2
+      }
+     }
+    }
+   },
+   "las_vegas_grand_prix": {
+    "event_name": "Las Vegas Grand Prix",
+    "circuit": "Las Vegas",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 14.4,
+       "air_temp_c": 11.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 17.2,
+       "air_temp_c": 17.6
+      }
+     }
+    }
+   },
+   "mexico_city_grand_prix": {
+    "event_name": "Mexico City Grand Prix",
+    "circuit": "Mexico City",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 41.3,
+       "air_temp_c": 22.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 36.2,
+       "air_temp_c": 20.2
+      }
+     }
+    }
+   },
+   "miami_grand_prix": {
+    "event_name": "Miami Grand Prix",
+    "circuit": "Miami",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 47.2,
+       "air_temp_c": 29.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 44.2,
+       "air_temp_c": 28.4
+      }
+     }
+    }
+   },
+   "monaco_grand_prix": {
+    "event_name": "Monaco Grand Prix",
+    "circuit": "Monaco",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 44.8,
+       "air_temp_c": 21.3
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "LEC",
+       "NOR",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 44.7,
+       "air_temp_c": 21.9
+      }
+     }
+    }
+   },
+   "qatar_grand_prix": {
+    "event_name": "Qatar Grand Prix",
+    "circuit": "Lusail",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 21.7,
+       "air_temp_c": 18.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 22.5,
+       "air_temp_c": 18.8
+      }
+     }
+    }
+   },
+   "sao_paulo_grand_prix": {
+    "event_name": "S\u00e3o Paulo Grand Prix",
+    "circuit": "S\u00e3o Paulo",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BEA",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 23.1,
+       "air_temp_c": 20.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALO",
+       "BEA",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 24.9,
+       "air_temp_c": 20.8
+      }
+     }
+    }
+   },
+   "saudi_arabian_grand_prix": {
+    "event_name": "Saudi Arabian Grand Prix",
+    "circuit": "Jeddah",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BEA",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 31.0,
+       "air_temp_c": 25.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BEA",
+       "BOT",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 30.9,
+       "air_temp_c": 25.5
+      }
+     }
+    }
+   },
+   "singapore_grand_prix": {
+    "event_name": "Singapore Grand Prix",
+    "circuit": "Marina Bay",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 32.2,
+       "air_temp_c": 29.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 35.8,
+       "air_temp_c": 30.8
+      }
+     }
+    }
+   },
+   "spanish_grand_prix": {
+    "event_name": "Spanish Grand Prix",
+    "circuit": "Barcelona",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 36.3,
+       "air_temp_c": 24.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RIC",
+       "RUS",
+       "SAI",
+       "SAR",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 41.3,
+       "air_temp_c": 24.1
+      }
+     }
+    }
+   },
+   "united_states_grand_prix": {
+    "event_name": "United States Grand Prix",
+    "circuit": "Austin",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 38.8,
+       "air_temp_c": 28.7
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BOT",
+       "COL",
+       "GAS",
+       "HUL",
+       "LAW",
+       "LEC",
+       "MAG",
+       "NOR",
+       "OCO",
+       "PER",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER",
+       "ZHO"
+      ],
+      "chassis": [
+       "A524",
+       "AMR24",
+       "C44",
+       "FW46",
+       "MCL38",
+       "RB20",
+       "SF-24",
+       "VCARB 01",
+       "VF-24",
+       "W15"
+      ],
+      "temps": {
+       "track_temp_c": 47.1,
+       "air_temp_c": 28.7
+      }
+     }
+    }
+   }
+  },
+  "2025": {
+   "abu_dhabi_grand_prix": {
+    "event_name": "Abu Dhabi Grand Prix",
+    "circuit": "Yas Island",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 28.9,
+       "air_temp_c": 25.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 30.1,
+       "air_temp_c": 26.3
+      }
+     }
+    }
+   },
+   "australian_grand_prix": {
+    "event_name": "Australian Grand Prix",
+    "circuit": "Melbourne",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 40.5,
+       "air_temp_c": 29.9
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 19.2,
+       "air_temp_c": 15.9
+      }
+     }
+    }
+   },
+   "austrian_grand_prix": {
+    "event_name": "Austrian Grand Prix",
+    "circuit": "Spielberg",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 47.2,
+       "air_temp_c": 27.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "STR",
+       "TSU"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 48.8,
+       "air_temp_c": 30.7
+      }
+     }
+    }
+   },
+   "azerbaijan_grand_prix": {
+    "event_name": "Azerbaijan Grand Prix",
+    "circuit": "Baku",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 26.9,
+       "air_temp_c": 20.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 25.0,
+       "air_temp_c": 20.5
+      }
+     }
+    }
+   },
+   "bahrain_grand_prix": {
+    "event_name": "Bahrain Grand Prix",
+    "circuit": "Sakhir",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 30.9,
+       "air_temp_c": 26.3
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 31.1,
+       "air_temp_c": 26.8
+      }
+     }
+    }
+   },
+   "belgian_grand_prix": {
+    "event_name": "Belgian Grand Prix",
+    "circuit": "Spa-Francorchamps",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 37.5,
+       "air_temp_c": 22.5
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 24.7,
+       "air_temp_c": 17.5
+      }
+     }
+    }
+   },
+   "british_grand_prix": {
+    "event_name": "British Grand Prix",
+    "circuit": "Silverstone",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 27.9,
+       "air_temp_c": 20.3
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 23.3,
+       "air_temp_c": 18.3
+      }
+     }
+    }
+   },
+   "canadian_grand_prix": {
+    "event_name": "Canadian Grand Prix",
+    "circuit": "Montr\u00e9al",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 43.3,
+       "air_temp_c": 21.3
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 49.8,
+       "air_temp_c": 24.5
+      }
+     }
+    }
+   },
+   "chinese_grand_prix": {
+    "event_name": "Chinese Grand Prix",
+    "circuit": "Shanghai",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 39.3,
+       "air_temp_c": 26.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 33.9,
+       "air_temp_c": 27.1
+      }
+     }
+    }
+   },
+   "dutch_grand_prix": {
+    "event_name": "Dutch Grand Prix",
+    "circuit": "Zandvoort",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 34.2,
+       "air_temp_c": 20.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 27.8,
+       "air_temp_c": 19.8
+      }
+     }
+    }
+   },
+   "emilia_romagna_grand_prix": {
+    "event_name": "Emilia Romagna Grand Prix",
+    "circuit": "Imola",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 39.4,
+       "air_temp_c": 23.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 41.6,
+       "air_temp_c": 24.0
+      }
+     }
+    }
+   },
+   "hungarian_grand_prix": {
+    "event_name": "Hungarian Grand Prix",
+    "circuit": "Budapest",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 41.0,
+       "air_temp_c": 28.2
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 31.5,
+       "air_temp_c": 22.0
+      }
+     }
+    }
+   },
+   "italian_grand_prix": {
+    "event_name": "Italian Grand Prix",
+    "circuit": "Monza",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 42.4,
+       "air_temp_c": 26.7
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 43.0,
+       "air_temp_c": 27.1
+      }
+     }
+    }
+   },
+   "japanese_grand_prix": {
+    "event_name": "Japanese Grand Prix",
+    "circuit": "Suzuka",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 33.6,
+       "air_temp_c": 14.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 19.6,
+       "air_temp_c": 14.5
+      }
+     }
+    }
+   },
+   "las_vegas_grand_prix": {
+    "event_name": "Las Vegas Grand Prix",
+    "circuit": "Las Vegas",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 12.6,
+       "air_temp_c": 11.7
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 17.2,
+       "air_temp_c": 16.4
+      }
+     }
+    }
+   },
+   "mexico_city_grand_prix": {
+    "event_name": "Mexico City Grand Prix",
+    "circuit": "Mexico City",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 46.45,
+       "air_temp_c": 26.3
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 50.4,
+       "air_temp_c": 26.8
+      }
+     }
+    }
+   },
+   "miami_grand_prix": {
+    "event_name": "Miami Grand Prix",
+    "circuit": "Miami Gardens",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 40.2,
+       "air_temp_c": 28.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 37.3,
+       "air_temp_c": 26.5
+      }
+     }
+    }
+   },
+   "monaco_grand_prix": {
+    "event_name": "Monaco Grand Prix",
+    "circuit": "Monaco",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 41.1,
+       "air_temp_c": 21.1
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 43.2,
+       "air_temp_c": 22.5
+      }
+     }
+    }
+   },
+   "qatar_grand_prix": {
+    "event_name": "Qatar Grand Prix",
+    "circuit": "Lusail",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 25.7,
+       "air_temp_c": 20.6
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 27.6,
+       "air_temp_c": 22.2
+      }
+     }
+    }
+   },
+   "sao_paulo_grand_prix": {
+    "event_name": "S\u00e3o Paulo Grand Prix",
+    "circuit": "S\u00e3o Paulo",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 40.9,
+       "air_temp_c": 26.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 30.9,
+       "air_temp_c": 17.4
+      }
+     }
+    }
+   },
+   "saudi_arabian_grand_prix": {
+    "event_name": "Saudi Arabian Grand Prix",
+    "circuit": "Jeddah",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 36.95,
+       "air_temp_c": 29.25
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "DOO",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 37.3,
+       "air_temp_c": 29.9
+      }
+     }
+    }
+   },
+   "singapore_grand_prix": {
+    "event_name": "Singapore Grand Prix",
+    "circuit": "Marina Bay",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 34.9,
+       "air_temp_c": 29.8
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 33.9,
+       "air_temp_c": 29.2
+      }
+     }
+    }
+   },
+   "spanish_grand_prix": {
+    "event_name": "Spanish Grand Prix",
+    "circuit": "Barcelona",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 47.8,
+       "air_temp_c": 29.3
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 48.0,
+       "air_temp_c": 29.0
+      }
+     }
+    }
+   },
+   "united_states_grand_prix": {
+    "event_name": "United States Grand Prix",
+    "circuit": "Austin",
+    "sessions": {
+     "Q": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 44.4,
+       "air_temp_c": 34.0
+      }
+     },
+     "R": {
+      "drivers": [
+       "ALB",
+       "ALO",
+       "ANT",
+       "BEA",
+       "BOR",
+       "COL",
+       "GAS",
+       "HAD",
+       "HAM",
+       "HUL",
+       "LAW",
+       "LEC",
+       "NOR",
+       "OCO",
+       "PIA",
+       "RUS",
+       "SAI",
+       "STR",
+       "TSU",
+       "VER"
+      ],
+      "chassis": [
+       "A525",
+       "AMR25",
+       "C45",
+       "FW47",
+       "MCL39",
+       "RB21",
+       "SF-25",
+       "VCARB 02",
+       "VF-25",
+       "W16"
+      ],
+      "temps": {
+       "track_temp_c": 45.8,
+       "air_temp_c": 28.9
+      }
+     }
+    }
+   }
+  }
+ }
+}

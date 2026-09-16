@@ -1,0 +1,65 @@
+data:
+  gold: ../data/gold/features.parquet
+  train_conditions:
+  - dry
+  effort_classes:
+  - push
+  - moderate
+  gap_tolerance_s: 0.05
+  exclude_unstable_races: true
+  holdout_event: miami_grand_prix
+  clean_air_gap_s: 2.5
+  gate_effort:
+  - push
+features:
+  numeric:
+  - tyre_life
+  - lap_number
+  - track_temp_c
+  - air_temp_c
+  - lap_effort_index
+  - gap_ahead_s
+  - segment_length_m
+  - segment_min_radius_m
+  - segment_reference_s
+  categorical:
+  - segment_kind
+  - session
+  - compound
+  - fresh_tyre
+  - driver
+  - chassis
+  - season
+  - segment_sector
+  - segment_is_kink
+level1:
+  backend: auto
+  quantiles:
+  - 0.1
+  - 0.5
+  - 0.9
+  n_folds: 5
+  params:
+    n_estimators: 600
+    learning_rate: 0.03
+    num_leaves: 31
+    min_child_samples: 200
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_lambda: 1.0
+level2:
+  ridge_alpha: 1.0
+  bootstrap: 200
+acceptance:
+  segment_mae_s: 0.15
+  lap_mae_vs_noise_floor: 1.25
+  lap_skill_min: 0.35
+  unseen_track_lap_skill_min: 0.25
+  coverage_80:
+  - 0.7
+  - 0.9
+  beat_ridge: true
+  monotonic:
+    tyre_life_up_slower: true
+    lap_number_up_faster_in_race: true
+registry: ../data/artifacts/models

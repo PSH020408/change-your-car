@@ -11,7 +11,7 @@ from app.schemas import domain as S
 from pipeline.physics.modifiers import PhysicsConfig
 
 GRADE_NOTES = {
-    "A": "learned from data (66 sessions); interval from the model",
+    "A": "learned from data (184 Q/R sessions, 2022-25); interval from the model",
     "B": "physics, coefficient size checked against our own data",
     "C": "physics, literature value only - wide band, cannot be verified with public data",
 }
@@ -95,7 +95,14 @@ def build(req: S.SimulationRequest, b, segs: list[S.SegmentDelta], lap: S.LapSum
     if env.tyre_life is not None and b.lap.get("tyre_life") is not None and env.tyre_life != b.lap["tyre_life"]:
         notes.append(N(severity="info", channel="tyre",
                        message=f"Tyre age {b.lap['tyre_life']} -> {env.tyre_life} laps: {lap.ml_s:+.3f} s from the model "
-                               f"(learned from {'66' if predictor else 'no'} sessions)."))
+                               f"(learned from {'184' if predictor else 'no'} sessions)."))
+        # Trees cannot extrapolate: qualifying laps never run tyres past ~8 laps, so a
+        # 20-lap tyre on a Q baseline is answered from the nearest thing the model saw.
+        if str(b.doc.get("session", "")).upper() == "Q" and env.tyre_life > 8:
+            notes.append(N(severity="warning", channel="model",
+                           message=f"Tyre age {env.tyre_life} laps on a QUALIFYING baseline: qualifying data never runs tyres past ~8 laps, "
+                                   f"so the model is extrapolating and will understate degradation.",
+                           suggestion="For tyre degradation pick a Race lap as the baseline — that is where old tyres were actually driven."))
     if env.compound is not None and b.lap.get("compound") and env.compound.value != b.lap["compound"]:
         notes.append(N(severity="info", channel="tyre", message=f"Compound {b.lap['compound']} -> {env.compound.value}: effect from the model."))
     if env.track_temp_c is not None and b.lap.get("track_temp_c") is not None:

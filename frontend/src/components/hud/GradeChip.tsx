@@ -1,7 +1,7 @@
 import type { Grade } from "@/lib/types";
 
 const NOTE: Record<Grade, string> = {
-  A: "learned from data (66 sessions); interval from the model",
+  A: "learned from data (184 Q/R sessions, 2022–25); interval from the model",
   B: "physics, coefficient checked on our data; interval from that check",
   C: "physics, literature value only; wide band, not verifiable with public data",
 };

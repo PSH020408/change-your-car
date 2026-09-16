@@ -127,8 +127,12 @@ def test_http_contract(engine, tmp_path, monkeypatch):
     from fastapi.testclient import TestClient
     from app import main
     from app.core import state
+    # Depends() holds the ORIGINAL function object: key the override on it
+    # before patching the module attribute (the first version patched first
+    # and keyed the override on the lambda, so the real store answered)
+    original = state.get_engine
+    main.app.dependency_overrides[original] = lambda: engine
     monkeypatch.setattr(state, "get_engine", lambda: engine)
-    main.app.dependency_overrides[state.get_engine] = lambda: engine
     c = TestClient(main.app)
     assert c.get("/api/meta/seasons").json() == [2024]
     r = c.get("/api/baseline", params={"season": 2024, "event": "toy_grand_prix", "driver": "VER"})
@@ -141,3 +145,4 @@ def test_http_contract(engine, tmp_path, monkeypatch):
     assert c.post("/api/simulate", json={"baseline": {"season": 2024, "event": "toy_grand_prix", "driver": "ZZZ"}}).status_code == 404
     assert c.post("/api/simulate", json={"baseline": {"season": 2024, "event": "toy_grand_prix", "driver": "VER"},
                                          "setup": {"rear_wing": 1.7}}).status_code == 422
+    main.app.dependency_overrides.pop(original, None)

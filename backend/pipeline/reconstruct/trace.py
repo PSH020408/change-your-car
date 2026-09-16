@@ -45,7 +45,13 @@ def integrate_lap_time(speed_kph: np.ndarray, distance_m: np.ndarray) -> float:
 
 
 def _segment_slices(distance_m: np.ndarray, segments: list[dict]) -> list[tuple[int, int]]:
-    """Index range [i0, i1) of each segment on the grid (last segment may wrap)."""
+    """Index range [i0, i1) of each segment's SAMPLES on the grid.
+
+    For TIME, use `_tiled(i0, i1, n)`: the interval from a segment's last
+    sample to the next segment's first sample belongs to nobody otherwise,
+    and 23 such straddles at 0.24 s each made the lap total disagree with
+    the sum of segments by ~0.05 s on real telemetry.
+    """
     out = []
     lap_len = max(float(s["end_m"]) for s in segments)
     for s in segments:
@@ -57,6 +63,11 @@ def _segment_slices(distance_m: np.ndarray, segments: list[dict]) -> list[tuple[
         idx = np.flatnonzero(mask)
         out.append((int(idx[0]), int(idx[-1]) + 1) if len(idx) else (0, 0))
     return out
+
+
+def _tiled(i0: int, i1: int, n: int) -> tuple[int, int]:
+    """Sample range whose intervals tile the lap: include the next segment's first sample."""
+    return i0, min(i1 + 1, n)
 
 
 def shape_weights(v: np.ndarray, kind: str) -> np.ndarray:
@@ -81,8 +92,13 @@ def warp_segment(v_kph: np.ndarray, d_m: np.ndarray, target_time_s: float, w: np
 
     Time is monotonic in k, so bisection is exact to `tol_s`. k > 0 slows
     the segment, k < 0 speeds it up; the scale never drops below
-    MIN_SPEED_SCALE.
+    MIN_SPEED_SCALE. `w` may be one sample shorter than `v_kph`: the
+    trailing sample then belongs to the next segment and is held fixed
+    (weight 0) while its interval still counts toward this segment's time.
     """
+    if len(w) < len(v_kph):
+        w = np.concatenate([w, np.zeros(len(v_kph) - len(w))])
+
     def time_at(k: float) -> float:
         return integrate_lap_time(v_kph / np.maximum(1.0 + k * w, MIN_SPEED_SCALE), d_m)
     lo, hi = -0.75, 3.0                             # 1+k*w in [0.25, 4]
@@ -111,17 +127,19 @@ def warp_speed_trace(distance_m: np.ndarray, speed_kph: np.ndarray, segments: li
     v = np.asarray(speed_kph, float).copy()
     out = v.copy()
     rows = []
+    n = len(d)
     for (i0, i1), s in zip(_segment_slices(d, segments), segments):
         idx = int(s["index"])
         delta = float(deltas_s[idx] if isinstance(deltas_s, dict) else deltas_s[idx])
         if i1 - i0 < 3:
             rows.append({"segment_index": idx, "kind": s["kind"], "baseline_s": 0.0, "requested_s": delta,
                          "warped_s": 0.0}); continue
-        seg_v, seg_d = v[i0:i1], d[i0:i1]
-        base_t = integrate_lap_time(seg_v, seg_d)
-        w = shape_weights(seg_v, str(s["kind"]))
-        new_v, got = warp_segment(seg_v, seg_d, base_t + delta, w)
-        out[i0:i1] = new_v
+        t0, t1 = _tiled(i0, i1, n)
+        seg_v, seg_d = out[t0:t1].copy(), d[t0:t1]          # `out`: earlier segments already warped
+        base_t = integrate_lap_time(v[t0:t1], seg_d)
+        w = shape_weights(v[i0:i1], str(s["kind"]))
+        new_v, got = warp_segment(seg_v, seg_d, integrate_lap_time(seg_v, seg_d) + delta, w)
+        out[i0:i1] = new_v[: i1 - i0]
         rows.append({"segment_index": idx, "kind": s["kind"], "baseline_s": base_t, "requested_s": delta,
                      "warped_s": got - base_t})
     return out, pd.DataFrame(rows)
@@ -360,8 +378,10 @@ def reconstruct(baseline: pd.DataFrame, segments: list[dict], deltas_s: dict[int
 
     # per-segment achieved time after clamping
     ach = []
+    n = len(d)
     for (i0, i1), s in zip(_segment_slices(d, segments), segments):
-        ach.append(integrate_lap_time(v_fin[i0:i1], d[i0:i1]) - integrate_lap_time(v0[i0:i1], d[i0:i1])
+        t0, t1 = _tiled(i0, i1, n)
+        ach.append(integrate_lap_time(v_fin[t0:t1], d[t0:t1]) - integrate_lap_time(v0[t0:t1], d[t0:t1])
                    if i1 - i0 >= 3 else 0.0)
     rep["achieved_s"] = ach
     rep["residual_s"] = rep["achieved_s"] - rep["requested_s"]

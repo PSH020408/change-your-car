@@ -117,7 +117,8 @@ class Engine:
         rows = []
         for (i0, i1), s in zip(T._segment_slices(d, b.segments), b.segments):
             vv = v[i0:i1]
-            t = T.integrate_lap_time(vv, d[i0:i1]) if i1 - i0 >= 3 else 0.0
+            t0, t1 = T._tiled(i0, i1, len(d))
+            t = T.integrate_lap_time(v[t0:t1], d[t0:t1]) if i1 - i0 >= 3 else 0.0
             rows.append({"segment_index": s["index"], "segment_kind": s["kind"], "segment_time_s": t,
                          "speed_min_kph": float(vv.min()) if len(vv) else np.nan,
                          "speed_mean_kph": float(vv.mean()) if len(vv) else np.nan,

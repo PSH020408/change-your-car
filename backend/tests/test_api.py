@@ -107,6 +107,7 @@ def test_wet_weather_without_a_model_is_physics_only_and_says_so(engine):
                               environment=S.Environment(weather=S.Weather.WET, track_temp_c=20.0))
     r = engine.simulate(req)
     assert r.lap.delta_s > 1.0, "wet grip x0.65 costs seconds"
+    assert r.lap.level2_applied is False
     assert r.physics.grip_multiplier == pytest.approx(0.65)
     channels = {n.channel for n in r.engineer_log}
     assert "weather" in channels and "model" in channels     # no registered model -> conditions ignored, said aloud

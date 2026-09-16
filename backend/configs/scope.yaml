@@ -21,7 +21,11 @@ warm:
   # used by the simulator (no representative push laps, no race fuel) and the
   # full 460-session set was projected at 31 GB. Add FP3 back here if the
   # P8 expansion wants it.
-  sessions: ["Q", "SQ", "S", "R"]
+  # DECISION (2026-09-16, P7 done): the simulator is Q + R of the ground-effect
+  # era, full stop. Sprint (S/SQ) and practice are out — few sessions, rules
+  # that changed every season, fuel loads unknown. Already-cached S/SQ stay on
+  # disk unused.
+  sessions: ["Q", "R"]
   load:
     laps: true
     telemetry: true
@@ -61,6 +65,10 @@ recon:
 # fuel-corrected pace is unreliable. Scope can widen later without
 # re-downloading anything — that is the point of collecting broadly (D8).
 # ---------------------------------------------------------------------------
+# NOTE: `events` below is the ORIGINAL design rationale, kept for the record.
+# `ingest.run` never filtered on it (only `--pilot` filters by event), so the
+# lake holds every cached Q/R session of the era. The 2026-09-16 expansion
+# made that explicit: 184 Q/R sessions (92 events x 2), not 48.
 train:
   sessions: ["Q", "R"]
   seasons: [2022, 2023, 2024, 2025]
@@ -71,7 +79,7 @@ train:
     - Hungaroring
     - Monaco
     - Bahrain Grand Prix
-  expansion_candidates: ["FP3", "S", "SQ"]
+  expansion_candidates: []      # S/SQ/FP ruled out (see warm.sessions)
 
 # Modelling pilot — the slice P1-P5 are built and validated against
 pilot:

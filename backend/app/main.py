@@ -5,6 +5,7 @@ config), four routers, one contract: app/schemas/domain.py.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.routers import baseline, engineer_log, meta, simulate
@@ -36,3 +37,9 @@ def health() -> dict:
     e = get_engine()
     return {"status": "ok", "version": app.version, "model_version": e.model_version,
             "seasons": e.seasons()}
+
+
+# The built HUD, when present (production container). Mounted LAST so /api/* and
+# /health keep precedence; html=True serves index.html for "/".
+if settings.static_dir.is_dir():
+    app.mount("/", StaticFiles(directory=str(settings.static_dir), html=True), name="hud")

@@ -1,4 +1,4 @@
-.PHONY: expand ingest-only segment-fix segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
+.PHONY: gcp-setup deploy deploy-url docker expand ingest-only segment-fix segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
 
 setup: setup-be setup-fe
 
@@ -122,7 +122,40 @@ print(f'{len(fs)} circuit(s) segmented');\
 [print(f\"  {d['season']} {d['event']:<30s} {d['counts']['turns']:>3} turns  {d['geometry']['lap_length_m']:>7.0f} m  ref {d['reference_lap']['session']}\") for d in (json.load(open(f)) for f in fs)]" \
 	2>/dev/null || echo "no silver tracks yet — run 'make segment'"
 
-silver-clean:
+silver-# ---------------------------------------------------------------------------
+# P8 — deploy: one Cloud Run container (FastAPI + static HUD, same origin).
+#   make gcp-setup   once: enable APIs, set project/region
+#   make deploy      build in Cloud Build from this tree, deploy, print the URL
+#   make docker      local build + run on :8080 (needs Docker Desktop)
+# Spend guard: --max-instances 2 caps the bill even if traffic explodes;
+# --min-instances 0 means $0 while nobody is looking (cold start ~3 s).
+# ---------------------------------------------------------------------------
+GCP_PROJECT ?= f1-virtual-sim
+GCP_REGION  ?= asia-northeast3
+SERVICE     ?= change-your-car
+
+gcp-setup:
+	gcloud config set project $(GCP_PROJECT)
+	gcloud config set run/region $(GCP_REGION)
+	gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+deploy:
+	@mkdir -p data/logs
+	python3 scripts/deploy_ignore.py
+	gcloud run deploy $(SERVICE) --source . --region $(GCP_REGION) --project $(GCP_PROJECT) \
+		--allow-unauthenticated --port 8080 --cpu 1 --memory 1Gi \
+		--min-instances 0 --max-instances 2 --concurrency 40 --timeout 60 2>&1 | tee data/logs/deploy.log
+	@echo && gcloud run services describe $(SERVICE) --region $(GCP_REGION) --project $(GCP_PROJECT) --format='value(status.url)'
+
+deploy-url:
+	@gcloud run services describe $(SERVICE) --region $(GCP_REGION) --project $(GCP_PROJECT) --format='value(status.url)'
+
+docker:
+	python3 scripts/deploy_ignore.py
+	docker build -t $(SERVICE) .
+	docker run --rm -p 8080:8080 $(SERVICE)
+
+clean:
 	rm -rf data/silver
 
 # --- P2-5..P2-7 Feature store ------------------------------------------------

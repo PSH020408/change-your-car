@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     api_port: int = 8000
     api_cors_origins: str = "http://localhost:3000"
     log_level: str = "INFO"
+    # Built HUD (next build && output: "export"). Served at "/" when the directory exists,
+    # so one container = one origin = no CORS in production. Absent in development.
+    static_dir: Path = Path("../frontend/out")
 
     @property
     def cors_list(self) -> list[str]:

@@ -122,7 +122,8 @@ def test_unknown_driver_and_lap_are_404_material(engine):
 
 
 def test_http_contract(engine, tmp_path, monkeypatch):
-    fastapi = pytest.importorskip("fastapi")
+    pytest.importorskip("fastapi")
+    pytest.importorskip("httpx", reason="fastapi.testclient needs httpx: .venv/bin/pip install httpx")
     from fastapi.testclient import TestClient
     from app import main
     from app.core import state

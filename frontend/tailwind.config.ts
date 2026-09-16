@@ -1,9 +1,9 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Cyber-Engineering design tokens.
- * Slate substrate + a strictly limited neon accent set — neon is *data*,
- * never decoration: every accent colour below carries meaning in the HUD.
+ * Design tokens — Direction A "Console" (claude.ai design canvas, 2026-09-16).
+ * Slate substrate; colour is DATA, never decoration. The chart colours passed
+ * the data-viz palette validator on the dark surface (CVD-safe, >= 3:1).
  */
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
@@ -11,25 +11,36 @@ const config: Config = {
     extend: {
       colors: {
         hud: {
-          void: "#05070B",     // page ground
-          panel: "#0B111A",    // panel fill
-          line: "#1B2635",     // hairline borders
-          muted: "#5A6B80",    // secondary text
-          text: "#C9D6E4",     // primary text
+          void: "#0f1216",     // page ground
+          bar: "#12161b",      // top bar
+          panel: "#151a20",    // cards
+          inset: "#1b2129",    // chips, bars
+          line: "#232a33",     // hairlines
+          line2: "#2b333e",    // stronger hairline / sliders
+          muted: "#8b93a3",    // secondary text
+          dim: "#5b6472",      // tertiary text
+          text: "#e6e8ec",     // primary text
+          soft: "#c3c8d1",     // body text
         },
-        signal: {
-          cyan: "#22D3EE",     // baseline / real telemetry
-          amber: "#FBBF24",    // simulated telemetry
-          lime: "#84CC16",     // time GAINED  (negative delta)
-          rose: "#FB7185",     // time LOST    (positive delta)
-          violet: "#A78BFA",   // DRS / special states
+        series: {
+          real: "#c3c2b7",     // the real lap (neutral reference)
+          sim: "#3987e5",      // the simulated lap
+        },
+        status: {
+          gain: "#0ca30c",     // time gained (negative delta)
+          loss: "#ec835a",     // time lost (positive delta)
+          warn: "#e0a54a",
+          critical: "#d03b3b",
+        },
+        grade: {
+          a: "#4fc46a", abg: "#0f2a1a", abd: "#1f5a33",
+          b: "#6aa6f0", bbg: "#13233a", bbd: "#234a7a",
+          c: "#e0a54a", cbg: "#2a2113", cbd: "#5a4620",
         },
       },
       fontFamily: {
-        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-      },
-      boxShadow: {
-        glow: "0 0 0 1px rgba(34,211,238,0.25), 0 0 24px -6px rgba(34,211,238,0.45)",
+        sans: ["var(--font-barlow)", "Helvetica Neue", "Arial", "sans-serif"],
+        mono: ["var(--font-plex-mono)", "Menlo", "Consolas", "monospace"],
       },
     },
   },

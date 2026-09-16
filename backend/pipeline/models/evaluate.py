@@ -49,14 +49,22 @@ def lap_metrics(lap_uid: pd.Series, y: np.ndarray, q: pd.DataFrame) -> dict:
 
 
 def clean_push_mask(df: pd.DataFrame, cfg: dict) -> np.ndarray:
-    """The HUD's population: push laps with clean air at the line."""
+    """The HUD's population: push laps with clean air at the line.
+
+    The gap test applies to RACE laps only. In qualifying the car that
+    crossed the line 1.5 s ahead is usually on an out-lap or a cool-down
+    and moves aside; drivers manage their own gap. Applying the race rule
+    there threw away most qualifying push laps (2024 Bahrain Q: every one
+    of Verstappen's).
+    """
     d = cfg.get("data", {})
     ok = np.ones(len(df), dtype=bool)
     if "lap_effort_class" in df:
         ok &= df["lap_effort_class"].isin(d.get("gate_effort", ["push"])).to_numpy()
     if "gap_ahead_s" in df and d.get("clean_air_gap_s") is not None:
         gap = pd.to_numeric(df["gap_ahead_s"], errors="coerce")
-        ok &= (gap.isna() | (gap >= float(d["clean_air_gap_s"]))).to_numpy()
+        is_race = df["session"].astype(str).eq("R").to_numpy() if "session" in df else np.ones(len(df), bool)
+        ok &= (~is_race) | (gap.isna() | (gap >= float(d["clean_air_gap_s"]))).to_numpy()
     return ok
 
 

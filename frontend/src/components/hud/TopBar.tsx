@@ -3,26 +3,13 @@ import useSWR from "swr";
 import { api, fmtLap } from "@/lib/api";
 import { useHud } from "@/lib/store";
 import type { BaselineResponse } from "@/lib/types";
+import { Dropdown } from "./Dropdown";
 
 /** The HUD's name. Swap the asterisks out if the venue allows it. */
 export const TITLE = "CHANGE YOUR F***ING CAR";
 export const SUBTITLE = "F1 Virtual Sim · 2022–2025 ground-effect era";
 
 const SESSION_LABEL: Record<string, string> = { Q: "Qualifying", SQ: "Sprint Quali", S: "Sprint", R: "Race" };
-
-function Select<T extends string | number>({ label, value, options, onChange, disabled }: {
-  label: string; value: T; options: { value: T; label: string }[]; onChange: (v: string) => void; disabled?: boolean;
-}) {
-  return (
-    <label className="flex flex-col gap-0.5 min-w-0">
-      <span className="label">{label}</span>
-      <select value={String(value)} disabled={disabled || options.length === 0} onChange={(e) => onChange(e.target.value)}
-        className="h-7 bg-hud-inset border border-hud-line2 rounded px-1.5 text-[12px] text-hud-text font-mono focus:outline-none focus:border-series-sim disabled:opacity-50 max-w-[200px] truncate">
-        {options.map((o) => <option key={String(o.value)} value={String(o.value)}>{o.label}</option>)}
-      </select>
-    </label>
-  );
-}
 
 /**
  * Docking bar: pick season → event → session → driver → lap, and read the
@@ -60,16 +47,16 @@ export function TopBar({ baseline, error, busy }: { baseline?: BaselineResponse;
       </div>
 
       <div className="flex items-end gap-3 shrink-0">
-        <Select label="season" value={ref.season} onChange={onSeason}
+        <Dropdown label="season" value={ref.season} width={84} onChange={(v) => onSeason(String(v))}
           options={(seasons.data ?? [ref.season]).map((s) => ({ value: s, label: String(s) }))} />
-        <Select label="event" value={ref.event} onChange={onEvent}
-          options={(events.data ?? [{ event: ref.event, event_name: ref.event }]).map((e) => ({ value: e.event, label: e.event_name }))} />
-        <Select label="session" value={ref.session} onChange={(v) => setRef({ session: v as typeof ref.session, lap: "representative" })}
+        <Dropdown label="event" value={ref.event} width={210} onChange={onEvent}
+          options={(events.data ?? [{ event: ref.event, event_name: ref.event, circuit: null, sessions: [] }]).map((e) => ({ value: e.event, label: e.event_name, hint: e.circuit ?? undefined }))} />
+        <Dropdown label="session" value={ref.session} width={120} onChange={(v) => setRef({ session: v as typeof ref.session, lap: "representative" })}
           options={sessions.map((s) => ({ value: s, label: SESSION_LABEL[s] ?? s }))} />
-        <Select label="driver" value={ref.driver} onChange={(v) => setRef({ driver: v, lap: "representative" })}
+        <Dropdown label="driver" value={ref.driver} width={150} onChange={(v) => setRef({ driver: v, lap: "representative" })}
           options={(drivers.data ?? [{ driver: ref.driver, team: null, chassis: null, power_unit: null, laps: 0, representative_lap_time_s: null }])
             .map((d) => ({ value: d.driver, label: d.chassis ? `${d.driver} · ${d.chassis}` : d.driver }))} />
-        <Select label="lap" value={ref.lap} onChange={(v) => setRef({ lap: v })}
+        <Dropdown label="lap" value={ref.lap} width={170} onChange={(v) => setRef({ lap: v })}
           options={[
             { value: "representative", label: "representative" },
             { value: "fastest", label: "fastest" },

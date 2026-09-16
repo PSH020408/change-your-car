@@ -137,3 +137,26 @@ def test_the_envelope_is_anchored_on_the_baseline():
     _, anchored = T.clamp_to_gg_envelope(d, v0, k, env, baseline_kph=v0)
     assert sum(free.values()) > 0, "the toy lap does exceed the bare model somewhere"
     assert sum(anchored.values()) == 0
+
+
+def test_time_axis_is_scaled_to_the_official_lap_time():
+    base, segs = _lap()
+    t_int = T.integrate_lap_time(base["speed_kph"].to_numpy(), base["distance_m"].to_numpy())
+    r = T.reconstruct(base, segs, [0.0] * 5, official_lap_time_s=t_int * 1.005)
+    assert r.time_scale == pytest.approx(1.005)
+    assert r.trace["time_s"].iloc[-1] == pytest.approx(t_int * 1.005, rel=0.02)
+    r2 = T.reconstruct(base, segs, [0, 0.4, 0, 0, 0], official_lap_time_s=t_int * 1.005)
+    assert r2.achieved_delta_s == pytest.approx(0.4, abs=0.01), "deltas are not scaled"
+
+
+def test_anchor_uses_the_same_two_point_acceleration_as_the_passes():
+    """A sharp braking onset: central differences under-read it and the
+    baseline was clamped on real telemetry (2024 Bahrain Q: 4 samples)."""
+    d = np.arange(0, 500, 10.0)
+    v = np.where(d < 200, 300.0, 300.0 - 3.0 * (d - 200))        # hard step into braking
+    base = pd.DataFrame({"distance_m": d, "speed_kph": v, "brake_on": d >= 200})
+    segs = [dict(index=0, kind="straight", start_m=0, end_m=200, peak_curvature_1pm=0.0, wraps_start_finish=False),
+            dict(index=1, kind="low_speed_corner", start_m=200, end_m=500, peak_curvature_1pm=1 / 400, wraps_start_finish=False)]
+    r = T.reconstruct(base, segs, [0.0, 0.0])
+    assert sum(r.clamps.values()) == 0
+    assert np.allclose(r.trace["speed_kph"], v, atol=0.05)

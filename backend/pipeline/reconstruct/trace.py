@@ -227,8 +227,12 @@ def clamp_to_gg_envelope(distance_m: np.ndarray, speed_kph: np.ndarray, curvatur
     ds = np.diff(d)
     k = effective_curvature(curvature_1pm, baseline_kph, env, headroom)
     if baseline_kph is not None:
-        a0 = np.abs(longitudinal_accel(d, np.asarray(baseline_kph, float)))
-        a0_mid = 0.5 * (a0[1:] + a0[:-1]) * (1.0 + headroom)
+        # the baseline's own per-interval acceleration, computed EXACTLY the way
+        # the passes below test it (two-point, v^2 difference over 2 ds) - a
+        # central-difference estimate under-reads sharp braking onsets and
+        # let the baseline itself be clamped on real telemetry
+        v0 = np.asarray(baseline_kph, float) / KPH
+        a0_mid = np.abs(v0[1:] ** 2 - v0[:-1] ** 2) / (2.0 * np.maximum(ds, 1e-6)) * (1.0 + headroom)
     else:
         a0_mid = np.zeros(len(ds))
     v_lat = env.max_corner_speed(k)
@@ -318,6 +322,18 @@ class Reconstruction:
     requested_delta_s: float
     achieved_delta_s: float
     clamps: dict = field(default_factory=dict)
+    official_lap_time_s: float | None = None
+
+    @property
+    def time_scale(self) -> float:
+        """Official lap time / integrated baseline time. The 240 ms samples
+        miss the partial intervals just after and just before the line
+        (~0.5 s on a 90 s lap, -0.5%); the HUD's time axis is scaled by
+        this so the baseline reads its official time. Deltas are
+        unaffected: both traces carry the same gap."""
+        if not self.official_lap_time_s or self.lap_time_baseline_s <= 0:
+            return 1.0
+        return float(self.official_lap_time_s / self.lap_time_baseline_s)
 
     @property
     def integration_error_s(self) -> float:
@@ -328,7 +344,7 @@ class Reconstruction:
 
 def reconstruct(baseline: pd.DataFrame, segments: list[dict], deltas_s: dict[int, float] | list[float],
                 cfg: PhysicsConfig | None = None, fuel_kg: float = 40.0, grip_scale: float = 1.0,
-                clamp: bool = True) -> Reconstruction:
+                clamp: bool = True, official_lap_time_s: float | None = None) -> Reconstruction:
     """Baseline telemetry (distance_m, speed_kph, brake_on, gear, drs_raw ...)
     + per-segment deltas -> simulated trace with a per-segment audit."""
     base = baseline.sort_values("distance_m").drop_duplicates("distance_m").reset_index(drop=True)
@@ -357,6 +373,9 @@ def reconstruct(baseline: pd.DataFrame, segments: list[dict], deltas_s: dict[int
     vm = np.concatenate([[v_ms[0]], 0.5 * (v_ms[1:] + v_ms[:-1])])
     ch.insert(1, "time_s", np.cumsum(ds / np.maximum(vm, 1.0)))
     t_base, t_new = integrate_lap_time(v0, d), integrate_lap_time(v_fin, d)
-    return Reconstruction(trace=ch, segments=rep, lap_time_baseline_s=t_base, lap_time_s=t_new,
-                          requested_delta_s=float(rep["requested_s"].sum()), achieved_delta_s=t_new - t_base,
-                          clamps=clamps)
+    out = Reconstruction(trace=ch, segments=rep, lap_time_baseline_s=t_base, lap_time_s=t_new,
+                         requested_delta_s=float(rep["requested_s"].sum()), achieved_delta_s=t_new - t_base,
+                         clamps=clamps, official_lap_time_s=official_lap_time_s)
+    if official_lap_time_s:
+        out.trace["time_s"] = out.trace["time_s"] * out.time_scale
+    return out

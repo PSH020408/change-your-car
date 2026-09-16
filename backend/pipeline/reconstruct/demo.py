@@ -99,21 +99,24 @@ def main() -> int:
     # 1 — integration vs official lap time
     t_int = T.integrate_lap_time(base["speed_kph"].to_numpy(float), base["distance_m"].to_numpy(float))
     print(f"1 integrate: {t_int:.3f} s vs official {lap['lap_time_s']:.3f} s  "
-          f"(diff {t_int - lap['lap_time_s']:+.3f} s, {100 * (t_int / lap['lap_time_s'] - 1):+.2f}%)")
+          f"(diff {t_int - lap['lap_time_s']:+.3f} s, {100 * (t_int / lap['lap_time_s'] - 1):+.2f}%  "
+          f"= the two partial 240 ms intervals at the line; the HUD time axis is scaled by official/integrated)")
 
     # 2 — zero delta
-    r0 = T.reconstruct(base, segments, [0.0] * len(segments))
+    r0 = T.reconstruct(base, segments, [0.0] * len(segments), official_lap_time_s=float(lap["lap_time_s"]))
     agree = float(np.mean(r0.trace["brake_on"].to_numpy() == base["brake_on"].to_numpy().astype(bool)))
     thr_mae = float(np.mean(np.abs(r0.trace["throttle_pct"].to_numpy() - pd.to_numeric(base["throttle_pct"], errors="coerce").fillna(0).to_numpy())))
+    tiny = int((r0.segments["baseline_s"] == 0).sum())
     print(f"2 zero delta: achieved {r0.achieved_delta_s:+.4f} s  clamps {r0.clamps}  "
           f"brake agreement {agree:.1%}  throttle MAE {thr_mae:.1f} pts  "
-          f"DRS open {int(r0.trace['drs_open'].sum())} samples")
+          f"DRS open {int(r0.trace['drs_open'].sum())} samples  "
+          f"({tiny} segments shorter than 3 samples pass through unwarped; their deltas are ~0)")
 
     # 3 — a physics delta: rear wing 0.85, everything else baseline
     segs_df = segment_table(base, segments)
     phys = D.lap_physics_delta(segs_df, M.SetupInput(rear_wing=0.85), session=a.session)
     deltas = dict(zip(phys["segment_index"].astype(int), phys["physics_delta_s"].astype(float)))
-    r = T.reconstruct(base, segments, deltas)
+    r = T.reconstruct(base, segments, deltas, official_lap_time_s=float(lap["lap_time_s"]))
     print(f"3 rear wing 0.85: requested {r.requested_delta_s:+.3f} s  achieved {r.achieved_delta_s:+.3f} s  "
           f"integration error {r.integration_error_s:.4f} s  clamps {r.clamps}")
     rep = r.segments.copy()

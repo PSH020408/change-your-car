@@ -25,4 +25,5 @@ orjson>=3.10
 
 # --- Dev ---
 pytest>=8.3
+httpx>=0.27          # fastapi.testclient (make api-smoke, tests/test_api.py)
 ruff>=0.6

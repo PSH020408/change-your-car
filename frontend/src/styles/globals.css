@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html, body { height: 100%; }
+body { @apply bg-hud-void text-hud-text font-sans text-[13px] antialiased; }
+* { scrollbar-width: thin; scrollbar-color: #2b333e transparent; }
+
+.label { @apply text-[10px] tracking-[0.12em] uppercase text-hud-muted font-semibold; }
+.card { @apply bg-hud-panel border border-hud-line rounded-md; }
+.chip { @apply inline-flex items-center h-[22px] px-2 rounded border border-hud-line2 bg-hud-inset text-[11px] text-hud-soft; }
+.chip-on { @apply border-series-sim text-hud-text; }
+.gain { color: #0ca30c; }
+.loss { color: #ec835a; }
+
+input[type="range"].slider { @apply w-full h-1 appearance-none bg-hud-line2 rounded cursor-pointer; }
+input[type="range"].slider::-webkit-slider-thumb { -webkit-appearance: none; @apply w-[14px] h-[14px] rounded-full bg-hud-text border-2 border-series-sim; }
+input[type="range"].slider::-moz-range-thumb { @apply w-[14px] h-[14px] rounded-full bg-hud-text border-2 border-series-sim; }
+input[type="range"].slider.env::-webkit-slider-thumb { @apply border-hud-muted; }
+input[type="range"].slider.env::-moz-range-thumb { @apply border-hud-muted; }

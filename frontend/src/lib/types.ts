@@ -1,94 +1,111 @@
 /**
  * Mirrors backend/app/schemas/domain.py — keep the two in lockstep.
- * Phase 4 task: generate this file from the OpenAPI schema instead.
+ * Anything the HUD draws is here; anything not here the HUD cannot know.
  */
-export type Weather = "dry" | "intermediate" | "wet";
-export type Compound = "soft" | "medium" | "hard" | "intermediate" | "wet";
-export type SegmentKind =
-  | "straight"
-  | "low_speed_corner"
-  | "medium_speed_corner"
-  | "high_speed_corner"
-  | "braking";
+export type Weather = "dry" | "inter" | "wet";
+export type Compound = "SOFT" | "MEDIUM" | "HARD" | "INTERMEDIATE" | "WET";
+export type SegmentKind = "straight" | "kink" | "low_speed_corner" | "medium_speed_corner" | "high_speed_corner";
+export type Grade = "A" | "B" | "C";
 
 export interface CarSetup {
   front_wing: number;
   rear_wing: number;
-  ride_height_front_mm: number;
-  ride_height_rear_mm: number;
-  suspension_stiffness_front: number;
-  suspension_stiffness_rear: number;
-  camber_front_deg: number;
-  camber_rear_deg: number;
-  toe_front_deg: number;
-  toe_rear_deg: number;
-  brake_bias_pct: number;
-  diff_on_throttle: number;
+  ride_height: number;
+  suspension: number;
+  suspension_split: number;
+  fuel_kg: number | null;
 }
 
 export interface Environment {
-  track_temp_c: number;
-  air_temp_c: number;
+  track_temp_c: number | null;
+  air_temp_c: number | null;
   weather: Weather;
-  track_evolution: number;
-  wind_kph: number;
-  compound: Compound;
-  fuel_kg: number;
+  compound: Compound | null;
+  tyre_life: number | null;
 }
 
-/**
- * Distance-indexed channels on the 20 m display grid.
- * Grid size is measured: car telemetry arrives at a fixed 240 ms period,
- * so raw spacing is ~20 m at 300 km/h. See docs/recon/DECISIONS.md D1.
- */
-export interface TelemetryTrace {
-  distance_m: number[];
-  speed_kph: number[];
-  throttle_pct: number[];
-  /** FastF1 gives brake as on/off, not pressure — draw a band, not a curve. */
-  brake_on: boolean[];
-  gear: number[];
-  /** Derived from the circuit's DRS zones, not from the observed channel. */
-  drs_open: boolean[];
-  /** True where the sample was interpolated — dim these spans in the HUD. */
-  interpolated: boolean[];
+export interface BaselineRef {
+  season: number;
+  event: string;
+  session: "Q" | "R" | "S" | "SQ";
+  driver: string;
+  lap: string;
+}
+
+export interface SimulationRequest {
+  baseline: BaselineRef;
+  setup: CarSetup;
+  environment: Environment;
+}
+
+export interface SegmentInfo {
+  index: number; kind: SegmentKind; start_m: number; end_m: number; length_m: number;
+  sector: number | null; min_radius_m: number | null; direction: string | null;
 }
 
 export interface SegmentDelta {
-  index: number;
-  kind: SegmentKind;
-  start_m: number;
-  end_m: number;
-  sector: 1 | 2 | 3;
-  baseline_time_s: number;
-  simulated_time_s: number;
-  delta_s: number;
-  confidence: number;
+  index: number; kind: SegmentKind; sector: number | null; baseline_time_s: number;
+  ml_s: number; ml_lo_s: number; ml_hi_s: number; level2_s: number;
+  physics_s: number; physics_lo_s: number; physics_hi_s: number;
+  total_s: number; total_lo_s: number; total_hi_s: number;
+  achieved_s: number; refused_s: number;
 }
 
-export interface PhysicsDelta {
-  downforce_delta_pct: number;
-  drag_delta_pct: number;
-  mechanical_grip_delta_pct: number;
-  tyre_thermal_grip_delta_pct: number;
-  balance_index: number;
+export interface TelemetryTrace {
+  distance_m: number[]; time_s: number[]; speed_kph: number[]; throttle_pct: number[];
+  brake_on: boolean[]; gear: number[]; drs_open: boolean[]; interpolated: boolean[];
 }
+
+export interface LapMeta {
+  lap_uid: string; driver: string; team: string | null; chassis: string | null; power_unit: string | null;
+  season: number; event: string; event_name: string; session: string; circuit: string | null;
+  lap_number: number | null; lap_time_s: number; compound: string | null; tyre_life: number | null;
+  fresh_tyre: boolean | null; track_temp_c: number | null; air_temp_c: number | null;
+  telemetry_quality: string | null; effort_class: string | null; gap_ahead_s: number | null;
+  sector_times_s: (number | null)[];
+}
+
+export interface TrackMap {
+  view_box: string; path: string; sector_boundaries_m: number[]; lap_length_m: number;
+  published_turns: number | null; measured_turns: number;
+}
+
+export interface AvailableLap {
+  lap_uid: string; lap_number: number | null; lap_time_s: number | null; compound: string | null;
+  tyre_life: number | null; effort_class: string | null; telemetry_quality: string | null; gap_ahead_s: number | null;
+}
+
+export interface BaselineResponse {
+  lap: LapMeta; trace: TelemetryTrace; segments: SegmentInfo[]; track: TrackMap;
+  available_laps: AvailableLap[]; integration_note: string;
+}
+
+export interface PhysicsState {
+  downforce_pct: number; drag_pct: number; mech_grip_pct: number; grip_multiplier: number;
+  thermal_grip_pct: number; fuel_delta_kg: number; balance_index: number; warning: string | null;
+}
+
+export interface GradeRow { control: string; grade: Grade; note: string; }
 
 export interface EngineerNote {
   severity: "info" | "warning" | "critical";
-  channel: "balance" | "tyre" | "aero" | "brakes" | "traction";
-  message: string;
-  suggestion?: string;
+  channel: "balance" | "tyre" | "aero" | "fuel" | "weather" | "model" | "physics" | "sectors";
+  message: string; suggestion: string | null;
+}
+
+export interface LapSummary {
+  baseline_lap_time_s: number; simulated_lap_time_s: number; delta_s: number; delta_lo_s: number; delta_hi_s: number;
+  ml_s: number; level2_s: number; level2_applied: boolean; physics_s: number; refused_s: number; sector_deltas_s: number[];
 }
 
 export interface SimulationResponse {
-  lap_delta_s: number;
-  sector_deltas_s: number[];
-  segments: SegmentDelta[];
-  baseline: TelemetryTrace;
-  simulated: TelemetryTrace;
-  physics: PhysicsDelta;
-  engineer_log: EngineerNote[];
-  model_version: string;
-  computed_ms: number;
+  lap: LapSummary; segments: SegmentDelta[]; baseline: TelemetryTrace; simulated: TelemetryTrace;
+  physics: PhysicsState; grades: GradeRow[]; engineer_log: EngineerNote[];
+  model_version: string; physics_version: string; computed_ms: number;
 }
+
+export interface EventInfo { event: string; event_name: string; circuit: string | null; sessions: string[]; }
+export interface DriverInfo { driver: string; team: string | null; chassis: string | null; power_unit: string | null; laps: number; representative_lap_time_s: number | null; }
+
+export const DEFAULT_SETUP: CarSetup = { front_wing: 0.5, rear_wing: 0.5, ride_height: 0.5, suspension: 0.5, suspension_split: 0.5, fuel_kg: null };
+export const DEFAULT_ENV: Environment = { track_temp_c: null, air_temp_c: null, weather: "dry", compound: null, tyre_life: null };

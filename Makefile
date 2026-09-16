@@ -1,4 +1,4 @@
-.PHONY: setup setup-be setup-fe dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
+.PHONY: setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
 
 setup: setup-be setup-fe
 
@@ -6,13 +6,19 @@ setup-be:
 	cd backend && python3 -m venv .venv && .venv/bin/pip install -U pip && .venv/bin/pip install -r requirements.txt
 
 setup-fe:
-	cd frontend && npm install
+	@mkdir -p data/logs
+	cd frontend && npm install 2>&1 | tee ../data/logs/setup-fe.log
+
+# Type-check + lint + production build of the HUD. First real verification of P7.
+fe-check:
+	@mkdir -p data/logs
+	cd frontend && (npx tsc --noEmit && npm run lint && npm run build) 2>&1 | tee ../data/logs/fe-check.log
 
 dev-be:
 	cd backend && .venv/bin/uvicorn app.main:app --reload --port 8000
 
 dev-fe:
-	cd frontend && npm run dev
+	cd frontend && npm run dev -- --port 3000
 
 # --- P0.5 Reconnaissance -----------------------------------------------------
 # Answer "what do we actually have?" before designing features.

@@ -1,0 +1,12 @@
+# Render Blueprint — free web service built from the repo's Dockerfile.
+# Free plan: sleeps after 15 min idle, ~30-50 s cold start, 512 MB RAM (we use ~300).
+services:
+  - type: web
+    name: change-your-car
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true

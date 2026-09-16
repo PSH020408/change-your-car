@@ -1,0 +1,6 @@
+{
+ "version": "v2026.09.17-1",
+ "gates_passed": false,
+ "accepted_manually": true,
+ "reason": "Accepted 2026-09-17 with 5/8 gates on the 184-session era (81 events, 2.23 M rows). Same three lap-level gates fail as before and are frozen as aspirational: clean-air push counterfactual 0.474 s (Miami 0.443) vs a 0.339 s noise floor; skill 28% OOF (58% of the 49% ceiling, up from 53%) / 25% unseen. Segment MAE 0.062, coverage 0.80/0.81, beats ridge, monotonicity pass. Replaces v2026.09.16-1 because the HUD now serves all 92 events and 2024/25 chassis the old 33-event model never saw. Level 2 with one temperature term: +0.0015 %/C, indistinguishable from 0 -> temperature stays level-1 only."
+}

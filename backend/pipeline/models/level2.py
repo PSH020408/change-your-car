@@ -62,7 +62,10 @@ def design(t: pd.DataFrame) -> tuple[np.ndarray, list[str]]:
     cols, names = [np.ones(len(t))], ["intercept"]
     cols.append(t["is_race"].to_numpy(float)); names.append("is_race")
     cols.append(t["season_idx"].to_numpy(float)); names.append("season_idx")
-    cols.append(t["air_temp_c_centred"].to_numpy(float)); names.append("air_temp_per_c")
+    # ONE temperature term. Air and track temperature move together across
+    # sessions; fitted separately they came out +0.71 and -0.21 % per C,
+    # i.e. a track-only change had the wrong sign. Track temperature is the
+    # one the tyre feels.
     cols.append(t["track_temp_c_centred"].to_numpy(float)); names.append("track_temp_per_c")
     return np.column_stack(cols), names
 

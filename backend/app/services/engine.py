@@ -147,6 +147,16 @@ class Engine:
         rows["season"] = int(b.doc["season"])
         return rows
 
+    def _ml_lap_halfwidth(self) -> float:
+        """80% half-width of a predicted lap CHANGE, from the registered
+        model's measured counterfactual MAE on clean-air push laps (P4)."""
+        if self.predictor is None:
+            return 0.0
+        m = self.predictor.metrics or {}
+        cp = ((m.get("holdout") or {}).get("clean_push") or (m.get("cv") or {}).get("clean_push") or {})
+        mae = float(cp.get("cf_lap_mae_s", 0.5) or 0.5)
+        return float(np.log(5.0) * mae)
+
     @staticmethod
     def resample(trace: pd.DataFrame, lap_len: float, step: float = DISPLAY_STEP_M) -> S.TelemetryTrace:
         d = trace["distance_m"].to_numpy(float)
@@ -206,10 +216,22 @@ class Engine:
             base_rows, new_rows = self._ml_rows(b, segs, env, new=False), self._ml_rows(b, segs, env, new=True)
             qb, qn = self.predictor.predict_segments(base_rows), self.predictor.predict_segments(new_rows)
             ml = qn["q50"].to_numpy() - qb["q50"].to_numpy()
-            ml_lo = ml - (qn["q50"].to_numpy() - qn["q10"].to_numpy())
-            ml_hi = ml + (qn["q90"].to_numpy() - qn["q50"].to_numpy())
+            # Band for a DIFFERENCE of two predictions: the per-segment q10/q90
+            # bands summed over 23 segments assume every segment errs the same
+            # way and gave +-2 s for a 0.3 s tyre effect. The honest width is
+            # the model's MEASURED accuracy on lap changes (counterfactual MAE
+            # on unseen events, P4): for a Laplace error the 80% half-width is
+            # ln(5) * MAE. Shared over segments by their baseline time.
+            half = self._ml_lap_halfwidth()
+            share = segs["segment_time_s"].to_numpy() / max(float(segs["segment_time_s"].sum()), 1e-9)
+            ml_lo, ml_hi = ml - half * share, ml + half * share
 
-        # --- level 2: session-level shift, % of segment time
+        # --- level 2: session-level shift, % of segment time. INFORMATIONAL:
+        # reported per segment, NOT added to the total. With 57 sessions the
+        # air/track coefficients are collinear (+0.71 / -0.21 % per C) and a
+        # track-only +10 C came out 1.9 s FASTER; level 1 already carries the
+        # in-range temperature effect. Applied once a refit with one
+        # temperature term passes a sign-and-size check.
         l2 = np.zeros(n)
         if self.predictor is not None and env_changed:
             d_track = (env.track_temp_c - lap["track_temp_c"]) if (env.track_temp_c is not None and lap.get("track_temp_c") is not None) else 0.0
@@ -231,7 +253,7 @@ class Engine:
                                 cfg=self.physics)
         ph, ph_lo, ph_hi = (phys[c].to_numpy() for c in ("physics_delta_s", "physics_delta_lo_s", "physics_delta_hi_s"))
 
-        total, total_lo, total_hi = ml + l2 + ph, ml_lo + l2 + ph_lo, ml_hi + l2 + ph_hi
+        total, total_lo, total_hi = ml + ph, ml_lo + ph_lo, ml_hi + ph_hi          # level 2 not applied (see above)
         rec = T.reconstruct(b.trace, b.segments, {int(i): float(t) for i, t in zip(segs["segment_index"], total)},
                             cfg=self.physics, grip_scale=state.grip_multiplier, official_lap_time_s=lap["lap_time_s"])
         base_rec = T.reconstruct(b.trace, b.segments, [0.0] * n, cfg=self.physics, official_lap_time_s=lap["lap_time_s"])
@@ -259,7 +281,8 @@ class Engine:
             delta_s=round(rec.achieved_delta_s, 3),
             delta_lo_s=round(float(np.minimum(total_lo, total_hi).sum()), 3),
             delta_hi_s=round(float(np.maximum(total_lo, total_hi).sum()), 3),
-            ml_s=round(float(ml.sum()), 3), level2_s=round(float(l2.sum()), 3), physics_s=round(float(ph.sum()), 3),
+            ml_s=round(float(ml.sum()), 3), level2_s=round(float(l2.sum()), 3), level2_applied=False,
+            physics_s=round(float(ph.sum()), 3),
             refused_s=round(refused, 3), sector_deltas_s=[round(x, 3) for x in sectors])
         pstate = S.PhysicsState(downforce_pct=state.downforce_pct, drag_pct=state.drag_pct, mech_grip_pct=state.mech_grip_pct,
                                 grip_multiplier=state.grip_multiplier, thermal_grip_pct=state.thermal_grip_pct,

@@ -95,7 +95,7 @@ class SegmentDelta(BaseModel):
     ml_s: float = Field(..., description="tyre / temperature / conditions, level-1 model, q50 difference")
     ml_lo_s: float
     ml_hi_s: float
-    level2_s: float = Field(..., description="session-level temperature / session-type shift")
+    level2_s: float = Field(..., description="session-level temperature shift, INFORMATIONAL (not in total_s)")
     physics_s: float = Field(..., description="setup, physics layer, nominal")
     physics_lo_s: float
     physics_hi_s: float
@@ -199,7 +199,8 @@ class LapSummary(BaseModel):
     delta_lo_s: float
     delta_hi_s: float
     ml_s: float
-    level2_s: float
+    level2_s: float = Field(..., description="reported, not applied: see level2_applied")
+    level2_applied: bool = False
     physics_s: float
     refused_s: float
     sector_deltas_s: list[float]

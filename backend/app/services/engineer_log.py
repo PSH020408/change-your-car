@@ -51,7 +51,7 @@ def build(req: S.SimulationRequest, b, segs: list[S.SegmentDelta], lap: S.LapSum
     sign = "faster" if lap.delta_s < 0 else "slower"
     notes.append(N(severity="info", channel="sectors",
                    message=f"Lap {abs(lap.delta_s):.3f} s {sign} ({lap.delta_lo_s:+.3f} to {lap.delta_hi_s:+.3f} s band). "
-                           f"Setup {lap.physics_s:+.3f} s, conditions {lap.ml_s + lap.level2_s:+.3f} s."))
+                           f"Setup {lap.physics_s:+.3f} s, conditions {lap.ml_s:+.3f} s."))
 
     # --- where
     if segs:
@@ -102,8 +102,9 @@ def build(req: S.SimulationRequest, b, segs: list[S.SegmentDelta], lap: S.LapSum
         d = env.track_temp_c - b.lap["track_temp_c"]
         if abs(d) >= 3:
             notes.append(N(severity="info", channel="tyre",
-                           message=f"Track temperature {d:+.0f} C vs the session: level-2 shift {lap.level2_s:+.3f} s. "
-                                   f"With 57 sessions the temperature coefficient is measured, but its band is wide."))
+                           message=f"Track temperature {d:+.0f} C vs the session: {lap.ml_s:+.3f} s from the lap model. "
+                                   f"The session-level (level 2) estimate of {lap.level2_s:+.3f} s is shown but not applied: "
+                                   f"with 57 sessions its air/track coefficients are collinear and not yet trusted."))
     if env.weather != S.Weather.DRY:
         notes.append(N(severity="warning", channel="weather",
                        message=f"{env.weather.value.capitalize()} conditions: grip x{phys.grip_multiplier:.2f}. The model trained on dry laps only; "

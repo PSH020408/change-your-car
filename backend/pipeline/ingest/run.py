@@ -178,6 +178,21 @@ def build_worklist(scope: dict, cache: Path, pilot: bool, all_sessions: bool
 
 
 # ---------------------------------------------------------------------- one
+def _driver_lookup_from_siblings(bronze: Path, season: int, event_slug: str, skip_session: str) -> dict[str, dict]:
+    """car number -> {driver, team} from any already-ingested session of the same weekend."""
+    out: dict[str, dict] = {}
+    for lp in sorted((bronze / str(season) / event_slug).glob("*/laps.parquet")):
+        if lp.parent.name == skip_session:
+            continue
+        try:
+            t = pd.read_parquet(lp, columns=["driver", "driver_number", "team_raw"]).dropna()
+        except Exception:                                   # noqa: BLE001
+            continue
+        for d, n, tm in t.drop_duplicates("driver_number").itertuples(index=False):
+            out.setdefault(str(n).strip(), {"driver": str(d), "team": str(tm)})
+    return out
+
+
 def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
                season: int, event: str, ses: str, verbose: bool) -> dict:
     sess = loader.load_session(ff1, season, event, ses)
@@ -185,12 +200,26 @@ def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
 
     laps = sess.laps
     if "Team" in laps:
-        # 2024 Azerbaijan R carried lap rows with an empty team string; that is
-        # a feed glitch on a handful of rows, not an unmapped team. Drop the
-        # rows, say so, and keep the session.
+        # 2024 Azerbaijan R: FastF1 could not fetch the driver list ("Generating
+        # minimal driver list from timing data") so EVERY lap had Team == "" and
+        # Driver == car number. The sibling sessions of the same weekend in
+        # bronze know car number -> abbreviation / team; borrow from them.
         blank = laps["Team"].isna() | (laps["Team"].astype(str).str.strip() == "")
         if bool(blank.any()):
-            print(f"    note: {int(blank.sum())} lap row(s) with no team name dropped")
+            fill = _driver_lookup_from_siblings(paths.bronze_dir(scope_path, scope), season, event_slug, ses)
+            if fill and "DriverNumber" in laps:
+                laps = laps.copy()
+                num = laps["DriverNumber"].astype(str).str.strip()
+                laps.loc[blank, "Team"] = num[blank].map(lambda n: fill.get(n, {}).get("team"))
+                if "Driver" in laps:
+                    numeric_abbr = laps["Driver"].astype(str).str.fullmatch(r"\d+")
+                    laps.loc[numeric_abbr, "Driver"] = num[numeric_abbr].map(lambda n: fill.get(n, {}).get("driver"))
+                still = laps["Team"].isna() | (laps["Team"].astype(str).str.strip() == "")
+                print(f"    note: {int(blank.sum())} lap row(s) had no team; {int(blank.sum() - still.sum())} "
+                      f"recovered from sibling sessions, {int(still.sum())} dropped")
+                blank = still
+            else:
+                print(f"    note: {int(blank.sum())} lap row(s) with no team name dropped (no sibling session to borrow from)")
             laps = laps[~blank]
     raw_teams = sorted(laps["Team"].astype(str).unique()) if "Team" in laps else []
     unmapped = cmap.validate_coverage(season, raw_teams)
@@ -247,7 +276,7 @@ def ingest_one(ff1, scope_path: Path, scope: dict, cmap: metadata.ChassisMap,
 
 # ---------------------------------------------------------------------- main
 def run(scope_path: Path, pilot: bool, all_sessions: bool,
-        limit: int | None, force: bool, verbose: bool) -> int:
+        limit: int | None, force: bool, verbose: bool, only: set[str] | None = None) -> int:
     import fastf1 as ff1
 
     scope = paths.load_scope(scope_path)
@@ -263,7 +292,11 @@ def run(scope_path: Path, pilot: bool, all_sessions: bool,
     todo = []
     for season, event, ses in work:
         d = paths.session_dir(scope_path, scope, season, event, ses)
-        if (d / "session.json").exists() and not force:
+        if only:
+            # "2024/azerbaijan_grand_prix/R" — a named redo, always forced
+            if f"{season}/{paths.slug(event)}/{ses}" not in only:
+                continue
+        elif (d / "session.json").exists() and not force:
             continue
         todo.append((season, event, ses))
     if limit:
@@ -413,9 +446,12 @@ def main() -> None:
     p.add_argument("--limit", type=int, default=None)
     p.add_argument("--force", action="store_true", help="re-ingest sessions already written")
     p.add_argument("--verbose", "-v", action="store_true", help="print the filter chain per session")
+    p.add_argument("--only", type=str, default=None,
+                   help="comma-separated season/event_slug/session keys to (re)ingest, forcing a redo")
     a = p.parse_args()
     try:
-        sys.exit(run(a.scope, a.pilot, a.all_sessions, a.limit, a.force, a.verbose))
+        only = {x.strip() for x in a.only.split(",") if x.strip()} if a.only else None
+        sys.exit(run(a.scope, a.pilot, a.all_sessions, a.limit, a.force, a.verbose, only=only))
     except KeyboardInterrupt:
         sys.exit(130)
     except Exception:                                       # noqa: BLE001

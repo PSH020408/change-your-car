@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { api, kindLabel } from "@/lib/api";
 import { useHud } from "@/lib/store";
@@ -13,6 +13,28 @@ import { TrackMap } from "@/components/track/TrackMap";
 import { TelemetryChart } from "@/components/telemetry/TelemetryChart";
 
 const DEBOUNCE_MS = 150;
+const REPLAY_SPEEDS = [1, 3, 10];
+
+/** Distance (m) reached at lap time t, by linear interpolation on the trace's own time axis. */
+function distAt(tr: TelemetryTrace, t: number): number {
+  const T = tr.time_s, D = tr.distance_m;
+  if (t <= T[0]) return D[0];
+  if (t >= T[T.length - 1]) return D[D.length - 1];
+  let lo = 0, hi = T.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (T[m] <= t) lo = m; else hi = m; }
+  const f = (t - T[lo]) / (T[hi] - T[lo] || 1);
+  return D[lo] + f * (D[hi] - D[lo]);
+}
+/** Lap time (s) at which the trace passes distance x. */
+function timeAt(tr: TelemetryTrace, x: number): number {
+  const T = tr.time_s, D = tr.distance_m;
+  if (x <= D[0]) return T[0];
+  if (x >= D[D.length - 1]) return T[T.length - 1];
+  let lo = 0, hi = D.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (D[m] <= x) lo = m; else hi = m; }
+  const f = (x - D[lo]) / (D[hi] - D[lo] || 1);
+  return T[lo] + f * (T[hi] - T[lo]);
+}
 
 /**
  * First-order speed band for the chart: inside a segment, speed scales
@@ -43,6 +65,7 @@ export default function Page() {
   const [busy, setBusy] = useState(false);
   const [simError, setSimError] = useState<Error | undefined>();
   const abortRef = useRef<AbortController | null>(null);
+  const [replay, setReplay] = useState({ playing: false, t: 0, speed: 1 });
 
   const baseline = useSWR(["baseline", ref.season, ref.event, ref.session, ref.driver, ref.lap], () => api.baseline(ref), { keepPreviousData: true, revalidateOnFocus: false });
 
@@ -65,6 +88,28 @@ export default function Page() {
   useEffect(() => { setSim(undefined); }, [ref.season, ref.event, ref.session, ref.driver, ref.lap]);
 
   const b = baseline.data;
+
+  // replay clock: both cars start together; loops one second after the slower one finishes
+  useEffect(() => {
+    if (!replay.playing || !b) return;
+    const lapEnd = Math.max(b.trace.time_s[b.trace.time_s.length - 1] ?? 0, sim?.simulated.time_s[sim.simulated.time_s.length - 1] ?? 0) + 1;
+    let raf = 0, last = performance.now();
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000; last = now;
+      setReplay((r) => ({ ...r, t: (r.t + dt * r.speed) % lapEnd }));
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [replay.playing, replay.speed, b, sim]);
+  const toggleReplay = useCallback(() => setReplay((r) => ({ ...r, playing: !r.playing })), []);
+  const cycleSpeed = useCallback(() => setReplay((r) => ({ ...r, speed: REPLAY_SPEEDS[(REPLAY_SPEEDS.indexOf(r.speed) + 1) % REPLAY_SPEEDS.length] })), []);
+  const stopReplay = useCallback(() => setReplay((r) => ({ ...r, playing: false, t: 0 })), []);
+  const simTraceForReplay = sim?.simulated ?? b?.trace;
+  const replayOn = replay.playing || replay.t > 0;
+  const realDist = b && replayOn ? distAt(b.trace, replay.t) : null;
+  const simDist = simTraceForReplay && replayOn ? distAt(simTraceForReplay, replay.t) : null;
+  const gap = b && simTraceForReplay && realDist !== null ? timeAt(simTraceForReplay, realDist) - replay.t : null;
   const band = useMemo(() => (sim && b ? speedBand(sim, b.segments, b.track.lap_length_m) : undefined), [sim, b]);
   const simTrace: TelemetryTrace | undefined = sim?.simulated;
   const hovered = b?.segments.find((s) => s.index === hover);
@@ -106,25 +151,39 @@ export default function Page() {
                 </div>
               </div>
               <div className="flex-1 min-h-0 mt-2">
-                <TrackMap track={b.track} segments={b.segments} deltas={sim?.segments} hover={hover} onHover={setHover} />
+                <TrackMap track={b.track} segments={b.segments} deltas={sim?.segments} hover={hover} onHover={setHover}
+                  markers={realDist !== null && simDist !== null ? { realDist, simDist } : null} />
               </div>
-              <div className="flex gap-3 text-[10px] font-mono text-hud-dim mt-1">
-                <span><span className="gain">■</span> faster</span><span><span className="loss">■</span> slower</span><span><span style={{ color: "#3a4350" }}>■</span> unchanged</span>
-                <span className="ml-auto">colour intensity ∝ |Δ| · white tick = start/finish</span>
+              <div className="flex items-center gap-2 text-[10px] font-mono text-hud-dim mt-1">
+                <button onClick={toggleReplay} className={`chip h-[20px] px-2 ${replay.playing ? "chip-on" : ""}`} title="replay both laps from the line">
+                  {replay.playing ? "❚❚ pause" : "▶ replay"}
+                </button>
+                <button onClick={cycleSpeed} className="chip h-[20px] px-2" title="playback speed">{replay.speed}×</button>
+                {replayOn && <button onClick={stopReplay} className="chip h-[20px] px-2" title="back to the line">■</button>}
+                {replayOn && gap !== null && (
+                  <span className="ml-1 whitespace-nowrap">
+                    t <span className="text-hud-soft">{replay.t.toFixed(1)} s</span> · sim gap <span className={gap < -0.0005 ? "gain" : gap > 0.0005 ? "loss" : "text-hud-soft"}>{gap >= 0 ? "+" : "−"}{Math.abs(gap).toFixed(3)} s</span>
+                    <span className="text-hud-dim"> at the real car&apos;s position</span>
+                  </span>
+                )}
+                <span className="ml-auto flex gap-3">
+                  <span><span className="gain">■</span> faster</span><span><span className="loss">■</span> slower</span><span><span style={{ color: "#3a4350" }}>■</span> unchanged</span>
+                  <span className="hidden xl:inline">· white tick = start/finish</span>
+                </span>
               </div>
             </div>
 
-            <div className="card h-[352px] p-3 flex flex-col">
+            <div className="card h-[400px] p-3 flex flex-col">
               <div className="flex items-center justify-between">
                 <span className="label">telemetry · real vs simulated</span>
                 <div className="flex gap-3 text-[10px] font-mono">
                   <span className="text-series-real">— real {b.lap.driver}</span>
                   <span className="text-series-sim">— simulated</span>
-                  <span className="text-hud-dim">▨ interpolated (gap in FastF1 data)</span>
+                  <span className="text-hud-dim">▨ interpolated · <span className="gain">■</span> sim faster/ahead <span className="loss">■</span> slower/behind</span>
                 </div>
               </div>
               <div className="flex-1 min-h-0 mt-1">
-                <TelemetryChart real={b.trace} sim={simTrace} segments={b.segments} hover={hover} onHover={setHover} band={band} />
+                <TelemetryChart real={b.trace} sim={simTrace} segments={b.segments} hover={hover} onHover={setHover} band={band} markerDist={realDist} />
               </div>
             </div>
           </section>

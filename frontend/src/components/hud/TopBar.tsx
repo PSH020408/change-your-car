@@ -4,6 +4,10 @@ import { api, fmtLap } from "@/lib/api";
 import { useHud } from "@/lib/store";
 import type { BaselineResponse } from "@/lib/types";
 
+/** The HUD's name. Swap the asterisks out if the venue allows it. */
+export const TITLE = "CHANGE YOUR F***ING CAR";
+export const SUBTITLE = "F1 Virtual Sim · 2022–2025 ground-effect era";
+
 const SESSION_LABEL: Record<string, string> = { Q: "Qualifying", SQ: "Sprint Quali", S: "Sprint", R: "Race" };
 
 function Select<T extends string | number>({ label, value, options, onChange, disabled }: {
@@ -51,8 +55,8 @@ export function TopBar({ baseline, error, busy }: { baseline?: BaselineResponse;
   return (
     <header className="h-[60px] px-4 flex items-center gap-4 bg-hud-bar border-b border-hud-line">
       <div className="flex items-baseline gap-2 shrink-0">
-        <span className="text-[15px] font-semibold tracking-wide">F1 VIRTUAL SIM</span>
-        <span className="text-[10px] font-mono text-hud-dim">2022–2025 · ground-effect era</span>
+        <span className="text-[15px] font-semibold tracking-wide whitespace-nowrap">{TITLE}</span>
+        <span className="text-[10px] font-mono text-hud-dim whitespace-nowrap">{SUBTITLE}</span>
       </div>
 
       <div className="flex items-end gap-3 shrink-0">

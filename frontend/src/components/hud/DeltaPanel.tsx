@@ -9,7 +9,7 @@ function Stat({ k, v, sub, tone }: { k: string; v: string; sub?: string; tone?: 
   return (
     <div className="flex flex-col min-w-0">
       <span className="label">{k}</span>
-      <span className={`text-[15px] font-mono leading-tight ${tone ?? "text-hud-text"}`}>{v}</span>
+      <span className={`text-[13.5px] font-mono leading-tight whitespace-nowrap ${tone ?? "text-hud-text"}`}>{v}</span>
       {sub && <span className="text-[10px] font-mono text-hud-dim truncate">{sub}</span>}
     </div>
   );
@@ -51,28 +51,34 @@ export function DeltaPanel({ baseline, sim, hover, onHover }: {
   const top = useMemo(() => [...segs].sort((a, b) => Math.abs(b.total_s) - Math.abs(a.total_s)).slice(0, 7), [segs]);
   const lap = sim?.lap;
   const base = baseline.lap.lap_time_s;
+  // headline delta is the reconstructed trace, integrated; the components are what the segment model asked for.
+  // Whatever the rebuild adds or drops beyond that is shown, not hidden.
+  const recon = lap ? lap.delta_s - (lap.physics_s + lap.ml_s - lap.refused_s) : undefined;
 
   return (
     <section className="card p-3 flex flex-col gap-3">
       {/* headline */}
-      <div className="flex items-end justify-between gap-3">
-        <div>
+      <div className="grid grid-cols-2 gap-3 items-end">
+        <div className="min-w-0">
           <div className="label">simulated lap</div>
-          <div className="text-[30px] font-mono leading-none tabular-nums">{lap ? fmtLap(lap.simulated_lap_time_s) : fmtLap(base)}</div>
-          <div className="text-[10px] font-mono text-hud-dim mt-1 whitespace-nowrap">baseline {fmtLap(base)} · {baseline.lap.driver} {baseline.lap.session} {baseline.lap.season}</div>
+          <div className="text-[26px] font-mono leading-none tabular-nums">{lap ? fmtLap(lap.simulated_lap_time_s) : fmtLap(base)}</div>
         </div>
-        <div className="text-right">
+        <div className="min-w-0 text-right">
           <div className="label">delta</div>
-          <div className={`text-[30px] font-mono leading-none tabular-nums ${lap ? cls(lap.delta_s) : "text-hud-muted"}`}>{lap ? fmtDelta(lap.delta_s) : "—"}<span className="text-[13px] text-hud-muted ml-1">s</span></div>
-          <div className="text-[10px] font-mono text-hud-dim mt-1 whitespace-nowrap">{lap ? `band ${fmtDelta(lap.delta_lo_s)} … ${fmtDelta(lap.delta_hi_s)} (80 %)` : "waiting for simulation"}</div>
+          <div className={`text-[26px] font-mono leading-none tabular-nums ${lap ? cls(lap.delta_s) : "text-hud-muted"}`}>{lap ? fmtDelta(lap.delta_s) : "—"}<span className="text-[12px] text-hud-muted ml-1">s</span></div>
         </div>
       </div>
+      <div className="flex justify-between text-[10px] font-mono text-hud-dim -mt-1.5">
+        <span className="truncate">baseline {fmtLap(base)} · {baseline.lap.driver} {baseline.lap.session} {baseline.lap.season}</span>
+        <span className="whitespace-nowrap">{lap ? `80 % band ${fmtDelta(lap.delta_lo_s)} … ${fmtDelta(lap.delta_hi_s)}` : "waiting for simulation"}</span>
+      </div>
 
-      {/* split */}
-      <div className="grid grid-cols-3 gap-2 border-t border-hud-line pt-2">
-        <Stat k="setup · physics" v={lap ? fmtDelta(lap.physics_s) : "—"} tone={lap ? cls(lap.physics_s) : undefined} sub="wings · ride height · susp · fuel" />
+      {/* split — the four add up to the headline delta */}
+      <div className="grid grid-cols-4 gap-2 border-t border-hud-line pt-2">
+        <Stat k="setup · physics" v={lap ? fmtDelta(lap.physics_s) : "—"} tone={lap ? cls(lap.physics_s) : undefined} sub="wings · height · susp · fuel · weather" />
         <Stat k="conditions · ML" v={lap ? fmtDelta(lap.ml_s) : "—"} tone={lap ? cls(lap.ml_s) : undefined} sub="tyre age · compound · temps" />
-        <Stat k="envelope refused" v={lap ? fmtDelta(lap.refused_s) : "—"} tone={lap && Math.abs(lap.refused_s) > 0.0005 ? "text-status-warn" : "text-hud-muted"} sub="g-g limit: not reachable on track" />
+        <Stat k="envelope refused" v={lap ? fmtDelta(-lap.refused_s) : "—"} tone={lap && Math.abs(lap.refused_s) > 0.0005 ? "text-status-warn" : "text-hud-muted"} sub="g-g limit: not reachable" />
+        <Stat k="trace rebuild" v={recon !== undefined ? fmtDelta(recon) : "—"} tone={recon !== undefined && Math.abs(recon) > 0.05 ? "text-status-warn" : "text-hud-muted"} sub="warp + envelope beyond targets" />
       </div>
       {lap && Math.abs(lap.level2_s) > 0.0005 && (
         <div className="text-[10px] font-mono text-hud-dim -mt-1">

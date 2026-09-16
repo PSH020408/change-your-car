@@ -7,7 +7,7 @@ export function CarSchematic({ setup }: { setup: CarSetup }) {
   const rh = 8 + (1 - setup.ride_height) * 16;     // lower slider = closer to the ground line
   const c = "#5b6472";
   return (
-    <svg width="288" height="120" viewBox="0 0 288 120" fill="none" stroke={c} strokeWidth="1.4" aria-label="car schematic">
+    <svg className="w-full h-[96px]" viewBox="0 0 288 120" preserveAspectRatio="xMidYMid meet" fill="none" stroke={c} strokeWidth="1.4" aria-label="car schematic">
       <rect x="20" y="52" width="248" height="16" rx="6" stroke="#8b93a3" />
       <rect x={21 - fw / 2} y="30" width={fw} height="60" rx="3" stroke="#3987e5" strokeWidth={1.5 + setup.front_wing} />
       <rect x={266 - rw / 2} y="26" width={rw} height="68" rx="3" stroke="#3987e5" strokeWidth={1.5 + setup.rear_wing * 1.5} />

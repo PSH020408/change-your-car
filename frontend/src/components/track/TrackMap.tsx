@@ -3,9 +3,10 @@ import { useLayoutEffect, useRef } from "react";
 import type { SegmentDelta, SegmentInfo, TrackMap as TrackMapT } from "@/lib/types";
 import { fmtDelta, kindLabel } from "@/lib/api";
 
-/** A car marker placed at `dist` metres along the circuit path (path length is in metres via pathLength). */
-function CarMarker({ pathRef, dist, lapLength, color, label }: {
-  pathRef: React.RefObject<SVGPathElement | null>; dist: number; lapLength: number; color: string; label: string;
+/** A car marker placed at `dist` metres along the circuit path (path length is in metres via pathLength).
+ *  Sizes are in viewBox units, scaled from the box width so the marker reads at any zoom. */
+function CarMarker({ pathRef, dist, lapLength, color, label, unit, side }: {
+  pathRef: React.RefObject<SVGPathElement | null>; dist: number; lapLength: number; color: string; label: string; unit: number; side: 1 | -1;
 }) {
   const g = useRef<SVGGElement>(null);
   useLayoutEffect(() => {
@@ -18,9 +19,9 @@ function CarMarker({ pathRef, dist, lapLength, color, label }: {
   }, [pathRef, dist, lapLength]);
   return (
     <g ref={g}>
-      <circle r={9} fill={color} fillOpacity={0.25} />
-      <circle r={5} fill={color} stroke="#0f1216" strokeWidth={1.5} />
-      <title>{label}</title>
+      <circle r={unit * 2.6} fill={color} fillOpacity={0.18} />
+      <circle r={unit * 1.35} fill={color} stroke="#0f1216" strokeWidth={unit * 0.35} />
+      <text y={side * unit * 4.6 + (side > 0 ? unit * 0.9 : 0)} textAnchor="middle" fill={color} fontSize={unit * 2.2} fontWeight={600} fontFamily="var(--font-plex-mono), monospace" stroke="#0f1216" strokeWidth={unit * 0.5} paintOrder="stroke">{label}</text>
     </g>
   );
 }
@@ -39,6 +40,9 @@ export function TrackMap({ track, segments, deltas, hover, onHover, markers }: {
 }) {
   const L = track.lap_length_m;
   const base = useRef<SVGPathElement>(null);
+  const vbW = Number(track.view_box.split(/\s+/)[2]) || 1000;
+  const unit = vbW / 110;                       // marker size unit in viewBox px
+  const tail = Math.min(220, L * 0.04);         // metres of trail behind each car
   const byIdx = new Map((deltas ?? []).map((d) => [d.index, d]));
   const maxAbs = Math.max(0.01, ...(deltas ?? []).map((d) => Math.abs(d.total_s)));
   return (
@@ -63,8 +67,11 @@ export function TrackMap({ track, segments, deltas, hover, onHover, markers }: {
       <path d={track.path} pathLength={L} stroke="#e6e8ec" strokeWidth={16} strokeDasharray={`4 ${L}`} strokeDashoffset={0} />
       {markers && (
         <>
-          <CarMarker pathRef={base} dist={markers.realDist} lapLength={L} color="#c3c2b7" label="real lap" />
-          <CarMarker pathRef={base} dist={markers.simDist} lapLength={L} color="#3987e5" label="simulated lap" />
+          {/* trails: a dash of `tail` metres ending at each car */}
+          <path d={track.path} pathLength={L} stroke="#c3c2b7" strokeOpacity={0.55} strokeWidth={unit * 1.1} strokeDasharray={`${tail} ${L}`} strokeDashoffset={-(markers.realDist - tail)} />
+          <path d={track.path} pathLength={L} stroke="#3987e5" strokeOpacity={0.8} strokeWidth={unit * 1.1} strokeDasharray={`${tail} ${L}`} strokeDashoffset={-(markers.simDist - tail)} />
+          <CarMarker pathRef={base} dist={markers.realDist} lapLength={L} color="#c3c2b7" label="REAL" unit={unit} side={1} />
+          <CarMarker pathRef={base} dist={markers.simDist} lapLength={L} color="#3987e5" label="SIM" unit={unit} side={-1} />
         </>
       )}
     </svg>

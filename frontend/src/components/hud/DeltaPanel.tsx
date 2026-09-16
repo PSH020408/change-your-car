@@ -56,7 +56,7 @@ export function DeltaPanel({ baseline, sim, hover, onHover }: {
   const recon = lap ? lap.delta_s - (lap.physics_s + lap.ml_s - lap.refused_s) : undefined;
 
   return (
-    <section className="card p-3 flex flex-col gap-3">
+    <section className="card p-3 flex flex-col gap-3 shrink-0">
       {/* headline */}
       <div className="grid grid-cols-2 gap-3 items-end">
         <div className="min-w-0">

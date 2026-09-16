@@ -139,8 +139,8 @@ export default function Page() {
             <EnvironmentPanel lap={b.lap} />
           </aside>
 
-          <section className="flex flex-col gap-3 min-h-0">
-            <div className="card flex-1 min-h-0 p-3 flex flex-col">
+          <section className="flex flex-col gap-3 min-h-0 overflow-y-auto pr-0.5">
+            <div className="card shrink-0 h-[calc(100vh-84px)] p-3 flex flex-col relative">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-baseline gap-2 min-w-0">
                   <span className="text-[13px] font-semibold truncate">{b.lap.circuit ?? b.lap.event_name}</span>
@@ -150,30 +150,37 @@ export default function Page() {
                   {hovered ? `#${hovered.index} ${kindLabel(hovered.kind)} · S${hovered.sector ?? "?"} · ${hovered.length_m.toFixed(0)} m${hovered.min_radius_m ? ` · r ${hovered.min_radius_m.toFixed(0)} m` : ""}${hoveredDelta ? ` · Δ ${hoveredDelta.total_s >= 0 ? "+" : "−"}${Math.abs(hoveredDelta.total_s).toFixed(3)} s` : ""}` : "hover a segment"}
                 </div>
               </div>
-              <div className="flex-1 min-h-0 mt-2">
+              <div className="flex-1 min-h-0 mt-2 relative">
+                {replayOn && gap !== null && (
+                  <div className="absolute right-2 top-1 pointer-events-none text-right">
+                    <div className="label">sim vs real · same moment</div>
+                    <div className={`text-[34px] font-mono leading-none tabular-nums ${gap < -0.0005 ? "gain" : gap > 0.0005 ? "loss" : "text-hud-soft"}`}>
+                      {gap >= 0 ? "+" : "−"}{Math.abs(gap).toFixed(3)}<span className="text-[13px] text-hud-muted ml-1">s</span>
+                    </div>
+                    <div className="text-[11px] font-mono text-hud-muted mt-0.5">{gap < -0.0005 ? "SIM ahead" : gap > 0.0005 ? "SIM behind" : "level"} · t {replay.t.toFixed(1)} s</div>
+                  </div>
+                )}
                 <TrackMap track={b.track} segments={b.segments} deltas={sim?.segments} hover={hover} onHover={setHover}
                   markers={realDist !== null && simDist !== null ? { realDist, simDist } : null} />
               </div>
               <div className="flex items-center gap-2 text-[10px] font-mono text-hud-dim mt-1">
-                <button onClick={toggleReplay} className={`chip h-[20px] px-2 ${replay.playing ? "chip-on" : ""}`} title="replay both laps from the line">
-                  {replay.playing ? "❚❚ pause" : "▶ replay"}
+                <button onClick={toggleReplay} className="w-8 h-8 rounded border border-hud-line2 bg-hud-inset hover:border-hud-muted grid place-items-center" title={replay.playing ? "pause" : "play both laps from the line"} aria-label={replay.playing ? "pause" : "play"}>
+                  {replay.playing
+                    ? <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1.5" y="1" width="3.2" height="10" rx="0.8" fill="#e6e8ec" /><rect x="7.3" y="1" width="3.2" height="10" rx="0.8" fill="#e6e8ec" /></svg>
+                    : <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 1.2 L10.8 6 L2.5 10.8 Z" fill="#e6e8ec" /></svg>}
                 </button>
-                <button onClick={cycleSpeed} className="chip h-[20px] px-2" title="playback speed">{replay.speed}×</button>
-                {replayOn && <button onClick={stopReplay} className="chip h-[20px] px-2" title="back to the line">■</button>}
-                {replayOn && gap !== null && (
-                  <span className="ml-1 whitespace-nowrap">
-                    t <span className="text-hud-soft">{replay.t.toFixed(1)} s</span> · sim gap <span className={gap < -0.0005 ? "gain" : gap > 0.0005 ? "loss" : "text-hud-soft"}>{gap >= 0 ? "+" : "−"}{Math.abs(gap).toFixed(3)} s</span>
-                    <span className="text-hud-dim"> at the real car&apos;s position</span>
-                  </span>
-                )}
+                <button onClick={stopReplay} disabled={!replayOn} className="w-8 h-8 rounded border border-hud-line2 bg-hud-inset hover:border-hud-muted disabled:opacity-40 grid place-items-center" title="back to the line" aria-label="stop">
+                  <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" rx="1" fill="#e6e8ec" /></svg>
+                </button>
+                <button onClick={cycleSpeed} className="h-8 px-2 rounded border border-hud-line2 bg-hud-inset hover:border-hud-muted text-[11px] font-mono text-hud-text" title="playback speed">{replay.speed}×</button>
                 <span className="ml-auto flex gap-3">
-                  <span><span className="gain">■</span> faster</span><span><span className="loss">■</span> slower</span><span><span style={{ color: "#3a4350" }}>■</span> unchanged</span>
-                  <span className="hidden xl:inline">· white tick = start/finish</span>
+                  <span><span className="gain">■</span> sim faster</span><span><span className="loss">■</span> sim slower</span><span><span style={{ color: "#3a4350" }}>■</span> same</span>
+                  <span className="text-series-real">● real</span><span className="text-series-sim">● sim</span>
                 </span>
               </div>
             </div>
 
-            <div className="card h-[400px] p-3 flex flex-col">
+            <div className="card shrink-0 h-[420px] p-3 flex flex-col">
               <div className="flex items-center justify-between">
                 <span className="label">telemetry · real vs simulated</span>
                 <div className="flex gap-3 text-[10px] font-mono">

@@ -9,7 +9,7 @@ export function SetupPanel({ lap }: { lap: LapMeta | undefined }) {
   const baseFuel = lap?.session === "Q" ? 8 : 55;
   const fuel = setup.fuel_kg ?? baseFuel;
   return (
-    <div className="card p-3 flex flex-col gap-2">
+    <div className="card p-3 flex flex-col gap-2 shrink-0">
       <div className="flex justify-between items-center">
         <span className="label">Setup</span>
         <button onClick={reset} className="text-[11px] text-hud-muted hover:text-hud-text">reset · 0.50 = this weekend&apos;s car</button>

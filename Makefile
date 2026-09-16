@@ -1,4 +1,4 @@
-.PHONY: setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
+.PHONY: expand setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
 
 setup: setup-be setup-fe
 
@@ -46,6 +46,16 @@ warm-status:
 # --- P1 Ingestion ------------------------------------------------------------
 # Reads only what warm_cache has already downloaded, so it makes ZERO network
 # calls and can run while the background download is still going.
+# Data expansion (2026-09-16): every cached Q/R session of the era through the
+# lake. Each step tees its own log; make stops at the first failure.
+#   ingest    ~118 new sessions -> bronze     (skips sessions already there)
+#   segment   new events -> silver track.json (skips existing)
+#   features  gold/features.parquet rebuilt   (~2.6 M rows expected)
+#   baselines data/artifacts/baselines/*      (HUD picks these up on restart)
+# Then `make train` separately, and read the gates before accepting.
+expand: ingest segment features baselines
+	@echo "expand done -> restart 'make api' to serve the new baselines, then 'make train'"
+
 ingest-force:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.ingest.run --scope configs/scope.yaml --force --verbose 2>&1 | tee ../data/logs/ingest-force.log

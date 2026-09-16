@@ -37,6 +37,6 @@ class Predictor:
         X = self.level1.spec.transform(rows)
         return self.level1.predict(X)
 
-    def reference_shift(self, kind: str, d_track_temp_c: float = 0.0, d_air_temp_c: float = 0.0,
+    def reference_shift(self, kind: str = "", d_track_temp_c: float = 0.0, d_air_temp_c: float = 0.0,
                         to_race: float = 0.0, d_season: float = 0.0) -> tuple[float, float, float]:
         return self.level2.reference_pct_shift(kind, d_track_temp_c, d_air_temp_c, to_race, d_season)

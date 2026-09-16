@@ -66,8 +66,9 @@ def segment_table(tel: pd.DataFrame, segments: list[dict]) -> pd.DataFrame:
     rows = []
     for (i0, i1), s in zip(T._segment_slices(d, segments), segments):
         vv = v[i0:i1]
+        t0, t1 = T._tiled(i0, i1, len(d))
         rows.append({"segment_index": s["index"], "segment_kind": s["kind"],
-                     "segment_time_s": T.integrate_lap_time(vv, d[i0:i1]) if i1 - i0 >= 3 else 0.0,
+                     "segment_time_s": T.integrate_lap_time(v[t0:t1], d[t0:t1]) if i1 - i0 >= 3 else 0.0,
                      "speed_min_kph": float(vv.min()) if len(vv) else np.nan,
                      "speed_mean_kph": float(vv.mean()) if len(vv) else np.nan,
                      "speed_max_kph": float(vv.max()) if len(vv) else np.nan})

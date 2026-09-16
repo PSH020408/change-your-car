@@ -25,18 +25,39 @@ from pipeline.reconstruct import trace as T
 
 
 def representative_lap(laps: pd.DataFrame, driver: str) -> pd.Series:
-    """The driver's median clean push lap (the HUD's default baseline)."""
-    d = laps[laps["driver"].astype(str) == driver]
-    if "telemetry_quality" in d:
-        d = d[d["telemetry_quality"].isin(["clean", "normal"])]
-    if "gap_ahead_s" in d:
-        g = pd.to_numeric(d["gap_ahead_s"], errors="coerce")
-        d = d[g.isna() | (g >= 2.5)]
-    d = d.dropna(subset=["lap_time_s"])
+    """The driver's median clean push lap (the HUD's default baseline).
+
+    Relaxes its filters one by one and says so, rather than failing: a
+    qualifying session has only a handful of laps per driver.
+    """
+    d = laps[laps["driver"].astype(str) == driver].dropna(subset=["lap_time_s"])
+    print(f"laps for {driver}: {len(d)} of {len(laps)} in the session "
+          f"(drivers: {', '.join(sorted(laps['driver'].astype(str).unique())[:8])} ...)")
     if not len(d):
-        raise ValueError(f"no usable lap for {driver}")
-    med = d["lap_time_s"].median()
-    return d.iloc[(d["lap_time_s"] - med).abs().argsort().iloc[0]]
+        alt = laps["driver"].astype(str).value_counts().index[0]
+        print(f"  -> {driver} has no laps here; using {alt} instead")
+        return representative_lap(laps, alt)
+    steps = []
+    if "telemetry_quality" in d:
+        q = d[d["telemetry_quality"].isin(["clean", "normal"])]
+        steps.append(("telemetry clean/normal", q))
+        d2 = q if len(q) else d
+    else:
+        d2 = d
+    if "gap_ahead_s" in d2 and str(d2["session"].iloc[0]) == "R":     # race laps only, as in P4
+        g = pd.to_numeric(d2["gap_ahead_s"], errors="coerce")
+        c = d2[g.isna() | (g >= 2.5)]
+        steps.append(("clean air >= 2.5 s", c))
+        d3 = c if len(c) else d2
+    else:
+        d3 = d2
+        if "gap_ahead_s" in d2:
+            g = pd.to_numeric(d2["gap_ahead_s"], errors="coerce")
+            print(f"  gap ahead at the line   : median {g.median():.1f} s (qualifying: not filtered)")
+    for name, kept in steps:
+        print(f"  {name:<24}: {len(kept)} laps" + ("  (relaxed: none left)" if not len(kept) else ""))
+    med = d3["lap_time_s"].median()
+    return d3.iloc[(d3["lap_time_s"] - med).abs().argsort().iloc[0]]
 
 
 def segment_table(tel: pd.DataFrame, segments: list[dict]) -> pd.DataFrame:

@@ -215,10 +215,11 @@ def test_counterfactual_error_cancels_a_per_lap_offset():
 
 
 def test_clean_push_mask_keeps_clean_air_push_laps_only():
-    df = pd.DataFrame({"lap_effort_class": ["push", "push", "moderate", "push"],
-                       "gap_ahead_s": [10.0, 1.0, 10.0, np.nan]})
+    df = pd.DataFrame({"lap_effort_class": ["push", "push", "moderate", "push", "push"],
+                       "gap_ahead_s": [10.0, 1.0, 10.0, np.nan, 1.0],
+                       "session": ["R", "R", "R", "R", "Q"]})
     m = E.clean_push_mask(df, {"data": {"clean_air_gap_s": 2.5, "gate_effort": ["push"]}})
-    assert m.tolist() == [True, False, False, True]
+    assert m.tolist() == [True, False, False, True, True], "the gap rule is a race rule"
 
 
 def test_noise_floor_is_the_consecutive_lap_difference_over_root_two():

@@ -1,7 +1,7 @@
 """F1 Virtual Sim — engine API.
 
-Phase 2 deliverable. Routers are mounted as stubs so the frontend can
-develop against a stable contract before the ML layer lands.
+P6. One Engine per process (baseline store + registered model + physics
+config), four routers, one contract: app/schemas/domain.py.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +13,7 @@ settings = get_settings()
 
 app = FastAPI(
     title="F1 Virtual Sim Engine API",
-    version="0.1.0",
+    version="0.6.0",
     description="Setup + environment -> ML delta inference -> telemetry stream",
 )
 
@@ -31,5 +31,8 @@ app.include_router(engineer_log.router)
 
 
 @app.get("/health", tags=["ops"])
-def health() -> dict[str, str]:
-    return {"status": "ok", "version": app.version}
+def health() -> dict:
+    from app.core.state import get_engine
+    e = get_engine()
+    return {"status": "ok", "version": app.version, "model_version": e.model_version,
+            "seasons": e.seasons()}

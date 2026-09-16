@@ -107,6 +107,17 @@ reconstruct-demo:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.reconstruct.demo --season 2024 --event bahrain_grand_prix --session Q --driver VER 2>&1 | tee ../data/logs/reconstruct-demo.log
 
+baselines:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m app.services.baselines build 2>&1 | tee ../data/logs/baselines.log
+
+api-smoke:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m app.smoke 2>&1 | tee ../data/logs/api-smoke.log
+
+api:
+	cd backend && .venv/bin/uvicorn app.main:app --reload --port 8000
+
 train-quick:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.models.train --config configs/model.yaml --quick 2>&1 | tee ../data/logs/train-quick.log

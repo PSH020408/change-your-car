@@ -127,9 +127,15 @@ on the dark surface. First load: 121 kB.
 
 One container serves the API and the statically exported HUD on the same origin (no
 CORS, one URL). The baselines (184 session JSONs, 93 MB) and the registered model
-(5.5 MB) are committed so the service builds straight from the repository. Hosting is
-the free tier of a container host; the trade-off — the service sleeps when idle — is
-acceptable for a prototype and documented.
+(5.5 MB) are committed so the service builds straight from the repository; a push to
+`main` redeploys. It is live at https://change-your-car.onrender.com on Render's free
+tier. The trade-off is explicit: the instance sleeps after 15 minutes without visitors
+and the next request waits 30–60 s for the container to start, then every request is
+~15 ms. I considered three hosts — Hugging Face Spaces (Docker spaces now need a paid
+plan), Google Cloud Run (effectively free at this traffic, but needs a card on file) and
+Render (free, no card, sleeps). For a portfolio prototype the visible cold start was the
+cheapest honest option; `make deploy` keeps the Cloud Run path ready for the day the
+traffic justifies it.
 
 ## 9. What I would do next
 

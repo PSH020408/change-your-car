@@ -5,7 +5,15 @@
 > Watch where on the circuit the lap gets faster or slower, by how much, with what
 > confidence — and replay the real car against the simulated one.
 
-**Live demo:** _(link added after deployment)_ · **Data:** 184 sessions, 92 events × Q/R, 2022–2025 (FastF1) · **Stack:** Python / FastAPI / LightGBM · Next.js / hand-drawn SVG
+**Live demo:** **https://change-your-car.onrender.com** · **Data:** 184 sessions, 92 events × Q/R, 2022–2025 (FastF1) · **Stack:** Python / FastAPI / LightGBM · Next.js / hand-drawn SVG
+
+> **Before you click:** the demo runs on Render's free tier, which puts the server to
+> sleep after 15 minutes without visitors. The first request after that takes
+> **30–60 seconds** while the container starts (you may see a blank page or a browser
+> timeout — reload once). Every request after the first takes ~15 ms. The repository
+> also builds and runs locally with three commands (see *Run it*). A paid instance
+> would remove the delay; for a portfolio prototype the free tier was the deliberate
+> choice.
 
 ---
 
@@ -115,8 +123,26 @@ make api-smoke      # 8 end-to-end cases on 2024 Bahrain Q, VER
 make fe-check       # tsc + lint + next build
 ```
 
-Deploy: one container (`Dockerfile`) serves the API and the static HUD on one origin —
-`render.yaml` for Render, `make deploy` for Cloud Run.
+## Deployment
+
+One container (`Dockerfile`) serves the FastAPI backend and the statically exported HUD
+on the same origin — one URL, no CORS. The baselines (184 session JSONs, 93 MB) and the
+registered model (5.5 MB) are committed so the service builds straight from this
+repository: a push to `main` rebuilds and redeploys automatically (`render.yaml`,
+build ≈ 2 minutes).
+
+| | |
+|---|---|
+| Host | Render, free tier (`plan: free`, region Singapore) |
+| Live URL | https://change-your-car.onrender.com |
+| Health check | `GET /health` → `{"status":"ok","model_version":"v2026.09.17-1",…}` |
+| Cold start | 30–60 s after 15 min idle; ~15 ms per request when warm |
+| Memory | 512 MB available, ~300 MB used |
+| Alternative | `make deploy` targets Google Cloud Run (same container, no sleep, 2-instance spend cap) |
+
+Known limitations of the free tier, stated so nobody is surprised: the sleep/cold-start
+above; a single shared instance (fine for a handful of concurrent visitors, not for a
+front-page spike); no custom domain. None of these change the numbers the app shows.
 
 ## Layout
 

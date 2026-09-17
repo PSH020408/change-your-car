@@ -10,10 +10,14 @@
 > **Before you click:** the demo runs on Render's free tier, which puts the server to
 > sleep after 15 minutes without visitors. The first request after that takes
 > **30–60 seconds** while the container starts (you may see a blank page or a browser
-> timeout — reload once). Every request after the first takes ~15 ms. The repository
+> timeout — reload once). After that a simulation takes ~0.3 s. The repository
 > also builds and runs locally with three commands (see *Run it*). A paid instance
 > would remove the delay; for a portfolio prototype the free tier was the deliberate
 > choice.
+
+![The HUD on the live demo — 2024 Bahrain GP qualifying, VER, front wing +0.25, rear wing +0.40, ride height lowered into the bottoming zone: −0.260 s, corners green, straights orange](docs/img/hud-bahrain-2024-q-ver.png)
+
+*2024 Bahrain GP qualifying, VER's representative lap, on the live demo: more front and rear wing and a lower ride height. Corners gain (green), straights lose (orange); the lap is 0.260 s faster with an 80 % band of −0.367 … −0.068 s, and the delta splits into setup −0.255, conditions 0, envelope refused 0, trace rebuild −0.005.*
 
 ---
 
@@ -33,7 +37,7 @@
    envelope-refused / trace-rebuild* that adds up exactly.
 
 The HUD is deliberately 2D and dependency-light: every chart and the track map are
-hand-written SVG. First load is 121 kB of JavaScript; a simulation round-trip is ~15 ms.
+hand-written SVG. First load is 121 kB of JavaScript; a simulation computes in ~15 ms on a laptop and ~300 ms on the free hosted instance.
 
 ## How it works
 
@@ -136,7 +140,7 @@ build ≈ 2 minutes).
 | Host | Render, free tier (`plan: free`, region Singapore) |
 | Live URL | https://change-your-car.onrender.com |
 | Health check | `GET /health` → `{"status":"ok","model_version":"v2026.09.17-1",…}` |
-| Cold start | 30–60 s after 15 min idle; ~15 ms per request when warm |
+| Cold start | 30–60 s after 15 min idle; ~300 ms per simulation when warm (0.1 shared CPU — ~15 ms on a laptop) |
 | Memory | 512 MB available, ~300 MB used |
 | Alternative | `make deploy` targets Google Cloud Run (same container, no sleep, 2-instance spend cap) |
 

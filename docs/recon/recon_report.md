@@ -3,7 +3,7 @@
 _Generated 2026-09-14T15:05:46+00:00_
 
 Sessions surveyed: **10 / 10** · Era: **ground_effect** [2022, 2023, 2024, 2025]
-Cache: `/Users/jules/Claude/F1 Virtual Sim/backend/data/cache` — **1.3 GB**
+Cache: `backend/data/cache` — **1.3 GB**
 
 ## 1. Coverage matrix
 

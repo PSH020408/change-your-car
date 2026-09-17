@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Design tokens — Direction A "Console" (claude.ai design canvas, 2026-09-16).
+ * Design tokens — Direction A "Console" (design canvas, 2026-09-16).
  * Slate substrate; colour is DATA, never decoration. The chart colours passed
  * the data-viz palette validator on the dark surface (CVD-safe, >= 3:1).
  */

@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# P4 — ML delta model. Two levels (decision 2026-09-15, claude/PROJECT-STATE.md G):
+# P4 — ML delta model. Two levels (decision 2026-09-15, ROADMAP.md):
 #
 #   level 1  segment_delta_s vs the SESSION reference        <- tyre, fuel, driver, chassis
 #   level 2  session reference vs the CIRCUIT's best         <- temperature, session type, season

@@ -4,7 +4,7 @@ The Next.js client mirrors this in `frontend/src/lib/types.ts`. Anything the
 HUD draws is here; anything not here the HUD cannot know.
 
 Sliders follow the P3 physics layer: six setup controls + three environment
-controls (claude/P3-SCOPE.md). Camber, toe, brake bias and differential were
+controls (P3 scope decision, ROADMAP.md). Camber, toe, brake bias and differential were
 cut — no public data can verify them.
 """
 from __future__ import annotations

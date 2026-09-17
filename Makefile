@@ -27,7 +27,7 @@ recon:
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.recon.survey --scope configs/scope.yaml --out ../docs/recon 2>&1 | tee ../data/logs/recon.log
 
 # Every heavy target above/below writes its full output to data/logs/<target>.log
-# as well as the terminal, so a run can be read back (by Claude, via the
+# as well as the terminal, so a run can be read back (later, via the
 # project folder) instead of pasted.
 # Background cache warming — resumable, rate-limit aware. Run it and forget it.
 warm-bg:

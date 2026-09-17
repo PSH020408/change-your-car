@@ -3,7 +3,7 @@
 The ML (P4) answers "how does THIS car on THIS tyre in THIS weather compare
 to the reference lap". This module answers the question the ML cannot: what
 a setup change does. The two are added (decision: separate, additive — see
-claude/P3-SCOPE.md), each with its own interval.
+ROADMAP.md, P3 scope), each with its own interval.
 
 THE MODEL, IN THREE LINES
   straight  v_max ~ (P / Cd)^(1/3)          drag sets the top speed

@@ -6,7 +6,7 @@
 # Every function returns a RELATIVE change against that baseline, so the
 # layer never needs absolute aero numbers it cannot observe.
 #
-# GRADES (see claude/P3-SCOPE.md):
+# GRADES (see ROADMAP.md, P3 scope):
 #   A  the ML learns it from data — the physics version here is only for
 #      out-of-range extrapolation and the Engineering Log's "why"
 #   B  physics formula, coefficient SIZE checked against our own data

@@ -214,10 +214,10 @@ and lint clean; numbers verified against the smoke suite on screen.
 | P8-1 | End-to-end check on real data |
 | P8-2 | Bundle budget (< 300 kB gzip) — met at 121 kB |
 | P8-3 | Latency budget (p95 < 400 ms) — met at ~15 ms |
-| P8-4 | Deploy: one container, API + static HUD, same origin |
+| P8-4 | Deploy: one container, API + static HUD, same origin — **live at https://change-your-car.onrender.com** (Render free tier, cold start 30–60 s after idle) |
 | P8-5 | Back-test the simulator as a whole (qualifying → race lap through the fuel slider) — *open* |
 
-**Gate:** live URL, budgets met, retrained model re-gated. **Outcome:** in progress.
+**Gate:** live URL, budgets met, retrained model re-gated. **Outcome:** passed 2026-09-17 — first deploy built in 1 m 58 s from the repository; P8-5 (whole-simulator back-test) remains open.
 
 ---
 

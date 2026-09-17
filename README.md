@@ -60,11 +60,12 @@ make fe-check       # tsc + lint + next build
 
 ## How this was built
 
-Solo project by **PARK, SEHO** (Sept 2026). Every design decision, every acceptance
-gate, every pipeline run and every verification of the numbers in this repo is mine.
-The defect list (31 items and counting), the frozen-then-documented gate
-history and the C-grade markings on unverifiable physics coefficients are there
-because I would rather show what the model cannot do than hide it.
+Solo project by **PARK, SEHO** (Sept 2026). The concept, the architecture, every
+design decision, every acceptance gate, every pipeline run and every verification of
+the numbers in this repo are mine. The defect list (32 items and counting), the
+frozen-then-documented gate history and the C-grade markings on unverifiable physics
+coefficients are there because I would rather show what the model cannot do than
+hide it.
 
 Data: FastF1 (public F1 timing/telemetry). No team setup data exists publicly; every
 setup axis is expressed as a change relative to the lap actually driven.

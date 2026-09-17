@@ -1,383 +1,246 @@
-# R Gate — Reconnaissance Decisions
+# R gate — reconnaissance decisions
 
-_Settled 2026-09-14 from `recon_report.md` (10 sessions) + `_warm_ledger.json` (23 sessions)._
-
-이 문서가 R 게이트입니다. 여기 확정된 값이 P1 ingestion과 P2 feature 설계의 입력입니다.
+_Settled 2026-09-14 from `recon_report.md` (10 sessions) and the warm-cache ledger
+(23 sessions). This document **is** the R gate: the values fixed here are the inputs
+to P1 ingestion and P2 feature design. Two revisions, written after the first two
+ingest runs, follow at the end — they are kept because they correct this document._
 
 ---
 
-## D1 — 리샘플 그리드: 10 m 폐기
+## D1 — Resampling grid: the 10 m grid is dropped
 
-**측정값:** car telemetry `dt = 240 ms` 고정. 따라서 공간 간격은 순수하게 속도의 함수입니다.
+**Measured:** car telemetry arrives at a fixed `dt = 240 ms`. Spatial spacing is
+therefore purely a function of speed.
 
-| 속도 | 240 ms 동안 이동 거리 |
+| Speed | Distance covered in 240 ms |
 |---|---:|
-| 60 km/h (헤어핀) | 4.0 m |
+| 60 km/h (hairpin) | 4.0 m |
 | 100 km/h | 6.7 m |
 | 300 km/h | 20.0 m |
-| 350 km/h (몬자 직선) | 23.3 m |
+| 350 km/h (Monza straight) | 23.3 m |
 
-**리포트가 이것을 그대로 확인해 줍니다.** 트랙별 median 간격이 트랙 평균속도 순서와 정확히 일치합니다:
+The report confirms it: the median spacing per circuit follows the circuit's average
+speed exactly (Monaco 9.9 m, Hungaroring 12.5 m, Bahrain 14.0–14.7 m, Silverstone
+16.2–16.4 m, Monza 17.8–18.4 m).
 
-| 트랙 | median 간격 | 성격 |
+So the p95 warnings of 28–36 m were overstated: the wide spacings are on straights,
+where the speed profile is close to linear, while corners are naturally sampled at
+3–7 m. Samples are densest where the signal is complex — a favourable distribution.
+
+**Decisions.**
+1. No uniform grid for model features. The target is a per-segment time anyway, so raw
+   samples are integrated inside each segment; no interpolation means no invented detail.
+2. A uniform grid only for the HUD overlay, at 20 m (the real spacing at 300 km/h), with
+   an `interpolated` mask so the UI never claims resolution it does not have.
+3. `scope.yaml`: `feature_resampling: none`, `display_step_m: 20.0`.
+
+---
+
+## D2 — The maximum gap is a dropout detector, not a resolution figure
+
+A maximum spacing of 97.96 m was observed in the 2025 Silverstone race. At 300 km/h
+that is 1.2 s — four or five samples missing in a row. Bahrain (78 m), Spa (69 m) and
+Hungaroring (61 m) show the same pattern.
+
+**Decision (superseded — see Revision 1 and 2).** A new lap filter: laps with any
+telemetry gap over 40 m are excluded, and the share of laps removed is measured in P1.
+
+---
+
+## D3 — "Low lap yield" is two different phenomena
+
+**(a) Qualifying at 26–37 % is healthy.** Most qualifying laps are out-laps, cool-down
+laps and in-laps; a driver has three to five real push laps, and the 107 % gate removes
+exactly the rest. No action.
+
+**(b) 2025 Silverstone race at 14 % is a real defect.** The race had an intermediate
+phase (961 INTERMEDIATE laps in the sample). A 107 % gate relative to the *session
+best* fails when the session best was set in different grip: everything before or after
+the crossover is killed.
+
+**Decisions.**
+1. The 107 % reference becomes a conditions-matched one: the rolling median of the top
+   N laps within a ±5-lap window.
+2. Wet and intermediate laps are **tagged** (`condition: dry | inter | wet`), not
+   filtered; the dry model trains on dry laps only.
+3. Every filter logs how many laps it removed — no more silent data loss.
+
+---
+
+## D4 — The green-flag filter removed nothing (to be verified)
+
+`within 107 %: 3883 → green flag only: 3883`. The likely explanation is that safety-car
+laps are far outside 107 % and were already gone; but a broken `pick_track_status`
+match is equally possible.
+
+**Decision.** Move track status *before* the pace gate and log each step. If it still
+removes nothing, it is broken and gets fixed; guessing here would let safety-car laps
+into the training data unnoticed.
+
+---
+
+## D5 — Two contract bugs (fixed before P7)
+
+**(a) `Brake` is boolean.** FastF1 gives brake on/off, not pressure. The schema's
+`brake_pct: list[float]` promised data that does not exist → `brake_on: list[bool]`,
+and the HUD draws a band, not a curve.
+
+**(b) DRS is a race-situation variable, not a setup one.** In the sample lap the DRS
+channel had cardinality 1 — the car led and never opened it. Whether DRS opens depends
+on being within one second of the car ahead. → In the simulator DRS is a track property
+(detection/activation zones) and the simulation assumes "open in the zone".
+
+---
+
+## D6 — Setup proxies: the lap table already carries speed traps
+
+| Column | null % | Proxy |
 |---|---:|---|
-| Monaco | 9.92 m | 가장 느림 |
-| Hungaroring | 12.53 m | 저속 |
-| Bahrain | 14.0–14.7 m | 중속 |
-| Silverstone | 16.2–16.4 m | 고속 |
-| Monza | 17.8–18.4 m | 최고속 |
+| `SpeedST` | 13.4 % | drag — longest straight |
+| `SpeedFL` | 5.4 % | drag + traction (finish line) |
+| `SpeedI1` | 20.8 % | downforce — mid-sector |
+| `SpeedI2` | 0.2 % | downforce (cleanest) |
 
-**따라서 p95 28–36 m 경고는 과대평가입니다.** 간격이 벌어지는 곳은 **직선**이고,
-직선의 속도 프로파일은 거의 선형입니다. 반대로 코너는 자연스럽게 3–7 m로 조밀하게
-샘플링됩니다 — 신호가 복잡한 곳에 샘플이 몰려 있다는 뜻으로, 우리에게 유리한 분포입니다.
+Derived: `aero_balance ≈ SpeedST / high-speed-corner apex speed`,
+`traction ≈ low-speed-corner exit acceleration`,
+`braking_stability ≈ deceleration length / entry speed²`.
 
-### 결정
-
-1. **모델 피처에는 균일 그리드를 쓰지 않습니다.** 타깃이 애초에 세그먼트별 통과시간이므로,
-   세그먼트 내부에서 raw 샘플을 그대로 적분합니다. 보간이 없으면 없는 디테일을 만들 일도 없습니다.
-2. **균일 그리드는 HUD 오버레이 전용, 20 m.** (= 300 km/h에서의 실제 간격)
-   `interpolated` 마스크를 함께 반환해서 UI가 없는 해상도를 주장하지 않게 합니다.
-3. `configs/scope.yaml`: `telemetry.step_m: 10.0` → `display_step_m: 20.0`,
-   `feature_resampling: none`.
+**Decision.** Impute missing `SpeedI1` / `SpeedST` from the telemetry maximum within
+the trap's segment, and carry a `speed_trap_imputed` flag so the model can tell.
+`SpeedI2` is the primary downforce proxy.
 
 ---
 
-## D2 — `max` 간격은 해상도가 아니라 **드롭아웃 탐지기**다
+## D7 — Drivers without telemetry are mostly DNFs, not data holes
 
-2025 Silverstone R에서 max 간격 **97.96 m**가 관측됐습니다. 300 km/h에서 98 m는 약 1.2초,
-즉 **샘플 4–5개가 통째로 비었다**는 뜻입니다. 이건 샘플레이트가 아니라 텔레메트리 전송 결손입니다.
-
-Bahrain 78 m, Spa 69 m, Hungaroring 61 m에서도 같은 패턴이 보입니다.
-
-### 결정
-
-**새 랩 필터 추가:** 텔레메트리 간격이 **40 m를 초과하는 구간이 있는 랩은 제외**
-(≈ 고속에서 샘플 2개 이상 결손). 이 필터가 랩을 몇 % 먹는지 P1에서 계측해 기록합니다.
-결손 구간을 보간해서 학습에 넣으면 모델이 존재하지 않은 주행을 배웁니다.
+2024 Monaco R — HUL, MAG, OCO, PER: a multi-car crash on lap 1. Legitimate absence.
+**Decision.** The survey distinguishes "no completed lap" from "laps but no telemetry";
+only the latter is an issue.
 
 ---
 
-## D3 — "낮은 랩 수율" 경고는 두 개의 서로 다른 현상이다
+## D8 — Disk budget, measured
 
-리포트가 9건을 뭉뚱그려 경고했지만, 둘로 갈립니다.
+Median per session (23-session ledger): FP 52–74 MB, Q 99 MB, R 110 MB, S 64 MB.
+The era is 92 events (21 sprint weekends): 460 sessions, 36.9 GB in full; 24.3 GB
+without practice.
 
-### (a) Q 세션 25.9–36.5% — **정상. 필터 문제 아님.**
-
-퀄리파잉 랩의 대부분은 아웃랩·쿨다운랩·인랩입니다. 드라이버당 진짜 푸시 랩은 3–5개뿐이고,
-107% 게이트가 걸러내는 게 정확히 그 나머지입니다. **30%는 건강한 필터가 반환해야 할 값입니다.**
-조치 없음.
-
-### (b) 2025 Silverstone R 14.4% — **진짜 결함.**
-
-이 레이스는 인터미디에이트 구간이 있었습니다 (표본 전체에서 INTERMEDIATE 961랩 관측).
-107% 게이트는 **세션 베스트 대비** 상대값인데, 노면이 마르거나 젖는 레이스에서는
-세션 베스트가 완전히 다른 그립 조건에서 나옵니다. 결과적으로 크로스오버 이전/이후 랩이
-전부 몰살당합니다.
-
-### 결정
-
-1. 107% 기준을 **세션 베스트 → 조건 정합 레퍼런스**로 교체.
-   구체적으로 `±5랩 윈도우 내 상위 N랩의 롤링 중앙값`.
-2. 습식/인터 세션은 **필터로 죽이지 말고 태그**할 것 (`condition: dry | inter | wet`).
-   드라이 모델과 분리해서 다루고, 초기 학습에서는 드라이만 사용합니다.
-3. 모든 필터는 단계별 제거 랩 수를 로그로 남깁니다 — 이번처럼 조용히 데이터를 잃지 않도록.
+**Decision.** Collect broadly, train narrowly: keep the background download running
+(raw cache is schema-independent, re-downloading is rate-limited and expensive); train
+on Q + R only (practice fuel loads are unknown, so fuel-corrected pace is unreliable).
+_Later narrowed further: the warm scope itself became Q + R (2026-09-16)._
 
 ---
 
-## D4 — 그린플래그 필터가 아무것도 안 걸렀다 (검증 필요)
+## D9 — Cache path bug
 
-```
-within 107%      3883
-green flag only  3883   ← 제거 0
-```
-
-**가장 그럴듯한 설명:** SC/VSC 랩은 107%보다 한참 느리므로 앞 단계에서 이미 제거됨.
-**하지만 검증되지 않았습니다.** `pick_track_status("457", how="none")` 자체가 매칭에
-실패하고 있을 가능성도 동일하게 열려 있습니다.
-
-### 결정
-
-필터 순서를 바꿔 **track status를 107% 앞에** 두고, 각 단계의 제거 랩 수를 기록합니다.
-재배치 후에도 제거가 0이면 필터가 고장 난 것이므로 고칩니다. 여기서 추측으로 넘어가면
-SC 랩이 학습 데이터에 섞여도 알 방법이 없습니다.
+The cache was created under `backend/data/cache` instead of `data/cache`:
+`Path("configs/scope.yaml").parent.parent.parent` saturates to `.` on a relative path.
+The download was running, so the cache was not moved; the paths were made explicit in
+`scope.yaml` and the code reads them from there.
 
 ---
 
-## D5 — 계약 버그 2건 (P7 착수 전에 고쳐야 함)
+## Checklist
 
-데이터 사전이 스키마의 오류를 두 개 잡아냈습니다.
+- [x] Resampling grid → none for features, 20 m + mask for display (D1)
+- [x] Sessions entering training → Q + R (D8)
+- [x] Filter chain order and thresholds → track status first, conditions-matched 107 %, gap filter, per-step logging (D2–D4)
+- [x] Setup-proxy feature list → SpeedI2 primary, SpeedST, SpeedFL, SpeedI1 + imputation flags (D6)
+- [x] Full-era download projection → 36.9 GB / 24.3 GB (D8)
 
-### (a) `Brake`는 float이 아니라 **bool**
-
-```
-| `Brake` | bool | 0.0 | 2 | False |
-```
-
-FastF1은 브레이크 **압력**을 주지 않습니다. on/off뿐입니다.
-`TelemetryTrace.brake_pct: list[float]`는 있지도 않은 데이터를 약속하고 있었습니다.
-→ `brake_on: list[bool]`로 변경. HUD도 압력 곡선이 아니라 on/off 밴드로 그립니다.
-
-### (b) `DRS`는 셋업 변수가 아니라 **레이스 상황 변수**
-
-표본 랩의 DRS cardinality = 1 (값 고정). 선두 주행이라 DRS가 한 번도 열리지 않은 랩입니다.
-DRS 작동 여부는 **앞차와 1초 이내**라는 경기 상황에 달려 있고, 셋업으로 바꿀 수 있는 값이 아닙니다.
-
-→ 셋업 시뮬레이터에서 DRS는 **트랙 속성**(디텍션/액티베이션 존)으로 모델링하고,
-시뮬레이션은 "DRS 존에서 열림"을 가정합니다. 관측 채널을 그대로 쓰면 안 됩니다.
+**R gate passed. P1 ingestion may start.**
 
 ---
 
-## D6 — 셋업 프록시: Laps 테이블에 이미 스피드트랩이 있다
+# Revision 1 — 2026-09-14, after the first ingest run
 
-리포트에서 가장 좋은 소식입니다. 텔레메트리를 파싱하지 않아도 랩 테이블에 트랩 속도가 있습니다.
+The first ingest (2022 Australian GP qualifying) exposed two wrong decisions. They are
+recorded so the same mistake is not repeated.
 
-| 컬럼 | null % | 프록시 역할 |
-|---|---:|---|
-| `SpeedST` | 13.4% | **드래그 프록시** — 최장 직선 트랩 |
-| `SpeedFL` | 5.4% | 드래그 + 트랙션 (피니시라인) |
-| `SpeedI1` | 20.8% | **다운포스 프록시** — 섹터 중간 |
-| `SpeedI2` | 0.2% | 다운포스 프록시 (가장 깨끗함) |
+## D2 corrected — the gap filter was on the wrong axis (distance → time)
 
-파생 프록시:
-- `aero_balance ≈ SpeedST / (고속코너 apex 속도)` — 낮을수록 다운포스 지향 셋업
-- `traction ≈ 저속코너 탈출 가속도` (텔레메트리 적분)
-- `braking_stability ≈ 감속 구간 길이 / 진입속도²`
+**Symptom:** 146 of 165 laps (88 %) removed by the gap filter; final yield 4.4 %.
+**Measured:** `max_gap_m` p50 67.4 m, p95 319.8 m, max 434.3 m.
 
-### 결정
+Two causes. First, the threshold (40 m) sat below the median of the data — the survey
+already showed 7 of 10 sample laps above 40 m, and D2 had set the number by reasoning
+("two samples missing at high speed") right after D1 had said *measure, don't estimate*.
+Second, and more fundamentally, distance is the wrong axis: with a fixed 240 ms period,
+a distance gap cannot separate "data is missing" from "the car was fast". At 300 km/h
+one missing sample is already 20 m; 67 m on a straight is three samples in a nearly
+linear stretch, harmless; 67 m at 80 km/h is twelve samples and, in a corner, fatal.
 
-`SpeedI1`(20.8%)과 `SpeedST`(13.4%)의 결측은 무시하면 안 됩니다.
-**해당 트랩이 속한 세그먼트의 텔레메트리 최대 속도로 임퓨테이션**하고,
-`speed_trap_imputed: bool` 플래그를 피처에 함께 넣어 모델이 구분할 수 있게 합니다.
-`SpeedI2`는 결측 0.2%로 가장 신뢰할 만하므로 주 다운포스 프록시로 씁니다.
+**Decisions.** Gate moved to the time axis (`max_telemetry_gap_s: 1.0`, ≈ 3 samples);
+distance metrics kept for reporting; the number and position of the worst gap stored per
+lap; and `ingest.run` now prints a threshold sweep table so the next threshold is chosen
+from the data, not from an argument.
 
----
+## D4 corrected — the filter was fine, the diagnosis was wrong
 
-## D7 — 텔레메트리 없는 드라이버 = 대부분 DNF, 데이터 구멍 아님
+Observed track-status codes in that session: `1` (green) and `2` (yellow) only. No
+safety car, no VSC — removing zero laps was correct. Two bugs in the *diagnostic*:
+it counted yellow as excludable (it is deliberately not), and it cross-checked against
+FastF1 on a different population (338 raw laps vs 165 filtered), producing a negative
+"laps removed". Both fixed; the check now only flags BROKEN when an excludable code is
+present and nothing was removed.
 
-- `2024 Monaco R` — HUL, MAG, OCO, PER: **1랩 스타트 직후 다중 충돌**. 정당한 부재.
-- `2023 Hungaroring R` — GAS, OCO / `2025 Silverstone R` — COL, LAW: 개별 확인 필요.
+Side fixes: red flag (code 5) was missing from the exclusion list; yellow is tagged
+(`track_status_flag`), never dropped — 20 % of qualifying laps touch a yellow sector.
 
-### 결정
-
-서베이가 **"완주 랩 없음(DNF)"과 "랩은 있는데 텔레메트리가 빔"을 구분**하도록 수정.
-전자는 정상, 후자만 이슈입니다. 지금은 둘이 섞여서 노이즈가 됩니다.
-
----
-
-## D8 — 디스크 예산: 실측 완료
-
-원장 23세션 실측 (median MB/session):
-
-| 세션 | median | 
-|---|---:|
-| FP1 / FP2 / FP3 | 56 / 52 / 74 |
-| Q | 99 |
-| R | 110 |
-| S | 64 |
-
-2022–25 = **92 이벤트 (스프린트 주말 21회)** → 실전 226세션 + 프랙티스 234세션
-
-| 범위 | 세션 수 | 예상 용량 |
-|---|---:|---:|
-| 전부 (FP+Q+R+S+SQ) | 460 | **36.9 GB** |
-| 프랙티스 제외 (Q+R+S+SQ) | 226 | **24.3 GB** |
-| Q+SQ만 | 113 | 12.1 GB |
-
-### 결정
-
-**수집은 전부, 학습은 좁게.**
-- 다운로드는 현재 실행 중인 `warm-bg`를 그대로 두고 460세션 전부 받습니다.
-  37 GB는 감당 가능하고, rate limit 때문에 나중에 재수집하는 비용이 훨씬 큽니다.
-- **초기 학습은 Q + R만** 사용합니다. 프랙티스는 연료량을 알 수 없어 페이스 보정이 불안정합니다.
-- FP3는 퀄리파잉 트림에 가장 가까우므로 **선택적 확장 후보**로 남겨둡니다 (P8-6).
+**Lesson.** Reconnaissance caught assumptions; the first run caught my reading of the
+reconnaissance. A report is not enough — thresholds have to be laid against the printed
+distribution, so the sweep table is now a permanent output.
 
 ---
 
-## D9 — 캐시 경로 버그
+# Revision 2 — 2026-09-14, after the second ingest run
 
-캐시가 의도한 `data/cache`가 아니라 `backend/data/cache`에 생성됐습니다.
-원인: `Path("configs/scope.yaml").parent.parent.parent`가 상대 경로에서 `.`로 포화됩니다.
+The second run (2022 Australian GP race, 1045 laps) produced the sweep table, and the
+table showed that the gap filter's premise was wrong — and that D4 was still untested.
 
-다운로드가 실행 중이므로 **옮기지 않습니다.** 대신 `scope.yaml`에 경로를 명시하고
-코드가 그 값을 읽도록 고쳤습니다. bronze/silver/gold는 루트 `data/`에 그대로 둡니다.
+## D2 again — not a threshold problem; not a filter problem at all
 
----
+Measured on 813 laps (nominal period 0.24 s): worst gap per lap p50 0.88 s, p90 1.20 s,
+p95 1.24 s, max 1.32 s; missing samples p50 3, max 5. The distribution is unimodal and
+tight: a three-sample dropout is *normal feed behaviour*. A 1.0 s threshold removed 294
+laps (36 %) — a filter that fires on the median lap is a coin toss, not a defect
+detector; 1.5 s removed none. There are no two peaks to cut between.
 
-## 체크리스트 해소
+**Decisions.** Demote to a safety net (`max_telemetry_gap_s: 2.0`, outside the observed
+range, catches genuinely broken laps elsewhere) and carry the real signal as a tag:
+`telemetry_quality ∈ {clean ≤ 0.5 s, normal ≤ 1.0 s, gappy ≤ 1.5 s, holed > 1.5 s}`.
 
-- [x] **10 m resample grid** → 피처는 그리드 없음 / 표시는 20 m + 보간 마스크 (D1)
-- [x] **Which sessions enter training** → 수집 전부 / 학습 Q+R, FP3 보류 (D8)
-- [x] **Filter chain final order and thresholds** → track status 선행, 조건정합 107%,
-      40 m 갭 필터 신설, 단계별 로깅 (D2·D3·D4)
-- [x] **Setup-proxy feature list** → SpeedI2(주) · SpeedST · SpeedFL · SpeedI1 + 임퓨테이션 플래그 (D6)
-- [x] **Full-era download size projection** → 36.9 GB 전량 / 24.3 GB 프랙티스 제외 (D8)
+> This is the third time the project reached the same conclusion — wet conditions,
+> yellow flags, now feed gaps. **Destroying a row at ingest also destroys the evidence
+> for whether it should have been destroyed.** From here on: *ingest tags; downstream
+> decides.*
 
-**R 게이트 통과. P1 ingestion 착수 가능.**
+## D4 re-examined — the filter was positioned where it could not answer
 
----
+The 2022 Australian GP had three cautions (laps 2, 23, 39). The filter removed zero laps
+and saw only codes 1 and 2. The chain explains it: `require_accurate` removed 189 laps
+first, and the caution laps were among them. The filter was not broken; it was
+inspecting an already-emptied set. But nothing guarantees `IsAccurate` removes caution
+laps in every session, and relying on that silently is a risk.
 
-# REVISION 1 — 2026-09-14, after the first ingest run
-
-첫 ingest 실행(2022 Australian GP Q)이 결정 두 개의 오류를 드러냈습니다.
-기록을 남기는 이유는 같은 실수를 반복하지 않기 위해서입니다.
-
-## D2 정정 — 갭 필터의 **축이 틀렸습니다** (거리 → 시간)
-
-**증상:** 165랩 중 **146랩(88%)이 갭 필터에서 제거**됨. 최종 수율 4.44%.
-
-**측정값:**
-```
-max_gap_m   p50: 67.4 m    p95: 319.8 m    max: 434.3 m
-```
-
-**원인 두 가지.**
-
-1. **임계값이 중앙값보다 낮았습니다.** 40 m는 데이터 중앙(67 m)의 한참 아래입니다.
-   정찰 리포트에 이미 근거가 있었습니다 — 표본 10개 랩 중 **7개가 max > 40 m**
-   (56 · 61 · 62 · 69 · 73 · 78 · 98 m). D1에서 "추정하지 말고 측정하라"고 결정해
-   놓고, D2는 "고속에서 샘플 2개 결손"이라는 **추론만으로** 숫자를 정했습니다.
-
-2. **더 근본적으로, 거리는 잘못된 축입니다.** 샘플 주기가 240 ms로 고정이므로
-   거리 간격은 "데이터가 빠졌는가"와 "차가 빨랐는가"를 구분하지 못합니다.
-   300 km/h에서는 샘플 **1개**만 빠져도 20 m입니다. 67 m는 고속 직선에서
-   샘플 3개 — 속도가 거의 선형인 구간이라 무해합니다. 반면 80 km/h에서의
-   67 m는 샘플 **12개** 결손이고, 코너 한복판이라면 치명적입니다.
-
-**결정:**
-- 게이트를 **시간축**으로 이동: `max_telemetry_gap_s: 1.0`
-  (≈ 연속 3샘플 결손. 공칭 주기 0.24 s)
-- 거리 지표는 리포팅·HUD용으로 계속 기록
-- `missed_samples_worst`(결손 샘플 수)와 `worst_gap_at_frac`(랩 내 위치)를 함께 저장 —
-  갭이 특정 지점(예: 모나코 터널)에 몰리는지 나중에 볼 수 있게
-- **`ingest.run`이 후보 임계값 스윕 표를 출력**합니다. 다음 임계값은 그 표를 보고
-  정합니다. 같은 실수를 세 번째로 반복하지 않기 위한 장치입니다.
-
-## D4 정정 — 필터는 정상, **진단이 틀렸습니다**
-
-실제 데이터:
-```
-observed_values: {'1': 131, '12': 33, '21': 1}
-laps_matching_each_code: {'4:SafetyCar': 0, '6:VSC': 0, '7:VSCEnding': 0}
-```
-
-이 퀄리파잉 세션에 존재한 비그린 코드는 **`2` (옐로) 뿐**입니다. SC/VSC는 아예 없었고,
-따라서 **제거 0이 정답**입니다. 필터는 정상 작동했습니다.
-
-**진단 코드의 버그 2건:**
-
-1. **경보 로직이 옐로를 제외 대상과 혼동.** `laps_with_any_non_green_code`가
-   `"1"`이 아닌 모든 코드를 세었는데, 옐로는 **의도적으로 제외하지 않는** 코드입니다.
-   → 이제 "제외 대상 코드가 실제로 존재하는데 제거가 0"일 때만 BROKEN으로 판정.
-   옐로 등은 `codes_present_but_not_excluded`에 **정보로** 표시.
-
-2. **교차검증이 다른 모집단을 비교.** FastF1 결과는 원본 338랩에서, 우리 결과는
-   필터링된 165랩에서 계산해 `laps_removed_fastf1: -173`이라는 음수가 나왔습니다.
-   → 이제 **같은 프레임**에 대해 계산하고 모집단 크기를 함께 기록.
-
-## 부수 수정
-
-- **레드플래그(코드 5)가 제외 목록에서 빠져 있었습니다.** → `["4","5","6","7"]`로 수정.
-- **옐로는 버리지 말고 태그.** 퀄리파잉의 20%가 옐로 구간을 포함하는데 전부 버리면
-  비용이 너무 큽니다. `track_status_flag` 컬럼으로 bronze에 보존하고, 학습 시
-  제외 여부는 설정으로 결정 — 습식 조건과 같은 원칙입니다.
-
-## 이 리비전에서 배운 것
-
-정찰이 잡아낸 건 **가정**이었고, 첫 실행이 잡아낸 건 **제가 정찰 데이터를 읽고
-내린 판단**이었습니다. 리포트를 만드는 것만으로는 부족하고, 리포트가 제시한 분포에
-임계값을 실제로 맞춰봐야 합니다. 그래서 임계값 스윕 표를 상시 출력으로 넣었습니다.
-
----
-
-# REVISION 2 — 2026-09-14, after the second ingest run
-
-두 번째 실행(2022 Australian GP **R**, 1045랩)이 스윕 표를 냈고, 그 표가
-**갭 필터의 전제 자체가 틀렸다**는 걸 보여줬습니다. 그리고 D4가 아직 검증되지
-않았다는 것도 드러났습니다.
-
-## D2 재정정 — 임계값 문제가 아니라 **필터로 만들 문제가 아니었습니다**
-
-실측 (813랩, 공칭 주기 0.24 s):
-
-```
-worst gap per lap:  p50 0.88 s   p90 1.20 s   p95 1.24 s   max 1.32 s
-missed samples   :  p50 3        max 5
-threshold sweep  :  0.5s→19.2%   0.75s→37.6%   1.0s→63.8%   1.5s→100%
-```
-
-**분포가 단봉이고 좁습니다.** 중앙값 랩이 이미 0.88초(샘플 약 3개) 결손을 갖고 있고,
-최댓값도 1.32초입니다. 즉 **3샘플 결손은 이 피드의 정상 동작**이지 이상이 아닙니다.
-
-- 1.0 s → 813랩 중 **294랩(36%) 제거.** 중앙값 랩에서 발동하는 필터는 결함 탐지기가
-  아니라 동전 던지기입니다.
-- 1.5 s → **0랩 제거.** 필터가 무의미해집니다.
-
-**"깨끗한 랩 / 망가진 랩" 두 봉우리가 존재하지 않으므로, 그 사이에 임계값을 그을 수
-없습니다.** 애초에 필터로 풀 문제가 아니었습니다.
-
-### 결정
-
-1. **안전망으로 강등: `max_telemetry_gap_s: 2.0`** — 관측 분포 바깥. 지금은 0랩을
-   제거하지만, 다른 세션의 진짜 고장 랩을 잡습니다.
-2. **실제 신호는 태그로:** `telemetry_quality` ∈ {clean ≤0.5s, normal ≤1.0s,
-   gappy ≤1.5s, holed >1.5s}. bronze에 보존하고 P2·P4가 필요한 만큼 골라 씁니다.
-
-> 이 프로젝트에서 **세 번째로 같은 결론**에 도달했습니다 — 조건(습식), 옐로 플래그,
-> 이제 피드 갭. **ingest 단계에서 행을 파괴하면, 그 행을 파괴했어야 했는지 판단할
-> 근거까지 같이 사라집니다.** 이제 이걸 기본 원칙으로 둡니다: *ingest는 태그하고,
-> 버리는 결정은 downstream에서.*
-
-## D4 재검증 — 필터가 **답할 수 없는 위치**에 있었습니다
-
-2022 호주 GP는 **세이프티카가 3번** 나왔습니다 (2랩 Sainz, 23랩 Vettel, 39랩 VSC —
-F1 공식 리포트 확인). 그런데 필터는 **0랩을 제거**했고, 관측된 코드는 `1`과 `2`뿐이었습니다.
-
-체인을 보면 이유가 보입니다:
-
-```
-accurate       kept=813   removed=189   ← 여기서 189랩이 먼저 사라짐
-track status   kept=813   removed=0     ← 그 다음에 실행
-```
-
-**`require_accurate`가 189랩을 먼저 제거했고, 그 안에 SC/VSC 랩이 들어 있었던 것으로
-보입니다.** 즉 필터는 "고장난" 게 아니라 **이미 비워진 집합을 검사하고 있었습니다.**
-
-하지만 FastF1의 `IsAccurate`가 **모든 세션에서** 코션 랩을 제거한다는 보장은 없습니다.
-그걸 조용히 의존하는 건 리스크입니다.
-
-### 결정
-
-**track status를 체인 맨 앞으로 이동.** 트랙 상태는 텔레메트리도 타이밍 유효성도
-필요 없는 **랩의 순수 속성**이므로, 전체 모집단에 대해 먼저 적용되어야 그 수치가
-의미를 갖습니다.
+**Decision.** Track status moves to the front of the chain — it is a pure property of
+the lap, needing neither telemetry nor timing validity, and its count only means
+something against the full population:
 
 ```
 exclude_track_status → drop_pit_laps → drop_deleted → require_accurate
-                     → max_telemetry_gap(안전망) → pace_gate
+                     → max_telemetry_gap (safety net) → pace_gate
 ```
 
-이제 호주 GP R을 다시 돌리면 **SC/VSC 랩이 몇 개였는지 숫자로 나옵니다.** 0이 나오면
-그때는 진짜 고장입니다.
+## New — distance-axis integrity
 
-## 신규 — 거리축 무결성 검사
+The qualifying run had reported a maximum distance gap of 434 m; the race run a maximum
+time gap of 1.32 s. Covering 434 m in 1.32 s needs 1183 km/h. My diagnostic had compared
+the maximum of time with the maximum of distance — two different samples. This matters
+because `Distance` is the axis every feature integrates over from P2 onward.
 
-리비전 1의 Q 세션은 `max_gap_m` 최댓값이 **434 m**였는데, 이번 R 세션은 시간 갭
-최댓값이 1.32초입니다. 434 m를 1.32초에 주파하려면 **1183 km/h**가 필요합니다 —
-물리적으로 불가능합니다.
-
-원인은 **제 진단이 시간의 최댓값과 거리의 최댓값을 비교**했기 때문입니다. 두 값이
-서로 다른 샘플에서 나온 것이라 애초에 비교 대상이 아니었습니다.
-
-**이건 중요합니다.** `Distance`는 P2 세그멘테이션부터 모든 피처가 적분하는 축입니다.
-여기에 불연속이 있으면 코너 분할과 세그먼트 통과시간이 전부 틀어집니다.
-
-### 결정
-
-같은 샘플에서 시간과 거리를 **쌍으로** 측정하고 **함축 속도**를 계산합니다:
-
-- `implied_speed_kph = (거리 / 시간) × 3.6`
-- 400 km/h 초과 랩 수를 카운트 (F1 최고 기록 약 372 km/h)
-- 거리 역행 스텝(`negative_distance_steps`) 카운트
-
-`ingest.run`이 매 실행마다 `DISTANCE AXIS integrity` 블록을 출력합니다.
-**하나라도 걸리면 P2 착수 전에 고쳐야 합니다.**
+**Decision.** Time and distance are measured on the same sample; the implied speed
+(`distance / time × 3.6`), the count of laps implying > 400 km/h (the F1 record is
+~372) and the count of negative distance steps are printed as a `DISTANCE AXIS
+integrity` block on every ingest run. Any hit blocks P2.

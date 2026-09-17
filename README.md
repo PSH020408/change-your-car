@@ -1,70 +1,139 @@
-# Change Your F***ing Car — F1 Virtual Sim
+# Change Your F\*\*\*ing Car — an F1 setup & conditions simulator on real telemetry
 
-2022–2025 Ground Effect ERA 실제 F1 텔레메트리(FastF1) 기반의 **2D 엔지니어링
-셋업 & 조건 시뮬레이터**. 예선·레이스 184세션(92이벤트 × Q/R) 위에서 돌아갑니다.
+> Pick a real 2022–2025 Formula 1 lap. Move the wings, the ride height, the
+> suspension, the fuel load, the tyre age, the track temperature or the weather.
+> Watch where on the circuit the lap gets faster or slower, by how much, with what
+> confidence — and replay the real car against the simulated one.
 
-드라이버와 실제 랩을 고르고, 윙·차고·서스펜션·연료를 조절하고, 타이어 나이와
-온도·날씨를 바꾸면 — 물리 모델과 ML이 **세그먼트별 시간 델타(±80 % 밴드)**,
-**재구성된 텔레메트리**, 실제 vs 시뮬 **리플레이**를 돌려줍니다.
+**Live demo:** _(link added after deployment)_ · **Data:** 184 sessions, 92 events × Q/R, 2022–2025 (FastF1) · **Stack:** Python / FastAPI / LightGBM · Next.js / hand-drawn SVG
+
+---
+
+## What it does
+
+1. **Docking.** Choose season → event → session (qualifying or race) → driver → lap. The
+   baseline is the driver's *representative* clean push lap (the median one, not the lucky
+   one), or the fastest, or any lap of the session.
+2. **Setup (physics).** Six sliders — front wing, rear wing, ride height, suspension
+   stiffness, front/rear split, fuel — expressed as *changes relative to the lap actually
+   driven* (0.50 = that weekend's car), because no team publishes its setup.
+3. **Conditions (ML).** Tyre age, compound, track and air temperature, weather.
+4. **Answer.** Per-segment time deltas with an 80 % band, colour-coded on the circuit map;
+   the reconstructed telemetry (speed, throttle, brake, DRS) overlaid on the real one with
+   Δspeed and running Δtime rows; a replay of real vs simulated car with the live gap; a
+   rule-based engineer log; and a split of the lap delta into *setup / conditions /
+   envelope-refused / trace-rebuild* that adds up exactly.
+
+The HUD is deliberately 2D and dependency-light: every chart and the track map are
+hand-written SVG. First load is 121 kB of JavaScript; a simulation round-trip is ~15 ms.
+
+## How it works
 
 ```
-FastF1 ──► warm_cache ──► ingest ──► segment ──► features ──► LightGBM q10/q50/q90 ──► FastAPI ──► Next.js HUD
-                          bronze     silver       gold         artifacts/models        baselines    (hand-drawn SVG)
-                                                                     ▲                      ▲
-                                            physics modifiers (sliders → ΔCl/ΔCd/Δgrip)     reconstruct (delta → trace)
+FastF1 ─► warm_cache ─► ingest ─► segment ─► features ─► LightGBM q10/q50/q90 ─► FastAPI ─► Next.js HUD
+                         bronze    silver      gold          artifacts/models       baselines   (static export,
+                                                                  ▲                     ▲        same origin)
+                              physics modifiers (sliders → ΔCl / ΔCd / Δgrip)    reconstruction (Δt → trace)
 ```
 
-> **Scope: 2022–2025, Q + R only.** 그라운드 이펙트 플로어는 2022년 규정과 함께
-> 도입되어 2026년 규정으로 교체되었습니다. 스프린트·연습 세션은 제외(결정, 2026-09-16).
+- **Ingest** filters laps (track status → pit → deleted → accurate → gap safety net →
+  conditions-matched 107 % pace gate), *tags* rather than drops ambiguous cases (wet,
+  yellow flags, telemetry quality), and writes a bronze parquet lake.
+- **Segment** builds an ensemble racing line per circuit (16 phase-locked laps), splits
+  it by curvature into straights / kinks / low-, medium-, high-speed corners, and checks
+  itself against physics (no corner may hide inside a "straight"; no corner over 6.5 g).
+- **Features** integrate raw telemetry inside each segment — no uniform resampling, so
+  no invented detail — and produce 2.6 M segment rows.
+- **Physics** turns the setup sliders into coefficient changes with an explicit formula
+  per axis and a **grade** per coefficient: A = learned from data, B = physics with the
+  coefficient size checked on our own data, C = literature value only.
+- **ML** is a two-level model: three LightGBM quantile regressors (q10/q50/q90) on the
+  segment delta versus the session reference, conformally calibrated, plus a
+  session-level sector model that is *reported but not applied* (see the model card for
+  why).
+- **Reconstruction** warps the real speed trace segment by segment until each segment's
+  time matches the requested delta, clamps it to a g-g envelope anchored on the real lap,
+  and re-synthesises throttle, brake, gear and DRS.
+- **API** serves precomputed baselines (JSON per session) and one `POST /api/simulate`
+  that returns everything the HUD draws.
 
-## Quick start
+## Results (model `v2026.09.17-1`, 184 sessions, 81 training events)
+
+| Metric | Cross-validated (GroupKFold by event) | Unseen circuit (Miami, never trained or calibrated on) |
+|---|---|---|
+| Segment MAE, q50 | **0.062 s** | 0.078 s |
+| Lap counterfactual MAE (clean-air push laps vs the driver's representative lap) | **0.474 s** — "no change" would score 0.659 s | 0.443 s (0.589) |
+| Skill (1 − MAE / no-change) | **28 %** | 25 % |
+| Noise floor (two consecutive clean push laps, same driver, same tyres) | 0.339 s → **skill ceiling 49 %** | — |
+| 80 % band coverage after calibration | 0.80 | 0.81 |
+
+The model reaches 58 % of what a perfect model could reach on this data; the rest is
+lap-to-lap variance that no pre-lap feature can see. Details, gates, what failed and why
+in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md).
+
+## Principles
+
+1. **No number without a band.** Every delta carries an 80 % interval; interpolated
+   telemetry is hatched; unverifiable coefficients are marked grade C on the slider.
+2. **Physics owns the setup, ML owns the conditions.** There is no public setup data, so
+   setup effects come from explicit formulas; tyre and temperature effects, which *are*
+   in the data, are learned. The two are added, and the parts that the reconstruction
+   could not honour (envelope refusals, rebuild residual) are shown, not hidden.
+3. **Measure, then decide.** Thresholds come from printed distributions, not guesses;
+   the noise floor was measured before any lap-level gate was set.
+4. **No stage without a gate — and no silent failures.** Models that miss a gate are
+   not registered as latest; if one is accepted anyway the reason is written into the
+   registry. The [defect list](docs/DEFECTS.md) (32 entries) records every mistake,
+   its cause and what changed.
+
+## Documents
+
+| | |
+|---|---|
+| [`docs/DESIGN.md`](docs/DESIGN.md) | From idea to deployment: the decisions and why they were taken |
+| [`ROADMAP.md`](ROADMAP.md) | The 10-stage plan, each stage's gate, and what actually happened |
+| [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) | The ML model: features, metrics, gates, limitations |
+| [`docs/DEFECTS.md`](docs/DEFECTS.md) | 32 defects and lessons, in the order they were found |
+| [`docs/recon/DECISIONS.md`](docs/recon/DECISIONS.md) | The reconnaissance gate: nine data decisions and two revisions |
+
+## Run it
 
 ```bash
-make setup          # python venv + npm install  (Node.js 필요)
-make api            # FastAPI  :8000   (별도 터미널)
+make setup          # python venv + npm install  (Node.js ≥ 20)
+make api            # FastAPI  :8000   (separate terminal)
 make dev-fe         # Next.js  :3000   → http://localhost:3000
 ```
 
-## Pipeline
+Rebuild the data and the model (FastF1 downloads are rate-limited; the cache is resumable):
 
 ```bash
-make warm-bg        # FastF1 raw 캐시 (백그라운드, 재개 가능) · make warm-status
-make expand         # ingest → segment → features → baselines  (캐시된 Q/R 전부)
-make train          # LightGBM 분위수 모델 + 게이트 → data/artifacts/models/<version>
-                    # 게이트 미달 시 latest로 등록되지 않음: registry accept 로 수동 승인 (사유 기록)
-make test           # 165 pytest (물리 단조성 · 세그먼트 · 모델 · 재구성 · API 계약)
-make api-smoke      # 8케이스 스모크 (2024 Bahrain Q VER)
+make warm-bg        # download raw sessions in the background · make warm-status
+make expand         # ingest → segment → features → baselines for every cached Q/R session
+make train          # quantile GBMs + gates → data/artifacts/models/<version>
+make test           # 165 pytest: physics monotonicity · segmentation · model · reconstruction · API contract
+make api-smoke      # 8 end-to-end cases on 2024 Bahrain Q, VER
 make fe-check       # tsc + lint + next build
 ```
 
+Deploy: one container (`Dockerfile`) serves the API and the static HUD on one origin —
+`render.yaml` for Render, `make deploy` for Cloud Run.
+
 ## Layout
 
-| 경로 | 역할 |
-|------|------|
-| `backend/pipeline/ingest` `segment` `features` | 배치 데이터 파이프라인 (bronze → silver → gold) |
-| `backend/pipeline/physics/` | 셋업 슬라이더 → 물리 계수 (등급 A/B/C, `configs/physics.yaml`) |
-| `backend/pipeline/models/` | 분위수 GBM · 컨포멀 밴드 · 반사실 평가 · 레지스트리 |
-| `backend/pipeline/reconstruct/` | 세그먼트 델타 → 연속 텔레메트리 (g-g 엔벨로프 클램프) |
-| `backend/app/` | FastAPI: `/api/meta/*` `/api/baseline` `POST /api/simulate` |
-| `frontend/src/` | Next.js 15 HUD — 차트 라이브러리 없이 SVG 직접 그림 (첫 로드 121 kB) |
-| `backend/configs/` | `scope.yaml` `physics.yaml` `model.yaml` `circuits.yaml` `chassis.yaml` |
-| `data/` | 메달리온 레이크 + 베이스라인 JSON(184세션) + 모델 아티팩트 (git 제외) |
+| Path | Role |
+|---|---|
+| `backend/pipeline/ingest` · `segment` · `features` | Batch data pipeline (bronze → silver → gold) |
+| `backend/pipeline/physics/` | Sliders → physics coefficients, graded (`configs/physics.yaml`) |
+| `backend/pipeline/models/` | Quantile GBMs, conformal bands, counterfactual evaluation, registry |
+| `backend/pipeline/reconstruct/` | Segment deltas → continuous telemetry (g-g envelope clamp) |
+| `backend/app/` | FastAPI: `/api/meta/*`, `/api/baseline`, `POST /api/simulate` |
+| `frontend/src/` | Next.js 15 HUD, no chart library |
+| `backend/configs/` | `scope.yaml` · `physics.yaml` · `model.yaml` · `circuits.yaml` · `chassis.yaml` |
+| `data/artifacts/` | Baselines (184 sessions) and the registered model — committed for repo-based builds |
 
-## 설계 원칙
+## About
 
-1. **3D 없음.** 트랙맵·차량 도식·텔레메트리 전부 손으로 그린 SVG.
-2. **물리는 셋업을, ML은 조건을.** 슬라이더→계수는 해석 가능한 수식(등급 표기), 타이어·온도는 실데이터 학습.
-   둘은 가산적으로 합치고, 재구성 잔차·엔벨로프 거절까지 HUD에 그대로 노출.
-3. **밴드 없는 숫자 없음.** 모든 델타에 80 % 구간, 보간 구간은 빗금, 검증 안 된 계수는 등급 C.
-4. **게이트 없는 단계 진행 없음.** 미달은 숨기지 않고 사유와 함께 기록 (결함 목록 28개, `ROADMAP.md`).
-
-## How this was built
-
-Solo project by **PARK, SEHO** (Sept 2026): concept, architecture, data pipeline,
-physics model, ML model, API and HUD. The defect list (32 items and counting), the
-frozen-then-documented gate history and the C-grade markings on unverifiable physics
-coefficients are there because I would rather show what the model cannot do than
-hide it.
-
-Data: FastF1 (public F1 timing/telemetry). No team setup data exists publicly; every
-setup axis is expressed as a change relative to the lap actually driven.
+Solo project by **PARK, SEHO** (September 2026): concept, architecture, data pipeline,
+physics model, ML model, API and HUD. Data from FastF1 (public F1 timing and telemetry).
+No team setup data exists publicly; every setup axis is expressed as a change relative to
+the lap actually driven. MIT licence.

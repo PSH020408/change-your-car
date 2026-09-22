@@ -152,6 +152,72 @@ def build_session(bronze_dir: Path, track_json: Path) -> dict:
     return doc
 
 
+DRY_COMPOUNDS = ("SOFT", "MEDIUM", "HARD")
+
+
+def weekend_tyre_envelope(event_dir: Path) -> tuple[dict, list[dict]]:
+    """What the field ACTUALLY did with each compound over this weekend (Q + R):
+    longest stint, typical stint, how many stints — and the race strategies as run.
+
+    Stint length = max tyre_life seen within (session, driver, stint) on the kept
+    laps; pit in/out laps are filtered out upstream, so this can read 1-2 laps
+    short of the true stint. That is the conservative side for a slider limit.
+    The HUD uses it to stop the tyre-age slider where the data stops, instead
+    of letting a tree model answer a question nobody ever drove.
+    """
+    frames = []
+    for lp in sorted(event_dir.glob("*/laps.parquet")):
+        try:
+            f = pd.read_parquet(lp, columns=["session", "driver", "stint", "compound", "tyre_life", "lap_number", "position"])
+        except Exception:                                   # noqa: BLE001
+            try:
+                f = pd.read_parquet(lp, columns=["session", "driver", "stint", "compound", "tyre_life", "lap_number"])
+                f["position"] = pd.NA
+            except Exception:                               # noqa: BLE001
+                continue
+        frames.append(f)
+    if not frames:
+        return {}, []
+    laps = pd.concat(frames, ignore_index=True).dropna(subset=["compound", "tyre_life"])
+    laps["compound"] = laps["compound"].astype(str).str.upper()
+    laps["tyre_life"] = pd.to_numeric(laps["tyre_life"], errors="coerce")
+    laps = laps.dropna(subset=["tyre_life"])
+    stints = (laps.groupby(["session", "driver", "stint", "compound"], dropna=False)["tyre_life"]
+              .max().reset_index().rename(columns={"tyre_life": "laps"}))
+    env: dict = {}
+    for comp, g in stints.groupby("compound"):
+        by_session = {str(k): int(v) for k, v in g.groupby("session")["laps"].max().items()}
+        env[str(comp)] = {"max_laps": int(g["laps"].max()), "median_stint": int(round(float(g["laps"].median()))),
+                          "n_stints": int(len(g)), "max_by_session": by_session}
+
+    # race strategies as run, grouped by COMPOUND SEQUENCE (S -> H -> H) with the
+    # median stint lengths of the drivers who ran it; exact lap counts differ by a
+    # lap or two per driver and would make every strategy unique.
+    strategies: list[dict] = []
+    race_stints = stints[stints["session"].astype(str).str.upper() == "R"]
+    if len(race_stints):
+        race = laps[laps["session"].astype(str).str.upper() == "R"]
+        pos = pd.to_numeric(race["position"], errors="coerce")
+        winner = None
+        if pos.notna().any():
+            last = race.assign(position=pos).dropna(subset=["position"]).sort_values("lap_number").groupby("driver").last()
+            winner = str(last["position"].idxmin()) if len(last) else None
+        per_driver: dict[str, list[tuple[str, int]]] = {}
+        for drv, g in race_stints.groupby("driver"):
+            g = g.sort_values("stint")
+            per_driver[str(drv)] = [(str(c), int(n)) for c, n in zip(g["compound"], g["laps"])]
+        groups: dict[tuple[str, ...], list[str]] = {}
+        for drv, seq in per_driver.items():
+            groups.setdefault(tuple(c for c, _ in seq), []).append(drv)
+        for comps, drivers in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+            med = [int(round(float(pd.Series([per_driver[d][i][1] for d in drivers]).median()))) for i in range(len(comps))]
+            strategies.append({"sequence": " → ".join(f"{c} {n}" for c, n in zip(comps, med)),
+                               "drivers": sorted(drivers), "count": len(drivers),
+                               "winner": bool(winner in drivers) if winner else False})
+        strategies = strategies[:6]
+    return env, strategies
+
+
 def build_all(lake: Path, out: Path, verbose: bool = True) -> dict:
     bronze, silver = lake / "bronze", lake / "silver"
     out.mkdir(parents=True, exist_ok=True)
@@ -165,6 +231,7 @@ def build_all(lake: Path, out: Path, verbose: bool = True) -> dict:
             continue
         try:
             doc = build_session(sdir, tj)
+            doc["tyre_envelope"], doc["strategies"] = weekend_tyre_envelope(sdir.parent)
         except Exception as exc:                   # noqa: BLE001
             print(f"  FAILED {season}/{slug}/{ses}: {type(exc).__name__}: {exc}")
             continue

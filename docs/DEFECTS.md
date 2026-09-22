@@ -38,7 +38,7 @@ project than its final numbers._
 | 29 | Warm | Three sessions marked "done" had laps but no telemetry in the cache | Download cut mid-session, ledger written anyway (6.8 MB delta vs ~110 MB normal) | Entries reset to failed and re-warmed; cache size delta is now a sanity signal |
 | 30 | Ingest | 2024 Baku R: first 0 laps, then 16,120 laps (18× the real 878) | FastF1 shipped a "minimal driver list" — team blank, driver abbreviation blank — so first the rows were dropped, then every driver's lap N shared one `lap_uid` and the telemetry merge multiplied | Driver and team borrowed from sibling sessions of the same weekend; a session with duplicate `lap_uid`s is refused outright |
 | 31 | Segment | Seven circuits failed the hidden-corner check (a 78 m radius inside a "straight" at Zandvoort) | The auto-scaled smoothing window is too wide for some circuits; and the calibration grid was swept with a different `min_gap` than the real run used | Per-circuit overrides in `circuits.yaml` (window, threshold, `min_gap` pinned); 20/20 circuit-seasons pass |
-| 32 | HUD / ML | Tyre age 2 → 20 laps on a qualifying baseline predicted only +0.13 s | Qualifying data never contains tyres past ~8 laps; trees cannot extrapolate | Engineer-log warning with the suggestion to use a race baseline for degradation |
+| 32 | HUD / ML | Tyre age 2 → 20 laps on a qualifying baseline predicted only +0.13 s | Qualifying data never contains tyres past ~8 laps; trees cannot extrapolate | First an engineer-log warning; then (2026-09-22) the slider itself is bounded by the longest stint run on that compound that weekend, compounds nobody raced are marked, and the log warns only past that bound |
 
 ## Patterns
 

@@ -159,6 +159,21 @@ class TrackMap(BaseModel):
     measured_turns: int
 
 
+class TyreEnvelope(BaseModel):
+    """What the field actually did with one compound over this weekend (Q + R)."""
+    max_laps: int
+    median_stint: int
+    n_stints: int
+    max_by_session: dict[str, int] = Field(default_factory=dict)
+
+
+class RaceStrategy(BaseModel):
+    sequence: str                 # e.g. "SOFT 14 → HARD 24 → HARD 19"
+    drivers: list[str]
+    count: int
+    winner: bool = False
+
+
 class BaselineResponse(BaseModel):
     lap: LapMeta
     trace: TelemetryTrace
@@ -166,6 +181,9 @@ class BaselineResponse(BaseModel):
     track: TrackMap
     available_laps: list[dict]
     integration_note: str
+    # data envelope for the conditions panel: the tyre-age slider stops where the data stops
+    tyre_envelope: dict[str, TyreEnvelope] = Field(default_factory=dict)
+    strategies: list[RaceStrategy] = Field(default_factory=list)
 
 
 class PhysicsState(BaseModel):

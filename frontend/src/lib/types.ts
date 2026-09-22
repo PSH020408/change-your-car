@@ -75,9 +75,13 @@ export interface AvailableLap {
   tyre_life: number | null; effort_class: string | null; telemetry_quality: string | null; gap_ahead_s: number | null;
 }
 
+export interface TyreEnvelope { max_laps: number; median_stint: number; n_stints: number; max_by_session: Record<string, number>; }
+export interface RaceStrategy { sequence: string; drivers: string[]; count: number; winner: boolean; }
+
 export interface BaselineResponse {
   lap: LapMeta; trace: TelemetryTrace; segments: SegmentInfo[]; track: TrackMap;
   available_laps: AvailableLap[]; integration_note: string;
+  tyre_envelope: Record<string, TyreEnvelope>; strategies: RaceStrategy[];
 }
 
 export interface PhysicsState {

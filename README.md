@@ -29,7 +29,10 @@
 2. **Setup (physics).** Six sliders — front wing, rear wing, ride height, suspension
    stiffness, front/rear split, fuel — expressed as *changes relative to the lap actually
    driven* (0.50 = that weekend's car), because no team publishes its setup.
-3. **Conditions (ML).** Tyre age, compound, track and air temperature, weather.
+3. **Conditions (ML).** Tyre age, compound, track and air temperature, weather. The
+   tyre controls are bounded by what the field actually did that weekend: only the
+   compounds that were run, tyre age up to the longest real stint, and the race's actual
+   strategies (compound sequence, median stint lengths, count, winner) shown alongside.
 4. **Answer.** Per-segment time deltas with an 80 % band, colour-coded on the circuit map;
    the reconstructed telemetry (speed, throttle, brake, DRS) overlaid on the real one with
    Δspeed and running Δtime rows; a replay of real vs simulated car with the live gap; a
@@ -106,10 +109,11 @@ in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md).
   straights).
 - **Three sliders rest on literature coefficients** that public data cannot verify — ride
   height, suspension, weather grip. They are marked grade C on the HUD.
-- **Tree models do not extrapolate.** A 20-lap tyre on a qualifying baseline, or a
-  compound run longer than any team ran it on that circuit, is answered from the nearest
-  thing the model saw and understates degradation. The engineer log warns; the slider
-  range is not yet constrained to the data.
+- **Tree models do not extrapolate,** so the tyre-age slider is constrained to the
+  data: per weekend and compound it stops at the longest stint any team actually ran,
+  and a compound nobody raced says so. Questions outside that range ("SOFT for 40 laps
+  at Bahrain") are not answered — deliberately; the alternative was to invent a
+  degradation curve nobody has driven.
 - **The physics layer is a coefficient model, not a lap simulator.** Effects are applied
   per segment, so a braking zone that crosses a segment boundary is not resolved; the
   reconstruction lands a few percent past the requested sum under low grip and that
@@ -120,17 +124,17 @@ in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md).
 
 ## What's next
 
-1. **Constrain tyre age to the data.** Per circuit and compound, the slider stops at the
-   longest stint any team actually ran, defaults to the median stint, and says so.
-2. **Back-test the whole simulator.** From a driver's qualifying lap, move only the fuel
+1. **Back-test the whole simulator.** From a driver's qualifying lap, move only the fuel
    slider and predict their race first-stint laps, scored per circuit over 92 events.
-3. **A quasi-steady-state point-mass physics engine** — corner speed from lateral grip,
+2. **A quasi-steady-state point-mass physics engine** — corner speed from lateral grip,
    forward/backward sweeps for traction and braking — calibrated to each real lap, so the
    setup axes act on real physical quantities and the simulator carries a measured
    accuracy of its own. Replaces the coefficient formulas and the warp-based reconstruction.
-4. **ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
+3. **ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
    allocation instead of soft/medium/hard labels.
-5. **A tyre-strategy mode** built only from strategies teams really used.
+4. **A tyre-strategy mode** built only from strategies teams really used — the HUD
+   already shows how each race was actually run (compound sequence, median stint
+   lengths, how many drivers, which one won); the mode would score those sequences.
 
 ## Documents
 

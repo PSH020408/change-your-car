@@ -136,7 +136,7 @@ export default function Page() {
         <main className="flex-1 min-h-0 grid grid-cols-[320px_minmax(0,1fr)_368px] gap-3 p-3">
           <aside className="flex flex-col gap-3 min-h-0 overflow-y-auto pr-0.5">
             <SetupPanel lap={b.lap} />
-            <EnvironmentPanel lap={b.lap} />
+            <EnvironmentPanel baseline={b} />
           </aside>
 
           <section className="flex flex-col gap-3 min-h-0 overflow-y-auto pr-0.5">

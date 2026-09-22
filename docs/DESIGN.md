@@ -139,6 +139,13 @@ traffic justifies it.
 
 ## 9. What I would do next
 
+_Done since first deployment (2026-09-22): the tyre-age slider is bounded per weekend
+and compound by the longest stint any team ran, compounds nobody raced are marked, and
+the race's real strategies are shown next to the controls. This replaced the plan to fit
+a degradation curve: extrapolating past the data would have produced numbers nobody has
+driven, and a race in which no team chose the medium is a fact worth showing, not a gap
+to fill._
+
 - Low-speed corners are the weakest segment kind (MAE 0.111 s vs 0.058 s on straights):
   a traction/exit feature is the obvious candidate.
 - Compound × temperature interaction, driver × circuit history.

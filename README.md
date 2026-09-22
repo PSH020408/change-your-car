@@ -81,10 +81,13 @@ FastF1 ─► warm_cache ─► ingest ─► segment ─► features ─► Lig
 | Skill (1 − MAE / no-change) | **28 %** | 25 % |
 | Noise floor (two consecutive clean push laps, same driver, same tyres) | 0.339 s → **skill ceiling 49 %** | — |
 | 80 % band coverage after calibration | 0.80 | 0.81 |
+| **Whole-simulator back-test:** qualifying lap + race fuel/tyres/temps → race first-stint lap (2,447 dry laps, 75 events) | flat-out answer -3.1 s optimistic; **1.21 s MAE, no bias** after a measured race-pace offset of +3.0 s (leave-one-event-out) | — |
 
 The model reaches 58 % of what a perfect model could reach on this data; the rest is
 lap-to-lap variance that no pre-lap feature can see. Details, gates, what failed and why
-in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md).
+in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md). The back-test of the sum — the simulator
+answers "this lap, flat out, in these conditions", and a race lap is a further 3.0 s of
+management on top — is in [`docs/BACKTEST.md`](docs/BACKTEST.md).
 
 ## Principles
 
@@ -118,23 +121,23 @@ in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md).
   per segment, so a braking zone that crosses a segment boundary is not resolved; the
   reconstruction lands a few percent past the requested sum under low grip and that
   residual is shown as its own term (`trace rebuild`) rather than fixed.
-- **The simulator as a whole has not been back-tested** — each part has (segment model
-  on a held-out circuit, physics coefficients by regression), the sum has not.
+- **The simulator answers the flat-out question.** Back-tested against real race laps it
+  is 3.1 s optimistic — the size of race-pace management (engine modes, lift-and-coast,
+  tyre saving), which no slider represents. Measured and applied as an explicit offset
+  the error drops to 1.2 s with no bias ([`docs/BACKTEST.md`](docs/BACKTEST.md)).
 - No front-end tests; COTA is under-segmented (esses merge); free hosting sleeps when idle.
 
 ## What's next
 
-1. **Back-test the whole simulator.** From a driver's qualifying lap, move only the fuel
-   slider and predict their race first-stint laps, scored per circuit over 92 events.
-2. **A quasi-steady-state point-mass physics engine** — corner speed from lateral grip,
+1. **A quasi-steady-state point-mass physics engine** — corner speed from lateral grip,
    forward/backward sweeps for traction and braking — calibrated to each real lap, so the
    setup axes act on real physical quantities and the simulator carries a measured
    accuracy of its own. Replaces the coefficient formulas and the warp-based reconstruction.
-3. **ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
+2. **ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
    allocation instead of soft/medium/hard labels.
-4. **A tyre-strategy mode** built only from strategies teams really used — the HUD
-   already shows how each race was actually run (compound sequence, median stint
-   lengths, how many drivers, which one won); the mode would score those sequences.
+3. **A tyre-strategy mode** built only from strategies teams really used — the HUD
+   already shows how each race was actually run; the mode would score those sequences,
+   carrying the measured race-pace offset as its own labelled term.
 
 ## Documents
 
@@ -143,6 +146,7 @@ in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md).
 | [`docs/DESIGN.md`](docs/DESIGN.md) | From idea to deployment: the decisions and why they were taken |
 | [`ROADMAP.md`](ROADMAP.md) | The 10-stage plan, each stage's gate, and what actually happened |
 | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) | The ML model: features, metrics, gates, limitations |
+| [`docs/BACKTEST.md`](docs/BACKTEST.md) | Whole-simulator back-test: qualifying lap → race lap, and the measured race-pace offset |
 | [`docs/DEFECTS.md`](docs/DEFECTS.md) | 32 defects and lessons, in the order they were found |
 | [`docs/recon/DECISIONS.md`](docs/recon/DECISIONS.md) | The reconnaissance gate: nine data decisions and two revisions |
 
@@ -162,6 +166,7 @@ make expand         # ingest → segment → features → baselines for every ca
 make train          # quantile GBMs + gates → data/artifacts/models/<version>
 make test           # 165 pytest: physics monotonicity · segmentation · model · reconstruction · API contract
 make api-smoke      # 8 end-to-end cases on 2024 Bahrain Q, VER
+make backtest       # qualifying → race back-test over the whole store (~70 s)
 make fe-check       # tsc + lint + next build
 ```
 

@@ -215,10 +215,10 @@ and lint clean; numbers verified against the smoke suite on screen.
 | P8-2 | Bundle budget (< 300 kB gzip) — met at 121 kB |
 | P8-3 | Latency budget (p95 < 400 ms) — met at ~15 ms |
 | P8-4 | Deploy: one container, API + static HUD, same origin — **live at https://change-your-car.onrender.com** (Render free tier, cold start 30–60 s after idle) |
-| P8-5 | Back-test the simulator as a whole (qualifying → race lap through the fuel slider) — *open* |
+| P8-5 | Back-test the simulator as a whole (qualifying → race lap) — **done 2026-09-22**: flat-out answer -3.1 s optimistic; 1.21 s MAE after a measured race-pace offset (`docs/BACKTEST.md`) |
 | P8-6 | Bound the tyre controls by the weekend's real stints; show the race's actual strategies — **done 2026-09-22** |
 
-**Gate:** live URL, budgets met, retrained model re-gated. **Outcome:** passed 2026-09-17 — first deploy built in 1 m 58 s from the repository; P8-5 (whole-simulator back-test) remains open.
+**Gate:** live URL, budgets met, retrained model re-gated. **Outcome:** passed 2026-09-17 — first deploy built in 1 m 58 s from the repository; P8-5 back-test done 2026-09-22.
 
 ---
 

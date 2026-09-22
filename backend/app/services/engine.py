@@ -186,6 +186,8 @@ class Engine:
             segments=[S.SegmentInfo(**{k: s.get(k) for k in S.SegmentInfo.model_fields}) for s in b.segments],
             track=S.TrackMap(**b.doc["track"]),
             available_laps=b.driver["available"],
+            tyre_envelope={k: S.TyreEnvelope(**v) for k, v in (b.doc.get("tyre_envelope") or {}).items()},
+            strategies=[S.RaceStrategy(**x) for x in (b.doc.get("strategies") or [])],
             integration_note=(f"sampled trace integrates {r0.lap_time_baseline_s:.3f} s vs official "
                               f"{b.lap['lap_time_s']:.3f} s; time axis scaled by {r0.time_scale:.4f} "
                               f"(the two partial 240 ms intervals at the line)"))

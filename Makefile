@@ -122,7 +122,7 @@ print(f'{len(fs)} circuit(s) segmented');\
 [print(f\"  {d['season']} {d['event']:<30s} {d['counts']['turns']:>3} turns  {d['geometry']['lap_length_m']:>7.0f} m  ref {d['reference_lap']['session']}\") for d in (json.load(open(f)) for f in fs)]" \
 	2>/dev/null || echo "no silver tracks yet — run 'make segment'"
 
-silver-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # P8 — deploy: one Cloud Run container (FastAPI + static HUD, same origin).
 #   make gcp-setup   once: enable APIs, set project/region
 #   make deploy      build in Cloud Build from this tree, deploy, print the URL
@@ -155,7 +155,7 @@ docker:
 	docker build -t $(SERVICE) .
 	docker run --rm -p 8080:8080 $(SERVICE)
 
-clean:
+silver-clean:
 	rm -rf data/silver
 
 # --- P2-5..P2-7 Feature store ------------------------------------------------

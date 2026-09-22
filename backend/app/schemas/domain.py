@@ -47,7 +47,7 @@ class Environment(BaseModel):
     air_temp_c: float | None = Field(None, ge=0, le=50)
     weather: Weather = Weather.DRY
     compound: Compound | None = None
-    tyre_life: int | None = Field(None, ge=1, le=60, description="laps on the tyre")
+    tyre_life: int | None = Field(None, ge=1, le=80, description="laps on the tyre")
 
 
 class BaselineRef(BaseModel):

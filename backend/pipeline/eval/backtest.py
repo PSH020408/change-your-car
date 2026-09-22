@@ -93,12 +93,12 @@ def run(out_dir: Path, limit_events: int | None, verbose: bool) -> int:
                 stint = [a for a in first_stint(rdoc["drivers"][drv]["available"]) if usable(a)]
                 for a in stint:
                     fuel = M.baseline_fuel_kg("R", a["lap_number"], total_laps, cfg)
-                    env = S.Environment(track_temp_c=r_temps.get("track_temp_c"), air_temp_c=r_temps.get("air_temp_c"),
-                                        weather=S.Weather.DRY,
-                                        compound=S.Compound(a["compound"]) if a.get("compound") in S.Compound.__members__ else None,
-                                        tyre_life=a.get("tyre_life"))
-                    req = S.SimulationRequest(baseline=ref, setup=S.CarSetup(fuel_kg=fuel), environment=env)
                     try:
+                        env = S.Environment(track_temp_c=r_temps.get("track_temp_c"), air_temp_c=r_temps.get("air_temp_c"),
+                                            weather=S.Weather.DRY,
+                                            compound=S.Compound(a["compound"]) if a.get("compound") in S.Compound.__members__ else None,
+                                            tyre_life=a.get("tyre_life"))
+                        req = S.SimulationRequest(baseline=ref, setup=S.CarSetup(fuel_kg=fuel), environment=env)
                         res = eng.simulate(req)
                     except Exception as exc:                        # noqa: BLE001
                         if verbose:

@@ -1,4 +1,4 @@
-.PHONY: gcp-setup deploy deploy-url docker expand ingest-only segment-fix segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
+.PHONY: backtest backtest-quick gcp-setup deploy deploy-url docker expand ingest-only segment-fix segment-recheck segment-failed setup setup-be setup-fe fe-check dev-be dev-fe recon warm warm-bg warm-status ingest segment features physics-check train test lint clean
 
 setup: setup-be setup-fe
 
@@ -177,6 +177,15 @@ train:
 reconstruct-demo:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.reconstruct.demo --season 2024 --event bahrain_grand_prix --session Q --driver VER 2>&1 | tee ../data/logs/reconstruct-demo.log
+
+# Whole-simulator back-test: Q representative lap + race fuel/tyre/temps -> race first-stint lap.
+# Reads the baseline store and the registered model only; writes data/artifacts/backtest/.
+backtest:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.eval.backtest --verbose 2>&1 | tee ../data/logs/backtest.log
+
+backtest-quick:
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.eval.backtest --limit-events 3 --verbose
 
 baselines:
 	@mkdir -p data/logs

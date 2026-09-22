@@ -36,6 +36,7 @@ from app.schemas import domain as S
 from app.services.engine import Engine, NotFound
 
 RACE_SHIFT_PCT = 4.75          # level-2 is_race coefficient, model card
+DRY = {"SOFT", "MEDIUM", "HARD"}
 MIN_LAP = 3
 MIN_GAP_S = 2.5
 
@@ -57,7 +58,10 @@ def first_stint(avail: list[dict]) -> list[dict]:
 
 
 def usable(a: dict) -> bool:
+    # dry compounds only on both sides: the simulator is dry-only, and a wet qualifying
+    # against a dry race (or the reverse) is a different question, not a hard case
     return (a.get("lap_time_s") is not None and (a.get("lap_number") or 0) >= MIN_LAP
+            and a.get("compound") in DRY
             and a.get("effort_class") == "push"
             and a.get("telemetry_quality") in ("clean", "normal")
             and (a.get("gap_ahead_s") is None or a["gap_ahead_s"] >= MIN_GAP_S))
@@ -89,6 +93,8 @@ def run(out_dir: Path, limit_events: int | None, verbose: bool) -> int:
                     q = eng.load_baseline(ref)
                 except NotFound:
                     continue
+                if q.lap.get("compound") not in DRY:
+                    continue                        # wet qualifying: not a dry-to-dry pair
                 q_time = float(q.lap["lap_time_s"])
                 stint = [a for a in first_stint(rdoc["drivers"][drv]["available"]) if usable(a)]
                 for a in stint:
@@ -158,7 +164,7 @@ def run(out_dir: Path, limit_events: int | None, verbose: bool) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     df.to_parquet(out_dir / "laps.parquet", index=False)
     report = {"n_laps": int(len(df)), "n_events": int(by_event.shape[0]), "n_drivers": int(df["driver"].nunique()),
-              "population": "race first stint, clean push, clean air, lap>=3, telemetry clean/normal",
+              "population": "dry qualifying lap -> dry race first-stint laps; clean push, clean air, lap>=3, telemetry clean/normal",
               "engine_band80_coverage": round(cover, 3), "summary": summary,
               "note": "engine_plus_race_mode: engine + leave-one-event-out global median residual; engine_plus_circuit_mode: same circuit's other seasons when available",
               "by_compound": {str(k): {kk: round(float(vv), 3) for kk, vv in v.items()} for k, v in by_compound.iterrows()},

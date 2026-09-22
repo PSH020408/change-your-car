@@ -122,13 +122,32 @@ def run(out_dir: Path, limit_events: int | None, verbose: bool) -> int:
     # oracle: the event's own median Q->R gap (uses the answers; an upper bound, not a competitor)
     gap = (df["actual_s"] - df["q_time_s"]).groupby([df["season"], df["event"]]).transform("median")
     df["oracle_s"] = df["q_time_s"] + gap
+    # race-mode offset, MEASURED not simulated: what the engine leaves unexplained
+    # (engine modes, lift-and-coast, tyre saving). Leave-one-event-out so no lap
+    # sees its own event's answer: (a) one global median; (b) the same circuit's
+    # other seasons when available, else global.
+    resid = df["actual_s"] - df["engine_s"]
+    key = df["season"].astype(str) + "|" + df["event"]
+    ev_med = resid.groupby(key).median()
+    ev_n = resid.groupby(key).size()
+    tot, cnt = float(resid.sum()), int(len(resid))
+    df["engine_plus_race_mode_s"] = df["engine_s"] + [
+        (tot - resid[key == k].sum()) / max(cnt - int(ev_n[k]), 1) for k in key]
+    circ_off = []
+    for k, ev in zip(key, df["event"]):
+        others = ev_med[[kk for kk in ev_med.index if kk.endswith("|" + ev) and kk != k]]
+        circ_off.append(float(others.median()) if len(others) else float((tot - resid[key == k].sum()) / max(cnt - int(ev_n[k]), 1)))
+    df["engine_plus_circuit_mode_s"] = df["engine_s"] + circ_off
+    df["race_mode_offset_loo_s"] = df["engine_plus_race_mode_s"] - df["engine_s"]
 
     def score(col: str) -> dict:
         e = df[col] - df["actual_s"]
         return {"mae_s": round(float(e.abs().mean()), 3), "bias_s": round(float(e.mean()), 3),
                 "median_abs_s": round(float(e.abs().median()), 3)}
 
-    summary = {c: score(c) for c in ("q_time_s", "q_plus_l2_s", "q_plus_fuel_s", "engine_s", "oracle_s")}
+    summary = {c: score(c) for c in ("q_time_s", "q_plus_l2_s", "q_plus_fuel_s", "engine_s", "engine_plus_race_mode_s", "engine_plus_circuit_mode_s", "oracle_s")}
+    summary["race_mode_offset_s"] = {"median": round(float(resid.median()), 3), "mean": round(float(resid.mean()), 3),
+                                     "p10": round(float(resid.quantile(0.1)), 3), "p90": round(float(resid.quantile(0.9)), 3)}
     cover = float(((df["actual_s"] >= df["engine_lo_s"]) & (df["actual_s"] <= df["engine_hi_s"])).mean())
     by_event = (df.assign(err=df["engine_s"] - df["actual_s"])
                 .groupby(["season", "event"])["err"].agg(n="size", mae=lambda x: x.abs().mean(), bias="mean")
@@ -141,6 +160,7 @@ def run(out_dir: Path, limit_events: int | None, verbose: bool) -> int:
     report = {"n_laps": int(len(df)), "n_events": int(by_event.shape[0]), "n_drivers": int(df["driver"].nunique()),
               "population": "race first stint, clean push, clean air, lap>=3, telemetry clean/normal",
               "engine_band80_coverage": round(cover, 3), "summary": summary,
+              "note": "engine_plus_race_mode: engine + leave-one-event-out global median residual; engine_plus_circuit_mode: same circuit's other seasons when available",
               "by_compound": {str(k): {kk: round(float(vv), 3) for kk, vv in v.items()} for k, v in by_compound.iterrows()},
               "by_event": [{"season": int(r.season), "event": r.event, "n": int(r.n), "mae_s": round(float(r.mae), 3), "bias_s": round(float(r.bias), 3)}
                            for r in by_event.itertuples()],
@@ -149,9 +169,12 @@ def run(out_dir: Path, limit_events: int | None, verbose: bool) -> int:
 
     print(f"\nBACK-TEST  qualifying lap -> race first-stint lap   {len(df):,} laps · {report['n_events']} events · {report['n_drivers']} drivers · model {eng.model_version}")
     print(f"  {'predictor':<14s} {'MAE':>7s} {'bias':>7s} {'median|e|':>10s}")
-    for k, lab in (("q_time_s", "Q only"), ("q_plus_l2_s", "Q + l2 4.75%"), ("q_plus_fuel_s", "Q + fuel"), ("engine_s", "ENGINE"), ("oracle_s", "oracle")):
+    for k, lab in (("q_time_s", "Q only"), ("q_plus_l2_s", "Q + l2 4.75%"), ("q_plus_fuel_s", "Q + fuel"), ("engine_s", "ENGINE"),
+                   ("engine_plus_race_mode_s", "ENGINE+race LOO"), ("engine_plus_circuit_mode_s", "ENGINE+circuit"), ("oracle_s", "oracle")):
         v = summary[k]; print(f"  {lab:<14s} {v['mae_s']:7.3f} {v['bias_s']:+7.3f} {v['median_abs_s']:10.3f}")
     print(f"  engine 80 % band covers the race lap in {cover*100:.0f} % of cases")
+    rm = summary["race_mode_offset_s"]
+    print(f"  race-mode offset (actual - engine): median {rm['median']:+.3f} s, p10..p90 {rm['p10']:+.2f}..{rm['p90']:+.2f}")
     print("  by compound:")
     for k, v in by_compound.iterrows():
         print(f"    {k:<8s} n={int(v['n']):5d}  MAE {v['mae']:.3f}  bias {v['bias']:+.3f}")

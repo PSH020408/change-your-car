@@ -98,6 +98,40 @@ in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md).
    registry. The [defect list](docs/DEFECTS.md) (32 entries) records every mistake,
    its cause and what changed.
 
+## Limitations
+
+- **Skill is 28 % against a 49 % ceiling.** Half of lap-to-lap variation is not predictable
+  from anything known before the lap; of the half that is, the model captures a bit more
+  than half. Low-speed corners are the weakest segment kind (MAE 0.111 s vs 0.058 s on
+  straights).
+- **Three sliders rest on literature coefficients** that public data cannot verify — ride
+  height, suspension, weather grip. They are marked grade C on the HUD.
+- **Tree models do not extrapolate.** A 20-lap tyre on a qualifying baseline, or a
+  compound run longer than any team ran it on that circuit, is answered from the nearest
+  thing the model saw and understates degradation. The engineer log warns; the slider
+  range is not yet constrained to the data.
+- **The physics layer is a coefficient model, not a lap simulator.** Effects are applied
+  per segment, so a braking zone that crosses a segment boundary is not resolved; the
+  reconstruction lands a few percent past the requested sum under low grip and that
+  residual is shown as its own term (`trace rebuild`) rather than fixed.
+- **The simulator as a whole has not been back-tested** — each part has (segment model
+  on a held-out circuit, physics coefficients by regression), the sum has not.
+- No front-end tests; COTA is under-segmented (esses merge); free hosting sleeps when idle.
+
+## What's next
+
+1. **Constrain tyre age to the data.** Per circuit and compound, the slider stops at the
+   longest stint any team actually ran, defaults to the median stint, and says so.
+2. **Back-test the whole simulator.** From a driver's qualifying lap, move only the fuel
+   slider and predict their race first-stint laps, scored per circuit over 92 events.
+3. **A quasi-steady-state point-mass physics engine** — corner speed from lateral grip,
+   forward/backward sweeps for traction and braking — calibrated to each real lap, so the
+   setup axes act on real physical quantities and the simulator carries a measured
+   accuracy of its own. Replaces the coefficient formulas and the warp-based reconstruction.
+4. **ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
+   allocation instead of soft/medium/hard labels.
+5. **A tyre-strategy mode** built only from strategies teams really used.
+
 ## Documents
 
 | | |

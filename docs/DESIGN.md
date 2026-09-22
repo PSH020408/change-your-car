@@ -137,6 +137,17 @@ Render (free, no card, sleeps). For a portfolio prototype the visible cold start
 cheapest honest option; `make deploy` keeps the Cloud Run path ready for the day the
 traffic justifies it.
 
+## 8b. The back-test (2026-09-22)
+
+The first test of the whole. Same driver, same weekend: qualifying representative lap
+as baseline, race fuel, race tyre, race temperatures → simulated lap vs the race lap
+driven. Over 2,447 dry laps the simulator explains 2.5 s of a 5.5 s gap and is
+3.1 s optimistic — the size of race-pace management, which no slider asks for. Its
+median is stable across circuits (p10–p90 within ±1.7 s), so it is a measurable term:
+applied leave-one-event-out, the error falls to 1.21 s with no bias. The lesson is a
+definition, not a fix: the sliders answer *flat out*; race pace is a separate, measured
+quantity. Details in `BACKTEST.md`.
+
 ## 9. What I would do next
 
 _Done since first deployment (2026-09-22): the tyre-age slider is bounded per weekend

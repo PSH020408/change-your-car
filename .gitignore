@@ -23,6 +23,10 @@ data/gold/
 # are committed so Render/Cloud Build can build straight from the repo.
 data/artifacts/*
 !data/artifacts/baselines/
+!data/artifacts/qss/
+data/artifacts/qss/*
+!data/artifacts/qss/calibration_report.json
+!data/artifacts/qss/calibration.csv
 !data/artifacts/models/
 data/artifacts/models/*
 !data/artifacts/models/latest.json

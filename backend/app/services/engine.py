@@ -3,8 +3,10 @@
     baseline lap (store)  ->  segment table
     ML (P4)               ->  q(new conditions) - q(baseline conditions)   per segment, with band
     level 2 (P4)          ->  session-level temperature / session-type shift
-    physics (P3)          ->  setup deltas with declared bands
-    total                 ->  reconstruct (P5) -> trace, per-segment audit
+    physics (P9)          ->  QSS lap solver in differential form: setup deltas,
+                              conditions as a grip multiplier, trace = real + dv
+    fallback (P3/P5)      ->  coefficient table + warp reconstruction where a
+                              circuit has no line yet
 """
 from __future__ import annotations
 
@@ -18,6 +20,7 @@ import pandas as pd
 
 from app.schemas import domain as S
 from app.services import engineer_log as LOG
+from app.services.qss_engine import QssService
 from pipeline.models.predict import Predictor
 from pipeline.physics import modifiers as M, segment_delta as D
 from pipeline.reconstruct import trace as T
@@ -53,6 +56,9 @@ class Engine:
             pass
         self.physics = physics_cfg or M.default_config()
         self._cache: dict[str, dict] = {}
+        self.qss = QssService(self.baselines_dir,
+                              aero_u=float(self.physics.raw["aero"]["rear_wing"]["downforce_pct"].get("u", 0.3)),
+                              grip_u=float(self.physics.raw["suspension"]["mech_grip_pct_full_range"].get("u", 0.5)))
 
     # ------------------------------------------------------------ catalog
     def seasons(self) -> list[int]:
@@ -249,18 +255,56 @@ class Engine:
                            stint_lap=int(env.tyre_life or lap.get("tyre_life") or 1))
         # the ML already owns tyre temperature in-range: hand physics only the setup + weather
         sin_phys = M.SetupInput(**{**sin.__dict__, "track_temp_c": None})
-        phys = D.lap_physics_delta(segs, sin_phys, session=b.doc["session"], baseline_track_temp_c=lap.get("track_temp_c"),
-                                   roughness=M.circuit_roughness(b.doc["event"], self.physics), cfg=self.physics)
-        state = M.physics_state(sin_phys, session=b.doc["session"], roughness=M.circuit_roughness(b.doc["event"], self.physics),
-                                cfg=self.physics)
-        ph, ph_lo, ph_hi = (phys[c].to_numpy() for c in ("physics_delta_s", "physics_delta_lo_s", "physics_delta_hi_s"))
-
-        total, total_lo, total_hi = ml + ph, ml_lo + ph_lo, ml_hi + ph_hi          # level 2 not applied (see above)
-        rec = T.reconstruct(b.trace, b.segments, {int(i): float(t) for i, t in zip(segs["segment_index"], total)},
-                            cfg=self.physics, grip_scale=state.grip_multiplier, official_lap_time_s=lap["lap_time_s"])
-        base_rec = T.reconstruct(b.trace, b.segments, [0.0] * n, cfg=self.physics, official_lap_time_s=lap["lap_time_s"])
-        audit = rec.segments.set_index("segment_index")
+        roughness = M.circuit_roughness(b.doc["event"], self.physics)
+        state = M.physics_state(sin_phys, session=b.doc["session"], roughness=roughness, cfg=self.physics)
         lap_len = float(b.doc["track"]["lap_length_m"])
+        base_rec = T.reconstruct(b.trace, b.segments, [0.0] * n, cfg=self.physics, official_lap_time_s=lap["lap_time_s"])
+
+        engine_mode, qss_fit = "table", None
+        self._current_segments = b.segments
+        if self.qss.available(b.doc["season"], b.doc["event"]):
+            # ---- P9: QSS in differential form
+            fuel0 = M.baseline_fuel_kg(b.doc["session"], lap.get("lap_number"), self._total_laps(b.doc), self.physics)
+            q = self.qss.lap(b.doc["season"], b.doc["event"], lap, b.trace, fuel0, lap.get("air_temp_c"))
+            res = self.qss.simulate(q, state, float(ml.sum()), b.segments, base_rec.trace["distance_m"].to_numpy(float))
+            order = {int(s["index"]): i for i, s in enumerate(b.segments)}
+            idx = [order[int(i)] for i in segs["segment_index"]]
+            # The engine's own segment deltas are transported into the REAL
+            # trace's time domain: three traces (real, real+dv setup, real+dv
+            # setup+conditions) integrated per segment. Setup, conditions and
+            # headline then sum exactly, so the HUD's split needs no rebuild term.
+            rec0 = self._qss_trace(b, base_rec, np.zeros_like(res.dv1_kph_on_trace), state, fuel0, lap["lap_time_s"])
+            tr0 = self._segment_times(rec0.trace)          # same samples, same integration as the two below
+            rec1 = self._qss_trace(b, base_rec, res.dv1_kph_on_trace, state, fuel0, lap["lap_time_s"])
+            rec = self._qss_trace(b, base_rec, res.dv2_kph_on_trace, state, fuel0, lap["lap_time_s"])
+            tr1, tr2 = self._segment_times(rec1.trace), self._segment_times(rec.trace)
+            ph = np.array([tr1[int(i)] - tr0[int(i)] for i in segs["segment_index"]])
+            ml_applied = np.array([tr2[int(i)] - tr1[int(i)] for i in segs["segment_index"]])
+            band_lo, band_hi = res.physics_lo_s[idx] - res.physics_s[idx], res.physics_hi_s[idx] - res.physics_s[idx]
+            ph_lo, ph_hi = ph + band_lo, ph + band_hi
+            total = ph + ml_applied
+            total_lo = total + (ml_lo - ml) + band_lo
+            total_hi = total + (ml_hi - ml) + band_hi
+            achieved = total
+            refused = np.zeros(n)
+            engine_mode = "qss"
+            qss_fit = S.QssFit(mu=round(q.car0.mu, 3), cl_a=round(q.car0.cl_a, 3), cd_a=round(q.car0.cd_a, 3),
+                               speed_rms_kph=round(q.fit["rms_kph"], 1),
+                               lap_time_err_s=round(q.fit["sim_lap_time_s"] - lap["lap_time_s"], 3),
+                               grip_multiplier_ml=round(res.grip_multiplier_ml, 4), solves=res.solves)
+            ml = ml_applied
+        else:
+            # ---- fallback: P3 coefficient table + P5 warp reconstruction
+            phys = D.lap_physics_delta(segs, sin_phys, session=b.doc["session"], baseline_track_temp_c=lap.get("track_temp_c"),
+                                       roughness=roughness, cfg=self.physics)
+            ph, ph_lo, ph_hi = (phys[c].to_numpy() for c in ("physics_delta_s", "physics_delta_lo_s", "physics_delta_hi_s"))
+            total, total_lo, total_hi = ml + ph, ml_lo + ph_lo, ml_hi + ph_hi          # level 2 not applied (see above)
+            rec = T.reconstruct(b.trace, b.segments, {int(i): float(t) for i, t in zip(segs["segment_index"], total)},
+                                cfg=self.physics, grip_scale=state.grip_multiplier, official_lap_time_s=lap["lap_time_s"])
+            audit = rec.segments.set_index("segment_index")
+            achieved = np.array([float(audit.loc[int(i), "achieved_s"]) for i in segs["segment_index"]])
+            refused = np.array([float(audit.loc[int(i), "residual_s"]) if bool(audit.loc[int(i), "clamped"]) else 0.0
+                                for i in segs["segment_index"]])
 
         seg_out = []
         for k, row in segs.iterrows():
@@ -273,8 +317,8 @@ class Engine:
                 physics_s=round(float(ph[k]), 4), physics_lo_s=round(float(ph_lo[k]), 4), physics_hi_s=round(float(ph_hi[k]), 4),
                 total_s=round(float(total[k]), 4), total_lo_s=round(float(min(total_lo[k], total_hi[k])), 4),
                 total_hi_s=round(float(max(total_lo[k], total_hi[k])), 4),
-                achieved_s=round(float(audit.loc[i, "achieved_s"]), 4),
-                refused_s=round(float(audit.loc[i, "residual_s"]) if bool(audit.loc[i, "clamped"]) else 0.0, 4)))
+                achieved_s=round(float(achieved[k]), 4),
+                refused_s=round(float(refused[k]), 4)))
         sectors = [float(sum(s.total_s for s in seg_out if s.sector == k)) for k in (1, 2, 3)]
         refused = float(sum(s.refused_s for s in seg_out))
         summary = S.LapSummary(
@@ -295,4 +339,50 @@ class Engine:
             baseline=self.resample(base_rec.trace, lap_len), simulated=self.resample(rec.trace, lap_len),
             physics=pstate, grades=LOG.grades(self.physics), engineer_log=notes,
             model_version=self.model_version, physics_version=str(self.physics.path.name if self.physics.path else "physics.yaml"),
+            engine_mode=engine_mode, qss_fit=qss_fit,
             computed_ms=round((time.perf_counter() - t0) * 1000, 1))
+
+    # ------------------------------------------------------------ P9 trace
+    @staticmethod
+    def _total_laps(doc: dict) -> int | None:
+        """Race length from the laps the store lists for the weekend (None for qualifying)."""
+        if str(doc.get("session", "")).upper() != "R":
+            return None
+        mx = 0
+        for drv in doc.get("drivers", {}).values():
+            for lp in drv.get("available", []) or []:
+                mx = max(mx, int(lp.get("lap_number") or 0))
+        return mx or None
+
+    def _segment_times(self, trace: pd.DataFrame) -> dict[int, float]:
+        """Integrated time inside each stored segment, on the trace's own samples."""
+        d = trace["distance_m"].to_numpy(float)
+        v = trace["speed_kph"].to_numpy(float)
+        out = {}
+        n = len(d)
+        for (i0, i1), sg in zip(T._segment_slices(d, self._current_segments), self._current_segments):
+            t0, t1 = T._tiled(i0, i1, n)
+            out[int(sg["index"])] = T.integrate_lap_time(v[t0:t1], d[t0:t1]) if i1 - i0 >= 3 else 0.0
+        return out
+
+    @staticmethod
+    def _qss_trace(b: LoadedBaseline, base_rec: T.Reconstruction, dv_kph: np.ndarray, state: M.PhysicsState,
+                   fuel_kg: float, official_lap_time_s: float) -> T.Reconstruction:
+        """Real trace + the engine's speed change, with channels re-derived and time re-integrated."""
+        base = b.trace.sort_values("distance_m").drop_duplicates("distance_m").reset_index(drop=True)
+        d = base["distance_m"].to_numpy(float)
+        v0 = base["speed_kph"].to_numpy(float)
+        v1 = np.maximum(v0 + np.asarray(dv_kph, float), 20.0)
+        env = T.Envelope.from_config(None, fuel_kg=fuel_kg, grip_scale=state.grip_multiplier)
+        ch = T.synthesize_channels(d, v1, base, env)
+        v_ms = v1 / 3.6
+        ds = np.diff(d, prepend=d[0])
+        vm = np.concatenate([[v_ms[0]], 0.5 * (v_ms[1:] + v_ms[:-1])])
+        ch.insert(1, "time_s", np.cumsum(ds / np.maximum(vm, 1.0)))
+        t_base, t_new = T.integrate_lap_time(v0, d), T.integrate_lap_time(v1, d)
+        rep = base_rec.segments.copy()
+        out = T.Reconstruction(trace=ch, segments=rep, lap_time_baseline_s=t_base, lap_time_s=t_new,
+                               requested_delta_s=t_new - t_base, achieved_delta_s=t_new - t_base,
+                               official_lap_time_s=official_lap_time_s)
+        out.trace["time_s"] = out.trace["time_s"] * out.time_scale
+        return out

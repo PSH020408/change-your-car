@@ -34,11 +34,14 @@ project than its final numbers._
 | 25 | Reconstruction / ML | "No usable lap for VER" in qualifying | The clean-air gap rule was applied to qualifying, where there is no car ahead | Gap rule is race-only (also fixed the ML gate population) |
 | 26 | API | Tyre-age band ±2 s for a 0.3 s effect | Summing 23 per-segment bands assumes every segment errs the same way | Lap band = ln(5) × measured counterfactual MAE, shared over segments by their time |
 | 27 | API | Track +10 °C produced −1.9 s through level 2 | Air and track temperature collinear in a 57-session fit | Level 2 reported, not applied; refit with one temperature term on 165 sessions: coefficient indistinguishable from 0 |
-| 28 | HUD | Headline delta (+1.230) ≠ physics sum (+1.200); +4.355 vs +4.171 in intermediate conditions | The headline integrates the rebuilt trace; the rebuild lands past the requested sum, more so under low grip | Shown as a fourth "trace rebuild" term so the split adds up; backend fix pending |
+| 28 | HUD | Headline delta (+1.230) ≠ physics sum (+1.200); +4.355 vs +4.171 in intermediate conditions | The headline integrates the rebuilt trace; the rebuild lands past the requested sum, more so under low grip | Shown as a fourth "trace rebuild" term so the split adds up; **closed 2026-09-29** by the physics engine: components and headline come from one integration, `refused` is identically zero |
 | 29 | Warm | Three sessions marked "done" had laps but no telemetry in the cache | Download cut mid-session, ledger written anyway (6.8 MB delta vs ~110 MB normal) | Entries reset to failed and re-warmed; cache size delta is now a sanity signal |
 | 30 | Ingest | 2024 Baku R: first 0 laps, then 16,120 laps (18× the real 878) | FastF1 shipped a "minimal driver list" — team blank, driver abbreviation blank — so first the rows were dropped, then every driver's lap N shared one `lap_uid` and the telemetry merge multiplied | Driver and team borrowed from sibling sessions of the same weekend; a session with duplicate `lap_uid`s is refused outright |
 | 31 | Segment | Seven circuits failed the hidden-corner check (a 78 m radius inside a "straight" at Zandvoort) | The auto-scaled smoothing window is too wide for some circuits; and the calibration grid was swept with a different `min_gap` than the real run used | Per-circuit overrides in `circuits.yaml` (window, threshold, `min_gap` pinned); 20/20 circuit-seasons pass |
 | 32 | HUD / ML | Tyre age 2 → 20 laps on a qualifying baseline predicted only +0.13 s | Qualifying data never contains tyres past ~8 laps; trees cannot extrapolate | First an engineer-log warning; then (2026-09-22) the slider itself is bounded by the longest stint run on that compound that weekend, compounds nobody raced are marked, and the log warns only past that bound |
+| 33 | Physics engine | First calibration: every lap 15–20 km/h too fast on the straights, drag pinned at its upper bound on 97 % of laps | 780 kW applied for the whole lap (ERS deploys for ~a third of it) and four-wheel traction out of slow corners | Power set to 480 kW lap-average and traction to the rear axle's 60 % share, both by a sweep over 8 circuits; drag area falls into the published range |
+| 34 | Physics engine | Speed RMS 12.8 km/h against an 8 km/h gate, unmoved by any constant | The point mass brakes 10–20 m later and harder than a driver; a 10 m phase shift at 4 g is 35 km/h | Not fixable in this model class; recorded as a failed gate. The quantity the simulator outputs — segment time — is within 0.05 s, and a gate on it was added and labelled as added afterwards |
+| 35 | Physics engine | Tyre load sensitivity (a textbook term) made every circuit worse and pinned downforce at its bound | The three fitted parameters already absorb the speed dependence of grip; the extra term is not identifiable from one lap | Left at zero, tested values kept in the sweep log |
 
 ## Patterns
 
@@ -50,4 +53,8 @@ project than its final numbers._
 - **Compare like with like.** Three defects (#7, #17, #20) were comparisons between
   quantities from different populations or axes.
 - **Show the residual.** When a stage cannot honour a request exactly (#24, #26, #28),
-  the honest move is a visible term, not a hidden correction.
+  the honest move is a visible term, not a hidden correction — until the stage can be
+  replaced by one that has no residual (#28 → the physics engine).
+- **A gate can be wrong about what it measures.** #34: the speed RMS gate graded the
+  driver's braking shape, not the simulator's output. Keep the failed gate in the table,
+  add the right one, and say which came first.

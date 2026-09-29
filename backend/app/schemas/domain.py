@@ -224,6 +224,17 @@ class LapSummary(BaseModel):
     sector_deltas_s: list[float]
 
 
+class QssFit(BaseModel):
+    """The three car parameters fitted to the baseline lap, and how well they reproduce it."""
+    mu: float
+    cl_a: float
+    cd_a: float
+    speed_rms_kph: float
+    lap_time_err_s: float = Field(..., description="calibrated point-mass lap time minus the real lap time")
+    grip_multiplier_ml: float = Field(..., description="grip multiplier that reproduces the ML conditions delta")
+    solves: int
+
+
 class SimulationResponse(BaseModel):
     lap: LapSummary
     segments: list[SegmentDelta]
@@ -234,4 +245,6 @@ class SimulationResponse(BaseModel):
     engineer_log: list[EngineerNote]
     model_version: str
     physics_version: str
+    engine_mode: Literal["qss", "table"] = Field("table", description="qss: point-mass lap solver in differential form; table: P3 coefficients + warp")
+    qss_fit: QssFit | None = None
     computed_ms: float

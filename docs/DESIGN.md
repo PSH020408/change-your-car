@@ -148,6 +148,32 @@ applied leave-one-event-out, the error falls to 1.21 s with no bias. The lesson 
 definition, not a fix: the sliders answer *flat out*; race pace is a separate, measured
 quantity. Details in `BACKTEST.md`.
 
+## 8c. The physics engine (2026-09-29)
+
+The P3 coefficient table answered "how much does a wing click change a
+segment" with a formula per segment kind and a literature number per coefficient. It
+could not say how accurate the simulator was as a whole, and it needed the warp
+reconstruction to turn segment times back into a trace — which never quite landed
+(defect #28). The replacement is the smallest model that produces a speed profile from
+physics alone: a point mass on the measured racing line, limited by grip in corners,
+by power and rear-axle traction under acceleration and by grip plus drag under
+braking, with the road gradient from the position feed's Z channel.
+
+Three decisions shaped it. **Three free parameters, no more:** grip, downforce area,
+drag area — fitted to each lap's speed trace and never to its lap time, so the lap-time
+error is a measurement rather than a residual. Everything else is one constant for all
+552 laps, set by a sweep over eight circuits and written down with its reason. **Gates
+first:** six pass/fail criteria were written before the first run; three failed and the
+table says so. The interesting failure is the speed RMS: 12.8 km/h against a target of
+8, almost all of it in braking zones, where the point mass brakes later and harder than
+any driver. In time that phase error nearly cancels — the segment-time error is 0.05 s
+— so a segment-time gate was added afterwards and marked as such. **Differential use:**
+because the engine's own trace is wrong in exactly that way, the HUD never shows it. It
+shows the real trace plus the engine's *change*, and the change is computed by the same
+solver on the same line, so the braking-shape error cancels in the difference. The fuel
+slope, which the engine was never told, comes out at 0.024 s/kg against 0.029 measured on
+real races: the physics is doing real work.
+
 ## 9. What I would do next
 
 _Done since first deployment (2026-09-22): the tyre-age slider is bounded per weekend
@@ -162,6 +188,7 @@ to fill._
 - Compound × temperature interaction, driver × circuit history.
 - A back-test of the simulator as a whole: predict a race lap from the same driver's
   qualifying lap by moving only the fuel slider, and score it per circuit.
-- Fix, rather than expose, the reconstruction residual under low grip.
+- ~~Fix, rather than expose, the reconstruction residual under low grip.~~ Done by
+  the physics engine (§8c): the residual no longer exists.
 - A proper front-end test layer; today the HUD is verified by hand and by the
   contract tests on the API.

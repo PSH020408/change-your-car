@@ -82,6 +82,7 @@ FastF1 ─► warm_cache ─► ingest ─► segment ─► features ─► Lig
 | Noise floor (two consecutive clean push laps, same driver, same tyres) | 0.339 s → **skill ceiling 49 %** | — |
 | 80 % band coverage after calibration | 0.80 | 0.81 |
 | **Whole-simulator back-test:** qualifying lap + race fuel/tyres/temps → race first-stint lap (2,447 dry laps, 75 events) | flat-out answer -3.1 s optimistic; **1.21 s MAE, no bias** after a measured race-pace offset of +3.0 s (leave-one-event-out) | — |
+| **Physics engine** (point-mass lap solver, 3 parameters fitted to the speed trace, never to the lap time; 552 laps, 25 circuits) | segment time **0.051 s** median (2.6 %); lap time 0.59 s (0.6 %); fuel effect emerges at 0.024 s/kg vs 0.029 measured; speed RMS 12.8 km/h (braking-point phase, see [`docs/PHYSICS_ENGINE.md`](docs/PHYSICS_ENGINE.md)) | — |
 
 The model reaches 58 % of what a perfect model could reach on this data; the rest is
 lap-to-lap variance that no pre-lap feature can see. Details, gates, what failed and why
@@ -117,10 +118,12 @@ management on top — is in [`docs/BACKTEST.md`](docs/BACKTEST.md).
   and a compound nobody raced says so. Questions outside that range ("SOFT for 40 laps
   at Bahrain") are not answered — deliberately; the alternative was to invent a
   degradation curve nobody has driven.
-- **The physics layer is a coefficient model, not a lap simulator.** Effects are applied
-  per segment, so a braking zone that crosses a segment boundary is not resolved; the
-  reconstruction lands a few percent past the requested sum under low grip and that
-  residual is shown as its own term (`trace rebuild`) rather than fixed.
+- **The physics engine is a point mass.** It reproduces a real lap's segment times to
+  0.05 s but not the driver's braking shape (it brakes 10–20 m later and harder), so its
+  speed trace is 12.8 km/h RMS off the real one and is never shown directly: the HUD
+  shows the real trace plus the engine's *change*. Three of its six gates failed and are
+  recorded as failed ([`docs/PHYSICS_ENGINE.md`](docs/PHYSICS_ENGINE.md)). Ride height,
+  suspension and weather still enter through literature coefficients (grade C).
 - **The simulator answers the flat-out question.** Back-tested against real race laps it
   is 3.1 s optimistic — the size of race-pace management (engine modes, lift-and-coast,
   tyre saving), which no slider represents. Measured and applied as an explicit offset
@@ -129,15 +132,19 @@ management on top — is in [`docs/BACKTEST.md`](docs/BACKTEST.md).
 
 ## What's next
 
-1. **A quasi-steady-state point-mass physics engine** — corner speed from lateral grip,
-   forward/backward sweeps for traction and braking — calibrated to each real lap, so the
-   setup axes act on real physical quantities and the simulator carries a measured
-   accuracy of its own. Replaces the coefficient formulas and the warp-based reconstruction.
-2. **ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
+_Done 2026-09-29: the quasi-steady-state point-mass engine (item 1 of the previous list)
+— corner speeds from grip and aero, forward/backward sweeps, elevation, DRS, three
+parameters fitted per lap, 552-lap calibration with six gates, used in differential
+form. The coefficient table and the warp reconstruction remain only as a fallback._
+
+1. **ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
    allocation instead of soft/medium/hard labels.
-3. **A tyre-strategy mode** built only from strategies teams really used — the HUD
+2. **A tyre-strategy mode** built only from strategies teams really used — the HUD
    already shows how each race was actually run; the mode would score those sequences,
    carrying the measured race-pace offset as its own labelled term.
+3. **Engine follow-ups:** a per-circuit aero prior so the fitted downforce ranks
+   circuits the way the paddock does (gate G3), and a braking-shape term (earlier, softer
+   than the limit) if it can be done with one constant rather than a per-lap fit.
 
 ## Documents
 
@@ -147,7 +154,8 @@ management on top — is in [`docs/BACKTEST.md`](docs/BACKTEST.md).
 | [`ROADMAP.md`](ROADMAP.md) | The 10-stage plan, each stage's gate, and what actually happened |
 | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) | The ML model: features, metrics, gates, limitations |
 | [`docs/BACKTEST.md`](docs/BACKTEST.md) | Whole-simulator back-test: qualifying lap → race lap, and the measured race-pace offset |
-| [`docs/DEFECTS.md`](docs/DEFECTS.md) | 32 defects and lessons, in the order they were found |
+| [`docs/PHYSICS_ENGINE.md`](docs/PHYSICS_ENGINE.md) | The point-mass engine: model, constants set by sweep, 552-lap calibration, the gates it failed, and why it runs in differential form |
+| [`docs/DEFECTS.md`](docs/DEFECTS.md) | 35 defects and lessons, in the order they were found |
 | [`docs/recon/DECISIONS.md`](docs/recon/DECISIONS.md) | The reconnaissance gate: nine data decisions and two revisions |
 
 ## Run it
@@ -183,7 +191,7 @@ build ≈ 2 minutes).
 | Host | Render, free tier (`plan: free`, region Singapore) |
 | Live URL | https://change-your-car.onrender.com |
 | Health check | `GET /health` → `{"status":"ok","model_version":"v2026.09.17-1",…}` |
-| Cold start | 30–60 s after 15 min idle; ~300 ms per simulation when warm (0.1 shared CPU — ~15 ms on a laptop) |
+| Cold start | 30–60 s after 15 min idle; ~300 ms per simulation when warm (0.1 shared CPU — ~15–45 ms on a laptop); the first simulation of a lap adds the engine's 3-parameter fit (~120 ms on a laptop, a few seconds on the free instance) |
 | Memory | 512 MB available, ~300 MB used |
 | Alternative | `make deploy` targets Google Cloud Run (same container, no sleep, 2-instance spend cap) |
 
@@ -196,9 +204,9 @@ front-page spike); no custom domain. None of these change the numbers the app sh
 | Path | Role |
 |---|---|
 | `backend/pipeline/ingest` · `segment` · `features` | Batch data pipeline (bronze → silver → gold) |
-| `backend/pipeline/physics/` | Sliders → physics coefficients, graded (`configs/physics.yaml`) |
+| `backend/pipeline/physics/` | Sliders → physics modifiers (`configs/physics.yaml`); `qss.py` point-mass lap solver, `line.py` racing line (curvature, gradient, DRS), `calibrate_qss.py` 552-lap calibration and gates |
 | `backend/pipeline/models/` | Quantile GBMs, conformal bands, counterfactual evaluation, registry |
-| `backend/pipeline/reconstruct/` | Segment deltas → continuous telemetry (g-g envelope clamp) |
+| `backend/pipeline/reconstruct/` | Fallback: segment deltas → continuous telemetry by warping (used only where a circuit has no line) |
 | `backend/app/` | FastAPI: `/api/meta/*`, `/api/baseline`, `POST /api/simulate` |
 | `frontend/src/` | Next.js 15 HUD, no chart library |
 | `backend/configs/` | `scope.yaml` · `physics.yaml` · `model.yaml` · `circuits.yaml` · `chassis.yaml` |

@@ -222,6 +222,20 @@ and lint clean; numbers verified against the smoke suite on screen.
 
 ---
 
+## P9 — Physics engine (added 2026-09-29, after deployment)
+
+| ID | Task |
+|---|---|
+| P9-1 | Racing line per circuit-season: curvature, gradient (Z channel, gated on closure and lap-to-lap spread) and DRS zones on a 5 m grid, from the same ensemble the segmenter used — **done**, 92/92 lines, 92/92 pass the elevation gate |
+| P9-2 | Quasi-steady-state point-mass solver: grip limit, backward and forward sweeps, friction ellipse, rear-axle traction, elevation, DRS — **done**, ~4 ms per solve, 7 invariant tests |
+| P9-3 | Calibration: μ, C<sub>l</sub>A, C<sub>d</sub>A fitted per lap to the speed trace only; constants set by an 8-circuit sweep; 552 laps graded on six gates — **done**: segment time 0.051 s median, lap 0.59 s, fuel effect emergent at 0.024 s/kg; speed RMS 12.8 km/h and the parameter-plausibility gate failed and are recorded as failed (`docs/PHYSICS_ENGINE.md`) |
+| P9-4 | Engine in the API in differential form (real trace + engine change; ML conditions as a grip multiplier); coefficient table and warp kept as fallback — **done**, defect #28 closed, 4 integration tests on the stored Bahrain lap |
+| P9-5 | Per-circuit aero prior (gate G3) and a one-constant braking-shape term — open |
+
+**Gate (written before the first run):** G1 speed RMS ≤ 8 km/h · G2 lap time ≤ 0.5 s median · G3 parameters in box and circuits ranked · G4 fuel effect within 25 % · G5 sign checks. **Outcome:** 3/6 after G1b (segment time ≤ 0.10 s) was added once the residual analysis showed G1 measures the driver's braking shape, which a point mass cannot have. Both the failures and the added gate are in the document.
+
+---
+
 ## Budgets
 
 | Metric | Target | Actual |

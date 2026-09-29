@@ -102,10 +102,16 @@ export interface LapSummary {
   ml_s: number; level2_s: number; level2_applied: boolean; physics_s: number; refused_s: number; sector_deltas_s: number[];
 }
 
+export interface QssFit {
+  mu: number; cl_a: number; cd_a: number; speed_rms_kph: number; lap_time_err_s: number;
+  grip_multiplier_ml: number; solves: number;
+}
+
 export interface SimulationResponse {
   lap: LapSummary; segments: SegmentDelta[]; baseline: TelemetryTrace; simulated: TelemetryTrace;
   physics: PhysicsState; grades: GradeRow[]; engineer_log: EngineerNote[];
   model_version: string; physics_version: string; computed_ms: number;
+  engine_mode?: "qss" | "table"; qss_fit?: QssFit | null;
 }
 
 export interface EventInfo { event: string; event_name: string; circuit: string | null; sessions: string[]; }

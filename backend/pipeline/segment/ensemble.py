@@ -45,6 +45,11 @@ class EnsembleResult:
     rejected: int
     used: list[int] | None = None       # indices into the input `frames`
     scales: list[float] | None = None   # distance scale applied to each used lap
+    # Elevation (raw position units, same scale as x/y). Only present when
+    # every used lap carried pos_z; the spread is the lap-to-lap standard
+    # deviation after alignment and is the quality figure the physics engine
+    # gates on before it trusts a gradient.
+    z_spread: np.ndarray | None = None
 
     def to_ensemble_axis(self, i: int, distance_m: float) -> float:
         """Where a point at `distance_m` on used lap `i` lands on the ensemble axis.
@@ -60,10 +65,16 @@ class EnsembleResult:
 def _resample(frame: pd.DataFrame, grid: np.ndarray, scale: float) -> dict[str, np.ndarray] | None:
     d = pd.to_numeric(frame["distance_m"], errors="coerce").to_numpy(dtype=float) * scale
     cols = {}
-    for name in ("pos_x", "pos_y", "speed_kph"):
+    for name in ("pos_x", "pos_y", "speed_kph", "pos_z"):
+        if name not in frame.columns:
+            if name == "pos_z":
+                continue                  # elevation is optional
+            return None
         v = pd.to_numeric(frame.get(name), errors="coerce").to_numpy(dtype=float)
         ok = np.isfinite(d) & np.isfinite(v)
         if ok.sum() < 20:
+            if name == "pos_z":
+                continue
             return None
         dd, vv = d[ok], v[ok]
         order = np.argsort(dd)
@@ -116,6 +127,9 @@ def build_ensemble(frames: list[pd.DataFrame], lap_length_m: float,
     max_pts = int(round(max_phase_m / step_m))
     shifts = []
     aligned = {"pos_x": [], "pos_y": [], "speed_kph": []}
+    has_z = all("pos_z" in cols for cols in sampled)
+    if has_z:
+        aligned["pos_z"] = []
     for cols in sampled:
         k = _phase_shift(anchor, cols["speed_kph"], max_pts)
         shifts.append(float(k * step_m))
@@ -125,6 +139,10 @@ def build_ensemble(frames: list[pd.DataFrame], lap_length_m: float,
     med = {name: np.nanmedian(np.vstack(v), axis=0) for name, v in aligned.items()}
     frame = pd.DataFrame({"distance_m": grid, "pos_x": med["pos_x"],
                           "pos_y": med["pos_y"], "speed_kph": med["speed_kph"]})
+    z_spread = None
+    if has_z:
+        frame["pos_z"] = med["pos_z"]
+        z_spread = np.nanstd(np.vstack(aligned["pos_z"]), axis=0)
     return EnsembleResult(frame=frame, n_laps=len(sampled), lap_length_m=lap_length_m,
                           phase_shifts_m=shifts, rejected=rejected,
-                          used=used, scales=scales)
+                          used=used, scales=scales, z_spread=z_spread)

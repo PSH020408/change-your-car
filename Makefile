@@ -53,8 +53,8 @@ warm-status:
 #   features  gold/features.parquet rebuilt   (~2.6 M rows expected)
 #   baselines data/artifacts/baselines/*      (HUD picks these up on restart)
 # Then `make train` separately, and read the gates before accepting.
-expand: ingest segment features baselines
-	@echo "expand done -> restart 'make api' to serve the new baselines, then 'make train'"
+expand: ingest segment features baselines line
+	@echo "expand done -> restart 'make api' to serve the new baselines and lines, then 'make train' and 'make qss-calibrate'"
 
 ingest-force:
 	@mkdir -p data/logs
@@ -162,6 +162,40 @@ silver-clean:
 features:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --verbose 2>&1 | tee ../data/logs/features.log
+
+# --- P9 physics engine: per-metre racing line (curvature, gradient, DRS) ----
+line:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.physics.line --scope configs/scope.yaml --force --window 75 2>&1 | tee ../data/logs/line.log
+
+line-export:
+	cd backend && .venv/bin/python -m pipeline.physics.line --scope configs/scope.yaml --export-only
+
+line-one:
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.physics.line --scope configs/scope.yaml --limit 1 --force --verbose --window 75
+
+qss-calibrate:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.physics.calibrate_qss --power 480 --driven 0.6 --dump 2>&1 | tee ../data/logs/qss-calibrate.log
+
+qss-quick:
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.physics.calibrate_qss --only 2024/bahrain_grand_prix --verbose --power 480 --driven 0.6
+
+qss-sweep:
+	@mkdir -p data/logs
+	@cd backend && for W in 53 75 100; do \
+	  echo "=== curvature window $$W m ==="; \
+	  PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.physics.line --scope configs/scope.yaml --force --quiet --window $$W --only $(SWEEP_ONLY) ; \
+	  PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.physics.calibrate_qss --sweep --driven 0.6 --drivers 1 --only $(SWEEP_ONLY) ; \
+	done 2>&1 | tee ../data/logs/qss-sweep.log
+	@echo "NOTE: lines for the sweep circuits are left at window 100 m; run 'make line' to restore the per-circuit windows"
+
+SWEEP_ONLY = 2024/bahrain_grand_prix,2024/monaco_grand_prix,2024/italian_grand_prix,2024/las_vegas_grand_prix,2024/hungarian_grand_prix,2024/belgian_grand_prix,2024/japanese_grand_prix,2024/singapore_grand_prix
+
+qss-dump: P ?= 480
+qss-dump: LS ?= 0
+qss-dump:
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.physics.calibrate_qss --only 2024/bahrain_grand_prix/Q,2024/monaco_grand_prix/Q --drivers 1 --dump --verbose --power $(P) --driven 0.6 --loadsens $(LS)
 
 physics-check:
 	@mkdir -p data/logs

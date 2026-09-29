@@ -51,9 +51,11 @@ export function DeltaPanel({ baseline, sim, hover, onHover }: {
   const top = useMemo(() => [...segs].sort((a, b) => Math.abs(b.total_s) - Math.abs(a.total_s)).slice(0, 7), [segs]);
   const lap = sim?.lap;
   const base = baseline.lap.lap_time_s;
-  // headline delta is the reconstructed trace, integrated; the components are what the segment model asked for.
-  // Whatever the rebuild adds or drops beyond that is shown, not hidden.
+  // headline delta is the simulated trace, integrated; the components are what the engine produced per segment.
+  // Whatever the trace adds or drops beyond that is shown, not hidden. With the QSS engine the two are the
+  // same integration, so this term is only sample-boundary rounding; the table fallback can still refuse and warp.
   const recon = lap ? lap.delta_s - (lap.physics_s + lap.ml_s - lap.refused_s) : undefined;
+  const qss = sim?.engine_mode === "qss" ? sim.qss_fit : null;
 
   return (
     <section className="card p-3 flex flex-col gap-3 shrink-0">
@@ -77,9 +79,23 @@ export function DeltaPanel({ baseline, sim, hover, onHover }: {
       <div className="grid grid-cols-4 gap-2 border-t border-hud-line pt-2">
         <Stat k="setup · physics" v={lap ? fmtDelta(lap.physics_s) : "—"} tone={lap ? cls(lap.physics_s) : undefined} sub="wings · height · susp · fuel · weather" />
         <Stat k="conditions · ML" v={lap ? fmtDelta(lap.ml_s) : "—"} tone={lap ? cls(lap.ml_s) : undefined} sub="tyre age · compound · temps" />
-        <Stat k="envelope refused" v={lap ? fmtDelta(-lap.refused_s) : "—"} tone={lap && Math.abs(lap.refused_s) > 0.0005 ? "text-status-warn" : "text-hud-muted"} sub="g-g limit: not reachable" />
-        <Stat k="trace rebuild" v={recon !== undefined ? fmtDelta(recon) : "—"} tone={recon !== undefined && Math.abs(recon) > 0.05 ? "text-status-warn" : "text-hud-muted"} sub="warp + envelope beyond targets" />
+        <Stat k="envelope refused" v={lap ? fmtDelta(-lap.refused_s) : "—"} tone={lap && Math.abs(lap.refused_s) > 0.0005 ? "text-status-warn" : "text-hud-muted"} sub={qss ? "none: the solver never exceeds grip" : "g-g limit: not reachable"} />
+        <Stat k="trace rebuild" v={recon !== undefined ? fmtDelta(recon) : "—"} tone={recon !== undefined && Math.abs(recon) > 0.05 ? "text-status-warn" : "text-hud-muted"} sub={qss ? "rounding at segment edges" : "warp + envelope beyond targets"} />
       </div>
+      {sim && (
+        <div className="text-[10px] font-mono text-hud-dim -mt-1 flex flex-wrap gap-x-3">
+          {qss ? (
+            <>
+              <span>engine <span className="text-hud-text">QSS point-mass · differential</span></span>
+              <span>fit μ {qss.mu.toFixed(2)} · ClA {qss.cl_a.toFixed(2)} · CdA {qss.cd_a.toFixed(2)}</span>
+              <span>baseline reproduced to {qss.speed_rms_kph.toFixed(0)} km/h rms · {fmtDelta(qss.lap_time_err_s)} s lap</span>
+              {Math.abs(qss.grip_multiplier_ml - 1) > 1e-4 && <span>conditions as grip ×{qss.grip_multiplier_ml.toFixed(3)}</span>}
+            </>
+          ) : (
+            <span>engine <span className="text-status-warn">coefficient table + warp</span> — no racing line for this circuit yet</span>
+          )}
+        </div>
+      )}
       {lap && Math.abs(lap.level2_s) > 0.0005 && (
         <div className="text-[10px] font-mono text-hud-dim -mt-1">
           level 2 (session-wide temp shift) {fmtDelta(lap.level2_s)} s — <span className="text-status-warn">reported, not applied</span> (refit on 184 sessions: no measurable session-wide temperature effect; in-range temps live in level 1)

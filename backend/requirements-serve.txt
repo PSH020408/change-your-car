@@ -1,5 +1,5 @@
 # Runtime-only dependencies for the deployed API + HUD container.
-# (training / ingest extras — fastf1, xgboost, shap, scipy, pytest — stay in requirements.txt)
+# (training / ingest extras — fastf1, xgboost, shap, pytest — stay in requirements.txt)
 fastapi>=0.115
 uvicorn[standard]>=0.30
 pydantic>=2.8
@@ -7,6 +7,7 @@ pydantic-settings>=2.4
 orjson>=3.10
 pandas>=2.2
 numpy>=1.26
+scipy>=1.13          # physics engine: per-lap fit (least_squares) and the grip-multiplier root (brentq)
 pyyaml>=6.0
 lightgbm>=4.5
 scikit-learn>=1.5

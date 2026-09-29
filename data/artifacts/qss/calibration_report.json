@@ -1,0 +1,149 @@
+{
+ "run_at": "2026-09-29T06:39:00+00:00",
+ "laps": 552,
+ "sessions": 184,
+ "circuits": 25,
+ "drivers_per_session": "3",
+ "elevation_used_share": 1.0,
+ "fit_ms_median": 122.6,
+ "gates": {
+  "G1_speed_rms": {
+   "median_kph": 12.81,
+   "p90_kph": 15.76,
+   "limit_median_kph": 8.0,
+   "passes": false
+  },
+  "G1b_segment_time": {
+   "median_abs_s": 0.051,
+   "p90_abs_s": 0.269,
+   "median_abs_rel": 0.0258,
+   "bias_s": -0.0004,
+   "segments": 15570,
+   "by_kind": {
+    "high_speed_corner": {
+     "median_abs_s": 0.064,
+     "bias_s": 0.012,
+     "n": 798
+    },
+    "kink": {
+     "median_abs_s": 0.023,
+     "bias_s": 0.006,
+     "n": 3186
+    },
+    "low_speed_corner": {
+     "median_abs_s": 0.203,
+     "bias_s": -0.073,
+     "n": 2064
+    },
+    "medium_speed_corner": {
+     "median_abs_s": 0.167,
+     "bias_s": 0.112,
+     "n": 1482
+    },
+    "straight": {
+     "median_abs_s": 0.039,
+     "bias_s": -0.007,
+     "n": 8040
+    }
+   },
+   "limit_median_abs_s": 0.1,
+   "passes": true
+  },
+  "G2_lap_time": {
+   "median_abs_s": 0.591,
+   "p90_abs_s": 1.387,
+   "bias_s": -0.364,
+   "passes": false
+  },
+  "G3_parameters": {
+   "inside_prior_box": 0.764,
+   "at_bound_share": 0.252,
+   "mu_median": 1.915,
+   "cl_a_median": 4.725,
+   "cd_a_median": 1.158,
+   "cl_a_rank_top": [
+    "monaco_grand_prix",
+    "singapore_grand_prix",
+    "belgian_grand_prix",
+    "italian_grand_prix",
+    "spanish_grand_prix"
+   ],
+   "cl_a_rank_bottom": [
+    "emilia_romagna_grand_prix",
+    "french_grand_prix",
+    "dutch_grand_prix",
+    "qatar_grand_prix",
+    "saudi_arabian_grand_prix"
+   ],
+   "high_downforce_in_top_half": [
+    true,
+    false,
+    true
+   ],
+   "low_downforce_in_bottom_half": [
+    false,
+    false,
+    false
+   ],
+   "passes": false
+  },
+  "G4_fuel_effect": {
+   "median_s_per_kg": 0.02421,
+   "p10": 0.0191,
+   "p90": 0.02949,
+   "measured_s_per_kg": 0.0294,
+   "passes": true
+  },
+  "G5_wing_signs": {
+   "vmax_drops_share": 0.998,
+   "grip_corners_faster_share": 1.0,
+   "passes": true
+  }
+ },
+ "gates_passed": 3,
+ "by_session": {
+  "Q": {
+   "rms_kph_median": 12.38,
+   "lap_time_err_median_s": -0.402,
+   "laps": 276
+  },
+  "R": {
+   "rms_kph_median": 13.27,
+   "lap_time_err_median_s": -0.312,
+   "laps": 276
+  }
+ },
+ "cl_a_by_circuit": {
+  "monaco_grand_prix": 6.5,
+  "singapore_grand_prix": 6.499,
+  "belgian_grand_prix": 6.456,
+  "italian_grand_prix": 6.089,
+  "spanish_grand_prix": 5.633,
+  "azerbaijan_grand_prix": 5.392,
+  "mexico_city_grand_prix": 5.253,
+  "united_states_grand_prix": 5.128,
+  "miami_grand_prix": 4.998,
+  "canadian_grand_prix": 4.954,
+  "las_vegas_grand_prix": 4.818,
+  "abu_dhabi_grand_prix": 4.626,
+  "sao_paulo_grand_prix": 4.597,
+  "austrian_grand_prix": 4.581,
+  "japanese_grand_prix": 4.567,
+  "hungarian_grand_prix": 4.494,
+  "british_grand_prix": 4.278,
+  "chinese_grand_prix": 4.272,
+  "australian_grand_prix": 4.012,
+  "bahrain_grand_prix": 3.97,
+  "emilia_romagna_grand_prix": 3.829,
+  "french_grand_prix": 3.613,
+  "dutch_grand_prix": 3.599,
+  "qatar_grand_prix": 2.967,
+  "saudi_arabian_grand_prix": 2.909
+ },
+ "skipped": [
+  {
+   "session": "artifacts/baselines/index",
+   "reason": "no line.parquet"
+  }
+ ]
+}

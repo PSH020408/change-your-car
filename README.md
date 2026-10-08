@@ -42,6 +42,22 @@
 The HUD is deliberately 2D and dependency-light: every chart and the track map are
 hand-written SVG. First load is 121 kB of JavaScript; a simulation computes in ~15 ms on a laptop and ~300 ms on the free hosted instance.
 
+## Reading the HUD
+
+| Panel | What it shows |
+|---|---|
+| **Top bar** | Season → event → session → driver → lap. `BASELINE LAP ● LIVE` means the real lap and its trace are loaded; `reset setup` returns every slider to that weekend's car. |
+| **SETUP** | A 2D schematic of the car and six sliders — front wing, rear wing, ride height, suspension, front/rear split, fuel — as changes relative to the lap actually driven (0.50 = as raced). The chip beside each name is the evidence grade of its coefficient: **A** learned from data, **B** physics with a published constant, **C** literature value that public data cannot verify. |
+| **ENVIRONMENT** | Track and air temperature (session values by default), weather (dry / intermediate / wet), compound and tyre age. The compound buttons name the Pirelli C-compound behind them; compounds nobody raced that weekend are greyed; tyre age stops at the longest stint anyone ran. |
+| **Track map** | The circuit from the measured racing line, split into its segments. After a simulation each segment is coloured by its time delta (green faster, orange slower); hovering a segment prints its kind, length and delta. The ▶ / ■ / `1×` controls replay the real and the simulated car from the line with the live gap. |
+| **Telemetry overlay** (below the map) | Speed, throttle, brake and DRS of the real lap with the simulated lap drawn over it, plus Δspeed and running Δtime rows; interpolated stretches are hatched. |
+| **Headline** | Simulated lap time and the delta to the real lap with its 80 % band; beneath it the split into **setup (physics) / conditions (ML) / envelope refused / trace rebuild**, which adds up to the headline exactly, and the engine line — which solver ran and the three parameters it fitted to this lap (μ, C<sub>l</sub>A, C<sub>d</sub>A). |
+| **SECTOR 1 / 2 / 3** | The delta per timing sector over the real sector time. |
+| **DOWNFORCE · DRAG · MECH GRIP · BALANCE** | What the sliders did to the car in physical terms: aero and mechanical-grip changes in percent, and the front/rear balance shift with an under-/oversteer tendency. |
+| **LARGEST MOVERS** | The seven segments whose time changed most (bar = total, thin line = 80 % band, dot = part the tyre envelope refused); `full table` lists all segments. |
+| **RACE STRATEGY** (race sessions only) | A stint editor — compound, laps, add or remove a stop — scored as a race total from this driver's representative race lap, with the measured pit loss for that race; the gap to the best real strategy; a lap-time chart by compound with the running gap; and every strategy actually run that day scored with the same model. The list of what the mode ignores is printed underneath. |
+| **ENGINEER LOG** | Rule-based notes on the current setup and conditions: balance warnings, envelope refusals, tyre-age bounds, grade-C caveats. Rules, not generated prose. |
+
 ## How it works
 
 ```

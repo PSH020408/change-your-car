@@ -1,4 +1,4 @@
-"""P6 — the AI Engineering Log: rules, not prose generation.
+"""P6 — the engineer log: rules, not prose generation.
 
 Every note is traceable to a number in the response. The log says what
 changed, where the lap gained and lost, what the physics refused, how sure

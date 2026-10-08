@@ -58,6 +58,10 @@ hand-written SVG. First load is 121 kB of JavaScript; a simulation computes in ~
 | **RACE STRATEGY** (race sessions only) | A stint editor — compound, laps, add or remove a stop — scored as a race total from this driver's representative race lap, with the measured pit loss for that race; the gap to the best real strategy; a lap-time chart by compound with the running gap; and every strategy actually run that day scored with the same model. The list of what the mode ignores is printed underneath. |
 | **ENGINEER LOG** | Rule-based notes on the current setup and conditions: balance warnings, envelope refusals, tyre-age bounds, grade-C caveats. Rules, not generated prose. |
 
+![The HUD on the live demo in a race session — 2024 Bahrain GP, VER, more wing and a lower ride height on the race lap (−0.238 s), and the RACE STRATEGY panel scoring the winner's SOFT 15 → HARD 21 → SOFT 21 against the other strategies run that day](docs/img/hud-bahrain-2024-r-ver-strategy.png)
+
+*The same weekend's race session. Left and centre: the race lap with the setup change (−0.238 s, 80 % band −0.333 … −0.131). Right: the strategy panel — 57 laps, pit loss 24.1 s measured from 37 stops; the winner's plan scores 1:31:36.9, 0.1 s behind the best sequence anyone ran; the chart is predicted lap time by compound with the running gap to that best card; under it, every strategy run that day scored with the same model, and the list of what the mode ignores.*
+
 ## How it works
 
 ```

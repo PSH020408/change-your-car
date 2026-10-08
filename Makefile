@@ -225,6 +225,17 @@ backtest:
 backtest-quick:
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.eval.backtest --limit-events 3 --verbose
 
+race-timing:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.ingest.race_timing --scope configs/scope.yaml --force 2>&1 | tee ../data/logs/race-timing.log
+
+race-timing-one:
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.ingest.race_timing --scope configs/scope.yaml --force --only 2024/bahrain_grand_prix
+
+strategy-backtest:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.eval.strategy_backtest 2>&1 | tee ../data/logs/strategy-backtest.log
+
 baselines:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m app.services.baselines build 2>&1 | tee ../data/logs/baselines.log

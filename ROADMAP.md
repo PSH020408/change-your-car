@@ -245,6 +245,17 @@ and lint clean; numbers verified against the smoke suite on screen.
 
 **Gate:** adopt only if both the lap counterfactual and the low-speed corner improve. **Outcome:** neither did; experiment recorded in `docs/MODEL_CARD.md`.
 
+## P11 — Tyre-strategy mode (2026-10-08)
+
+| ID | Task |
+|---|---|
+| P11-1 | Race-timing sidecar from the FastF1 cache (timing only): per-lap neutralisation (SC/VSC/red), pit loss measured per stop from the surrounding clean laps, stint maxima per compound; `race.json` in the baseline store — **done**, 92/92 races, pit loss median 22.3 s |
+| P11-2 | Strategy service and `POST /api/strategy`: representative race lap + fuel slope (engine probe) + ML tyre difference + measured pit loss; refusals past the longest stint actually run; cards from the real strategies — **done**, 4 tests (190 in total) |
+| P11-3 | Back-test against real race totals, neutralised laps removed from both sides — **done**: 677 drivers / 40 green-flag races, S1 0.389 % median (p90 1.03 %), S2 order 74.4 %, S3 pit loss 90 races (`docs/STRATEGY.md`) |
+| P11-4 | HUD panel (race sessions only): stint editor, race time, gap to the best real card, lap-time chart, the real strategies scored with the same model — **done** |
+
+**Gate (written before the first run):** S1 race total median ≤ 0.5 % and p90 ≤ 1.5 % · S2 real strategy order reproduced in ≥ 70 % of pairs · S3 pit loss reported for ≥ 80 races with a plausible median. **Outcome:** 3/3; three data defects found on the way (#37–#39).
+
 ---
 
 ## Budgets

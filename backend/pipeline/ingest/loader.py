@@ -110,6 +110,20 @@ def load_session(ff1, season: int, event: str, ses: str) -> LoadedSession:
     )
 
 
+def load_session_timing(ff1, season: int, event: str, ses: str) -> LoadedSession:
+    """Laps only — no telemetry, no weather. Enough for pit stops and race totals."""
+    s = ff1.get_session(season, event, ses)
+    s.load(laps=True, telemetry=False, weather=False, messages=False)
+    laps = s.laps
+    if laps is None or not len(laps):
+        raise ValueError(f"no laps: {season} {event} {ses}")
+    ev = getattr(s, "event", None)
+    return LoadedSession(season=season, event=event, session=ses, official_name=str(getattr(s, "name", ses)),
+                         circuit=str(getattr(ev, "Location", "") or "") if ev is not None else "",
+                         event_date=str(getattr(ev, "EventDate", "") or "") if ev is not None else "",
+                         laps=laps.copy(), weather=pd.DataFrame(), handle=s)
+
+
 def lap_uid(season: int, event_slug: str, ses: str, driver: str, lap_number: float) -> str:
     n = int(lap_number) if pd.notna(lap_number) else -1
     return f"{season}_{event_slug}_{ses}_{driver}_{n:03d}"

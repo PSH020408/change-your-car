@@ -83,6 +83,7 @@ export interface BaselineResponse {
   available_laps: AvailableLap[]; integration_note: string;
   tyre_envelope: Record<string, TyreEnvelope>; strategies: RaceStrategy[];
   compounds?: Record<string, string>;
+  race_laps?: number | null; pit_loss_s?: number | null;
 }
 
 export interface PhysicsState {
@@ -120,3 +121,23 @@ export interface DriverInfo { driver: string; team: string | null; chassis: stri
 
 export const DEFAULT_SETUP: CarSetup = { front_wing: 0.5, rear_wing: 0.5, ride_height: 0.5, suspension: 0.5, suspension_split: 0.5, fuel_kg: null };
 export const DEFAULT_ENV: Environment = { track_temp_c: null, air_temp_c: null, weather: "dry", compound: null, tyre_life: null };
+
+// ---------------------------------------------------------------- P11 strategy
+export interface Stint { compound: Compound; laps: number; }
+export interface StrategyRequest { baseline: BaselineRef; stints: Stint[]; }
+export interface StrategyLap {
+  lap: number; compound: string; tyre_life: number; fuel_kg: number; predicted_s: number;
+  fuel_delta_s: number; tyre_delta_s: number; pit_in: boolean;
+}
+export interface StrategyScore {
+  label: string; stints: Stint[]; stops: number; driving_s: number; pit_s: number; race_s: number;
+  laps: StrategyLap[]; refused: string[]; count?: number | null; winner?: boolean | null; drivers: string[];
+}
+export interface StrategyUnitLap {
+  lap_uid: string; lap_number: number; lap_time_s: number; compound: string; tyre_life: number;
+  fuel_kg: number; fuel_slope_s_per_kg: number; fuel_slope_source: "engine" | "table";
+}
+export interface StrategyResponse {
+  race_laps: number; pit_loss_s: number; pit_loss_n: number; green_share: number; unit_lap: StrategyUnitLap;
+  yours: StrategyScore; cards: StrategyScore[]; delta_to_best_s: number | null; ignored: string[];
+}

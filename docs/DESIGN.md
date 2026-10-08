@@ -174,6 +174,22 @@ solver on the same line, so the braking-shape error cancels in the difference. T
 slope, which the engine was never told, comes out at 0.024 s/kg against 0.029 measured on
 real races: the physics is doing real work.
 
+## 8d. The strategy mode (2026-10-08)
+
+The HUD had shown for weeks how each race was actually run — compound sequences and
+stint lengths from the lap data — without scoring them. The strategy mode scores them
+with what already existed: the representative race lap, the fuel model, the ML tyre
+terms. Only one new measurement was needed, the pit loss, and the decision was to
+measure it per race from the in-lap and out-lap against the clean laps around the stop
+rather than to assume a number; the 90-race spread (18 s at Zandvoort, 43 s at Singapore
+2022) shows why. The second decision was what to validate against. Race totals are the
+only ground truth, and they carry safety cars, which the model does not; so neutralised
+laps are removed from both sides and the gates are written on what remains. The third was
+to refuse rather than extrapolate: a stint longer than anyone ran on that compound that
+weekend is not scored, consistent with the tyre-age slider. The mode ends with a list of
+what it ignores, printed on the HUD, because 0.39 % on a race total is easy to misread
+as a claim about a race ([`docs/STRATEGY.md`](docs/STRATEGY.md)).
+
 ## 9. What I would do next
 
 _Done since first deployment (2026-09-22): the tyre-age slider is bounded per weekend

@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
-from app.routers import baseline, engineer_log, meta, simulate
+from app.routers import baseline, engineer_log, meta, simulate, strategy
 
 settings = get_settings()
 
@@ -29,6 +29,7 @@ app.include_router(meta.router)
 app.include_router(baseline.router)
 app.include_router(simulate.router)
 app.include_router(engineer_log.router)
+app.include_router(strategy.router)
 
 
 @app.get("/health", tags=["ops"])

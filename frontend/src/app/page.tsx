@@ -7,6 +7,7 @@ import type { SegmentInfo, SimulationResponse, TelemetryTrace } from "@/lib/type
 import { TopBar } from "@/components/hud/TopBar";
 import { DeltaPanel } from "@/components/hud/DeltaPanel";
 import { EngineerLog } from "@/components/hud/EngineerLog";
+import { StrategyPanel } from "@/components/hud/StrategyPanel";
 import { SetupPanel } from "@/components/setup/SetupPanel";
 import { EnvironmentPanel } from "@/components/setup/EnvironmentPanel";
 import { TrackMap } from "@/components/track/TrackMap";
@@ -197,6 +198,7 @@ export default function Page() {
 
           <aside className="flex flex-col gap-3 min-h-0 overflow-y-auto pr-0.5">
             <DeltaPanel baseline={b} sim={sim} hover={hover} onHover={setHover} />
+            <StrategyPanel baseline={b} />
             <EngineerLog notes={sim?.engineer_log} pending={busy} />
           </aside>
         </main>

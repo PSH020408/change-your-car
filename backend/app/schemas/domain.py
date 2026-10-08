@@ -186,6 +186,68 @@ class BaselineResponse(BaseModel):
     strategies: list[RaceStrategy] = Field(default_factory=list)
     # which Pirelli compound each label was this weekend (configs/tyres.yaml), e.g. {"SOFT": "C3"}
     compounds: dict[str, str] = Field(default_factory=dict)
+    # P11: race length and the pit loss measured on this race (None until make race-timing ran)
+    race_laps: int | None = None
+    pit_loss_s: float | None = None
+
+
+# ------------------------------------------------------------------ P11 strategy
+class Stint(BaseModel):
+    compound: Compound
+    laps: int = Field(..., ge=1, le=80)
+
+
+class StrategyRequest(BaseModel):
+    baseline: BaselineRef
+    stints: list[Stint] = Field(..., min_length=1, max_length=6)
+
+
+class StrategyLap(BaseModel):
+    lap: int
+    compound: str
+    tyre_life: int
+    fuel_kg: float
+    predicted_s: float
+    fuel_delta_s: float
+    tyre_delta_s: float
+    pit_in: bool
+
+
+class StrategyScore(BaseModel):
+    label: str
+    stints: list[Stint]
+    stops: int
+    driving_s: float
+    pit_s: float
+    race_s: float
+    laps: list[StrategyLap]
+    refused: list[str] = Field(default_factory=list, description="why this plan is outside the data; race_s is then not comparable")
+    count: int | None = None
+    winner: bool | None = None
+    drivers: list[str] = Field(default_factory=list)
+
+
+class StrategyUnitLap(BaseModel):
+    lap_uid: str
+    lap_number: int
+    lap_time_s: float
+    compound: str
+    tyre_life: int
+    fuel_kg: float
+    fuel_slope_s_per_kg: float
+    fuel_slope_source: Literal["engine", "table"]
+
+
+class StrategyResponse(BaseModel):
+    race_laps: int
+    pit_loss_s: float
+    pit_loss_n: int
+    green_share: float
+    unit_lap: StrategyUnitLap
+    yours: StrategyScore
+    cards: list[StrategyScore]
+    delta_to_best_s: float | None
+    ignored: list[str]
 
 
 class PhysicsState(BaseModel):

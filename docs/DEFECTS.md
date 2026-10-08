@@ -43,6 +43,9 @@ project than its final numbers._
 | 34 | Physics engine | Speed RMS 12.8 km/h against an 8 km/h gate, unmoved by any constant | The point mass brakes 10–20 m later and harder than a driver; a 10 m phase shift at 4 g is 35 km/h | Not fixable in this model class; recorded as a failed gate. The quantity the simulator outputs — segment time — is within 0.05 s, and a gate on it was added and labelled as added afterwards |
 | 35 | Physics engine | Tyre load sensitivity (a textbook term) made every circuit worse and pinned downforce at its bound | The three fitted parameters already absorb the speed dependence of grip; the extra term is not identifiable from one lap | Left at zero, tested values kept in the sweep log |
 | 36 | ML | New gate "soft compounds suffer more from +10 °C than hard ones" failed with the opposite sign (soft +0.0001 s, hard +0.0021 s per segment) | The gate encoded a paddock assumption; the data say the hard end of the range is the temperature-sensitive one (hard rubber needs heat, grains when cold) | Gate kept as written, model rejected on the pre-agreed accuracy rule anyway; recorded here so the next person does not write the same gate |
+| 37 | Strategy | First back-test: predicted race totals 40–90 s short on every race with a safety car, median error 1.8 % | A neutralised lap is 30–40 s slow on the real side and a normal lap on the predicted side; a stop under the safety car costs far less than the measured pit loss | Laps flagged neutralised (track status SC/VSC/red) removed from both totals; stops made under neutralisation not charged; population limited to races ≥ 90 % green |
+| 38 | Strategy | 271 driver-races skipped as "57 laps planned for a 58-lap race" | Lapped cars run one lap fewer than the leader; the service refused their real strategy against the leader's distance | Back-test scores every driver on the laps they ran; the HUD keeps the leader's distance |
+| 39 | Strategy | 2024 Baku timing had one driver, named "" | Defect #30 again: the sidecar reads the raw feed, not bronze, so the fix that borrowed driver names from sibling sessions did not apply | The sidecar reuses the same sibling lookup; a lesson about fixing data at one entry point only |
 
 ## Patterns
 
@@ -59,3 +62,5 @@ project than its final numbers._
 - **A gate can be wrong about what it measures.** #34: the speed RMS gate graded the
   driver's braking shape, not the simulator's output. Keep the failed gate in the table,
   add the right one, and say which came first.
+- **A fix at one entry point is not a fix.** #39 is #30 a second time, because a new
+  reader of the same feed bypassed the place where the first fix lived.

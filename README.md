@@ -83,6 +83,7 @@ FastF1 ─► warm_cache ─► ingest ─► segment ─► features ─► Lig
 | 80 % band coverage after calibration | 0.80 | 0.81 |
 | **Whole-simulator back-test:** qualifying lap + race fuel/tyres/temps → race first-stint lap (2,447 dry laps, 75 events) | flat-out answer -3.1 s optimistic; **1.21 s MAE, no bias** after a measured race-pace offset of +3.0 s (leave-one-event-out) | — |
 | **Physics engine** (point-mass lap solver, 3 parameters fitted to the speed trace, never to the lap time; 552 laps, 25 circuits) | segment time **0.051 s** median (2.6 %); lap time 0.59 s (0.6 %); fuel effect emerges at 0.024 s/kg vs 0.029 measured; speed RMS 12.8 km/h (braking-point phase, see [`docs/PHYSICS_ENGINE.md`](docs/PHYSICS_ENGINE.md)) | — |
+| **Tyre-strategy mode** (race total from the representative race lap + fuel + ML tyre terms + measured pit loss; 677 drivers, 40 green-flag races) | race total within **0.39 %** (20.7 s) median, p90 1.03 %, no bias; real strategy order reproduced in 74 % of pairs; pit loss measured per race, median 22.3 s ([`docs/STRATEGY.md`](docs/STRATEGY.md)) | — |
 
 The model reaches 58 % of what a perfect model could reach on this data; the rest is
 lap-to-lap variance that no pre-lap feature can see. Details, gates, what failed and why
@@ -102,7 +103,7 @@ management on top — is in [`docs/BACKTEST.md`](docs/BACKTEST.md).
    the noise floor was measured before any lap-level gate was set.
 4. **No stage without a gate — and no silent failures.** Models that miss a gate are
    not registered as latest; if one is accepted anyway the reason is written into the
-   registry. The [defect list](docs/DEFECTS.md) (32 entries) records every mistake,
+   registry. The [defect list](docs/DEFECTS.md) (39 entries) records every mistake,
    its cause and what changed.
 
 ## Limitations
@@ -128,6 +129,10 @@ management on top — is in [`docs/BACKTEST.md`](docs/BACKTEST.md).
   is 3.1 s optimistic — the size of race-pace management (engine modes, lift-and-coast,
   tyre saving), which no slider represents. Measured and applied as an explicit offset
   the error drops to 1.2 s with no bias ([`docs/BACKTEST.md`](docs/BACKTEST.md)).
+- **The strategy mode scores laps, not races.** Safety cars, traffic, warm-up and in-lap
+  push, the start and plan-dependent pace management are all ignored and listed as such
+  on the HUD; 0.39 % on the race total is the size of the terms it does carry (fuel,
+  tyre age, compound, pit loss), not a claim about the rest ([`docs/STRATEGY.md`](docs/STRATEGY.md)).
 - No front-end tests; COTA is under-segmented (esses merge); free hosting sleeps when idle.
 
 ## What's next
@@ -143,9 +148,11 @@ form. The coefficient table and the warp reconstruction remain only as a fallbac
    shows (0.474 → 0.478 s), and the compound table carried no signal; rejected on the
    rule agreed beforehand, written up in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md). The
    Pirelli table now labels the HUD's compound buttons (Soft C3, …).
-2. **A tyre-strategy mode** built only from strategies teams really used — the HUD
-   already shows how each race was actually run; the mode would score those sequences,
-   carrying the measured race-pace offset as its own labelled term.
+2. ~~**A tyre-strategy mode** built only from strategies teams really used.~~ Done
+   2026-10-08: race timing measured per race (pit loss, neutralised laps, stint maxima),
+   a race total from the representative race lap plus fuel, tyre and pit terms, the real
+   strategies as comparison cards, and a back-test on 677 drivers / 40 green-flag races
+   (0.39 % median) — [`docs/STRATEGY.md`](docs/STRATEGY.md).
 3. **Engine follow-ups:** a per-circuit aero prior so the fitted downforce ranks
    circuits the way the paddock does (gate G3), and a braking-shape term (earlier, softer
    than the limit) if it can be done with one constant rather than a per-lap fit.
@@ -159,7 +166,8 @@ form. The coefficient table and the warp reconstruction remain only as a fallbac
 | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) | The ML model: features, metrics, gates, limitations |
 | [`docs/BACKTEST.md`](docs/BACKTEST.md) | Whole-simulator back-test: qualifying lap → race lap, and the measured race-pace offset |
 | [`docs/PHYSICS_ENGINE.md`](docs/PHYSICS_ENGINE.md) | The point-mass engine: model, constants set by sweep, 552-lap calibration, the gates it failed, and why it runs in differential form |
-| [`docs/DEFECTS.md`](docs/DEFECTS.md) | 36 defects and lessons, in the order they were found |
+| [`docs/STRATEGY.md`](docs/STRATEGY.md) | The tyre-strategy mode: lap model, measured race timing, the 677-driver back-test and what the mode ignores |
+| [`docs/DEFECTS.md`](docs/DEFECTS.md) | 39 defects and lessons, in the order they were found |
 | [`docs/recon/DECISIONS.md`](docs/recon/DECISIONS.md) | The reconnaissance gate: nine data decisions and two revisions |
 
 ## Run it
@@ -207,11 +215,12 @@ front-page spike); no custom domain. None of these change the numbers the app sh
 
 | Path | Role |
 |---|---|
-| `backend/pipeline/ingest` · `segment` · `features` | Batch data pipeline (bronze → silver → gold) |
+| `backend/pipeline/ingest` · `segment` · `features` | Batch data pipeline (bronze → silver → gold); `race_timing.py` measures pit loss and neutralised laps per race |
 | `backend/pipeline/physics/` | Sliders → physics modifiers (`configs/physics.yaml`); `qss.py` point-mass lap solver, `line.py` racing line (curvature, gradient, DRS), `calibrate_qss.py` 552-lap calibration and gates |
 | `backend/pipeline/models/` | Quantile GBMs, conformal bands, counterfactual evaluation, registry |
+| `backend/pipeline/eval/` | Whole-simulator back-test and the strategy back-test (gates S1–S3) |
 | `backend/pipeline/reconstruct/` | Fallback: segment deltas → continuous telemetry by warping (used only where a circuit has no line) |
-| `backend/app/` | FastAPI: `/api/meta/*`, `/api/baseline`, `POST /api/simulate` |
+| `backend/app/` | FastAPI: `/api/meta/*`, `/api/baseline`, `POST /api/simulate`, `POST /api/strategy` |
 | `frontend/src/` | Next.js 15 HUD, no chart library |
 | `backend/configs/` | `scope.yaml` · `physics.yaml` · `model.yaml` · `circuits.yaml` · `chassis.yaml` · `tyres.yaml` (Pirelli nominations, 92 events) |
 | `data/artifacts/` | Baselines (184 sessions) and the registered model — committed for repo-based builds |

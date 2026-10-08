@@ -27,6 +27,10 @@ data/artifacts/*
 data/artifacts/qss/*
 !data/artifacts/qss/calibration_report.json
 !data/artifacts/qss/calibration.csv
+!data/artifacts/strategy/
+data/artifacts/strategy/*
+!data/artifacts/strategy/strategy_backtest_report.json
+!data/artifacts/strategy/strategy_backtest.csv
 !data/artifacts/models/
 data/artifacts/models/*
 !data/artifacts/models/latest.json

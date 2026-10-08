@@ -21,6 +21,7 @@ import pandas as pd
 from app.schemas import domain as S
 from app.services import engineer_log as LOG
 from app.services.qss_engine import QssService
+from app.services.strategy import StrategyService
 from pipeline.models.predict import Predictor
 from pipeline.physics import modifiers as M, segment_delta as D
 from pipeline.reconstruct import trace as T
@@ -60,6 +61,7 @@ class Engine:
         self._cache: dict[str, dict] = {}
         self.tyres = self._load_tyres()
         self._segphys: dict[str, dict[int, dict]] = {}
+        self.strategy = StrategyService(self)
         self.qss = QssService(self.baselines_dir,
                               aero_u=float(self.physics.raw["aero"]["rear_wing"]["downforce_pct"].get("u", 0.3)),
                               grip_u=float(self.physics.raw["suspension"]["mech_grip_pct_full_range"].get("u", 0.5)))
@@ -219,6 +221,7 @@ class Engine:
         r0 = T.reconstruct(b.trace, b.segments, [0.0] * len(b.segments), cfg=self.physics,
                            official_lap_time_s=b.lap["lap_time_s"])
         lap_len = float(b.doc["track"]["lap_length_m"])
+        ri = self.strategy.race_info(int(b.doc["season"]), b.doc["event"]) if str(b.doc["session"]).upper() == "R" else None
         return S.BaselineResponse(
             lap=self._lap_meta(b), trace=self.resample(r0.trace, lap_len),
             segments=[S.SegmentInfo(**{k: s.get(k) for k in S.SegmentInfo.model_fields}) for s in b.segments],
@@ -228,6 +231,7 @@ class Engine:
             strategies=[S.RaceStrategy(**x) for x in (b.doc.get("strategies") or [])],
             compounds={lab: f"C{int(self.tyres[(int(b.doc['season']), b.doc['event'], lab)])}"
                        for lab in ("SOFT", "MEDIUM", "HARD") if (int(b.doc["season"]), b.doc["event"], lab) in self.tyres},
+            race_laps=(ri.race_laps if ri else None), pit_loss_s=(round(ri.pit_loss_s, 2) if ri and ri.pit_loss_s else None),
             integration_note=(f"sampled trace integrates {r0.lap_time_baseline_s:.3f} s vs official "
                               f"{b.lap['lap_time_s']:.3f} s; time axis scaled by {r0.time_scale:.4f} "
                               f"(the two partial 240 ms intervals at the line)"))

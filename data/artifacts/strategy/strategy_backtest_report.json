@@ -1,0 +1,485 @@
+{
+ "run_at": "2026-10-08T10:55:38+00:00",
+ "green_min": 0.9,
+ "gates": {
+  "S1_race_total": {
+   "median_abs_pct": 0.389,
+   "p90_abs_pct": 1.029,
+   "bias_pct": -0.292,
+   "median_abs_s": 20.7,
+   "drivers": 677,
+   "races": 40,
+   "passes": true
+  },
+  "S2_group_order": {
+   "pairs": 172,
+   "agree_share": 0.744,
+   "passes": true
+  },
+  "S3_pit_loss": {
+   "races": 90,
+   "median_s": 22.29,
+   "min": {
+    "event": "dutch_grand_prix",
+    "pit_loss_s": 18.197
+   },
+   "max": {
+    "event": "singapore_grand_prix",
+    "pit_loss_s": 42.887
+   },
+   "passes": true
+  }
+ },
+ "by_stops_median_abs_pct": {
+  "1": 0.389,
+  "2": 0.388,
+  "3": 0.468,
+  "4": 0.358,
+  "5": 0.387
+ },
+ "skipped": 44,
+ "skipped_examples": [
+  {
+   "race": "2022/australian_grand_prix",
+   "reason": "green share 0.80"
+  },
+  {
+   "race": "2022/azerbaijan_grand_prix",
+   "reason": "green share 0.87"
+  },
+  {
+   "race": "2022/bahrain_grand_prix",
+   "reason": "green share 0.85"
+  },
+  {
+   "race": "2022/belgian_grand_prix",
+   "reason": "green share 0.89"
+  },
+  {
+   "race": "2022/british_grand_prix",
+   "reason": "green share 0.87"
+  },
+  {
+   "race": "2022/canadian_grand_prix",
+   "reason": "green share 0.83"
+  },
+  {
+   "race": "2022/dutch_grand_prix",
+   "reason": "green share 0.81"
+  },
+  {
+   "race": "2022/emilia_romagna_grand_prix",
+   "reason": "green share 0.89"
+  },
+  {
+   "race": "2022/french_grand_prix",
+   "reason": "green share 0.84"
+  },
+  {
+   "race": "2022/hungarian_grand_prix",
+   "reason": "green share 0.87"
+  }
+ ],
+ "group_pairs": [
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD",
+   "real_gap_s": -9.85,
+   "pred_gap_s": 12.48
+  },
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD\u2192HARD",
+   "real_gap_s": 2.6,
+   "pred_gap_s": 17.75
+  },
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD\u2192MEDIUM",
+   "real_gap_s": -8.88,
+   "pred_gap_s": 34.37
+  },
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD\u2192SOFT",
+   "real_gap_s": -16.44,
+   "pred_gap_s": 35.31
+  },
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "MEDIUM\u2192HARD",
+   "b": "MEDIUM\u2192HARD\u2192HARD",
+   "real_gap_s": 12.45,
+   "pred_gap_s": 5.27
+  },
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "MEDIUM\u2192HARD",
+   "b": "MEDIUM\u2192HARD\u2192SOFT",
+   "real_gap_s": -6.58,
+   "pred_gap_s": 22.83
+  },
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "MEDIUM\u2192HARD\u2192HARD",
+   "b": "MEDIUM\u2192HARD\u2192MEDIUM",
+   "real_gap_s": -11.48,
+   "pred_gap_s": 16.62
+  },
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "MEDIUM\u2192HARD\u2192HARD",
+   "b": "MEDIUM\u2192HARD\u2192SOFT",
+   "real_gap_s": -19.03,
+   "pred_gap_s": 17.56
+  },
+  {
+   "season": 2022,
+   "event": "abu_dhabi_grand_prix",
+   "a": "MEDIUM\u2192HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD\u2192SOFT",
+   "real_gap_s": -7.56,
+   "pred_gap_s": 0.94
+  },
+  {
+   "season": 2022,
+   "event": "austrian_grand_prix",
+   "a": "HARD\u2192MEDIUM\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD\u2192HARD",
+   "real_gap_s": 67.66,
+   "pred_gap_s": 30.29
+  },
+  {
+   "season": 2022,
+   "event": "austrian_grand_prix",
+   "a": "HARD\u2192MEDIUM\u2192MEDIUM",
+   "b": "MEDIUM\u2192MEDIUM\u2192MEDIUM",
+   "real_gap_s": 31.4,
+   "pred_gap_s": -16.2
+  },
+  {
+   "season": 2022,
+   "event": "austrian_grand_prix",
+   "a": "MEDIUM\u2192HARD\u2192HARD",
+   "b": "MEDIUM\u2192MEDIUM\u2192MEDIUM",
+   "real_gap_s": -36.26,
+   "pred_gap_s": -46.49
+  },
+  {
+   "season": 2022,
+   "event": "mexico_city_grand_prix",
+   "a": "MEDIUM\u2192HARD",
+   "b": "MEDIUM\u2192SOFT",
+   "real_gap_s": -63.4,
+   "pred_gap_s": -51.46
+  },
+  {
+   "season": 2022,
+   "event": "mexico_city_grand_prix",
+   "a": "MEDIUM\u2192HARD",
+   "b": "SOFT\u2192MEDIUM",
+   "real_gap_s": -71.88,
+   "pred_gap_s": -60.9
+  },
+  {
+   "season": 2022,
+   "event": "mexico_city_grand_prix",
+   "a": "MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM",
+   "real_gap_s": -8.48,
+   "pred_gap_s": -9.44
+  },
+  {
+   "season": 2022,
+   "event": "spanish_grand_prix",
+   "a": "SOFT\u2192MEDIUM\u2192MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM\u2192SOFT\u2192SOFT",
+   "real_gap_s": -7.82,
+   "pred_gap_s": 19.23
+  },
+  {
+   "season": 2022,
+   "event": "spanish_grand_prix",
+   "a": "SOFT\u2192MEDIUM\u2192MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192SOFT\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": -15.7,
+   "pred_gap_s": 10.96
+  },
+  {
+   "season": 2022,
+   "event": "spanish_grand_prix",
+   "a": "SOFT\u2192MEDIUM\u2192SOFT\u2192SOFT",
+   "b": "SOFT\u2192SOFT\u2192MEDIUM",
+   "real_gap_s": 7.13,
+   "pred_gap_s": 14.51
+  },
+  {
+   "season": 2022,
+   "event": "spanish_grand_prix",
+   "a": "SOFT\u2192MEDIUM\u2192SOFT\u2192SOFT",
+   "b": "SOFT\u2192SOFT\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": -7.87,
+   "pred_gap_s": -8.27
+  },
+  {
+   "season": 2022,
+   "event": "spanish_grand_prix",
+   "a": "SOFT\u2192SOFT\u2192MEDIUM",
+   "b": "SOFT\u2192SOFT\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": -15.01,
+   "pred_gap_s": -22.78
+  },
+  {
+   "season": 2023,
+   "event": "abu_dhabi_grand_prix",
+   "a": "MEDIUM\u2192HARD",
+   "b": "MEDIUM\u2192HARD\u2192HARD",
+   "real_gap_s": 13.54,
+   "pred_gap_s": 78.04
+  },
+  {
+   "season": 2023,
+   "event": "austrian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192HARD\u2192HARD",
+   "b": "MEDIUM\u2192MEDIUM\u2192HARD\u2192HARD\u2192MEDIUM",
+   "real_gap_s": 4.52,
+   "pred_gap_s": 36.4
+  },
+  {
+   "season": 2023,
+   "event": "austrian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192HARD\u2192HARD",
+   "b": "MEDIUM\u2192MEDIUM\u2192HARD\u2192MEDIUM",
+   "real_gap_s": 6.29,
+   "pred_gap_s": -18.13
+  },
+  {
+   "season": 2023,
+   "event": "austrian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192HARD\u2192HARD",
+   "b": "MEDIUM\u2192MEDIUM\u2192MEDIUM\u2192HARD",
+   "real_gap_s": 69.56,
+   "pred_gap_s": 89.88
+  },
+  {
+   "season": 2023,
+   "event": "austrian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192HARD\u2192HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192MEDIUM\u2192HARD\u2192MEDIUM",
+   "real_gap_s": 1.77,
+   "pred_gap_s": -54.53
+  },
+  {
+   "season": 2023,
+   "event": "austrian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192HARD\u2192HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192MEDIUM\u2192MEDIUM\u2192HARD",
+   "real_gap_s": 65.04,
+   "pred_gap_s": 53.47
+  },
+  {
+   "season": 2023,
+   "event": "austrian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192MEDIUM\u2192MEDIUM\u2192HARD",
+   "real_gap_s": 63.27,
+   "pred_gap_s": 108.0
+  },
+  {
+   "season": 2023,
+   "event": "bahrain_grand_prix",
+   "a": "SOFT\u2192HARD\u2192HARD",
+   "b": "SOFT\u2192HARD\u2192HARD\u2192SOFT",
+   "real_gap_s": 48.23,
+   "pred_gap_s": 58.89
+  },
+  {
+   "season": 2023,
+   "event": "bahrain_grand_prix",
+   "a": "SOFT\u2192HARD\u2192HARD",
+   "b": "SOFT\u2192SOFT\u2192HARD",
+   "real_gap_s": 80.0,
+   "pred_gap_s": 66.11
+  },
+  {
+   "season": 2023,
+   "event": "bahrain_grand_prix",
+   "a": "SOFT\u2192HARD\u2192HARD",
+   "b": "SOFT\u2192SOFT\u2192HARD\u2192SOFT",
+   "real_gap_s": 62.0,
+   "pred_gap_s": 61.73
+  },
+  {
+   "season": 2023,
+   "event": "bahrain_grand_prix",
+   "a": "SOFT\u2192HARD\u2192HARD\u2192SOFT",
+   "b": "SOFT\u2192SOFT\u2192HARD",
+   "real_gap_s": 31.77,
+   "pred_gap_s": 7.22
+  },
+  {
+   "season": 2023,
+   "event": "bahrain_grand_prix",
+   "a": "SOFT\u2192HARD\u2192HARD\u2192SOFT",
+   "b": "SOFT\u2192SOFT\u2192HARD\u2192SOFT",
+   "real_gap_s": 13.77,
+   "pred_gap_s": 2.83
+  },
+  {
+   "season": 2023,
+   "event": "bahrain_grand_prix",
+   "a": "SOFT\u2192SOFT\u2192HARD",
+   "b": "SOFT\u2192SOFT\u2192HARD\u2192SOFT",
+   "real_gap_s": -18.0,
+   "pred_gap_s": -4.38
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192SOFT",
+   "b": "MEDIUM\u2192SOFT",
+   "real_gap_s": -1.48,
+   "pred_gap_s": -10.84
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM\u2192MEDIUM",
+   "real_gap_s": -24.33,
+   "pred_gap_s": -59.59
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": -29.67,
+   "pred_gap_s": -42.58
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "MEDIUM\u2192MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": 21.81,
+   "pred_gap_s": -1.23
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM\u2192MEDIUM",
+   "real_gap_s": -22.85,
+   "pred_gap_s": -48.75
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": -28.2,
+   "pred_gap_s": -31.74
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": 23.29,
+   "pred_gap_s": 9.61
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "SOFT\u2192MEDIUM\u2192MEDIUM",
+   "b": "SOFT\u2192MEDIUM\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": -5.35,
+   "pred_gap_s": 17.01
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "SOFT\u2192MEDIUM\u2192MEDIUM",
+   "b": "SOFT\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": 46.14,
+   "pred_gap_s": 58.37
+  },
+  {
+   "season": 2023,
+   "event": "belgian_grand_prix",
+   "a": "SOFT\u2192MEDIUM\u2192MEDIUM\u2192SOFT",
+   "b": "SOFT\u2192MEDIUM\u2192SOFT",
+   "real_gap_s": 51.49,
+   "pred_gap_s": 41.35
+  },
+  {
+   "season": 2023,
+   "event": "hungarian_grand_prix",
+   "a": "HARD\u2192MEDIUM\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD\u2192HARD",
+   "real_gap_s": -4.62,
+   "pred_gap_s": -31.21
+  },
+  {
+   "season": 2023,
+   "event": "hungarian_grand_prix",
+   "a": "HARD\u2192MEDIUM\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD\u2192MEDIUM",
+   "real_gap_s": 13.86,
+   "pred_gap_s": -13.69
+  },
+  {
+   "season": 2023,
+   "event": "hungarian_grand_prix",
+   "a": "HARD\u2192MEDIUM\u2192MEDIUM",
+   "b": "SOFT\u2192HARD\u2192HARD",
+   "real_gap_s": 7.27,
+   "pred_gap_s": -54.2
+  },
+  {
+   "season": 2023,
+   "event": "hungarian_grand_prix",
+   "a": "MEDIUM\u2192HARD\u2192HARD",
+   "b": "MEDIUM\u2192HARD\u2192MEDIUM",
+   "real_gap_s": 18.48,
+   "pred_gap_s": 17.52
+  },
+  {
+   "season": 2023,
+   "event": "hungarian_grand_prix",
+   "a": "MEDIUM\u2192HARD\u2192HARD",
+   "b": "SOFT\u2192HARD\u2192HARD",
+   "real_gap_s": 11.89,
+   "pred_gap_s": -22.99
+  },
+  {
+   "season": 2023,
+   "event": "hungarian_grand_prix",
+   "a": "MEDIUM\u2192HARD\u2192MEDIUM",
+   "b": "SOFT\u2192HARD\u2192HARD",
+   "real_gap_s": -6.59,
+   "pred_gap_s": -40.51
+  },
+  {
+   "season": 2023,
+   "event": "miami_grand_prix",
+   "a": "HARD\u2192MEDIUM",
+   "b": "MEDIUM\u2192HARD",
+   "real_gap_s": 3.55,
+   "pred_gap_s": -3.61
+  }
+ ]
+}

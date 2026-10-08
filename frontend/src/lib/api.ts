@@ -1,4 +1,4 @@
-import type { BaselineRef, BaselineResponse, DriverInfo, EventInfo, SimulationRequest, SimulationResponse } from "./types";
+import type { BaselineRef, BaselineResponse, DriverInfo, EventInfo, SimulationRequest, SimulationResponse, StrategyRequest, StrategyResponse } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -22,6 +22,17 @@ export const api = {
     if (!res.ok) throw new Error(`simulate: HTTP ${res.status} ${await res.text()}`);
     return res.json();
   },
+  strategy: async (body: StrategyRequest, signal?: AbortSignal): Promise<StrategyResponse> => {
+    const res = await fetch(`${BASE}/api/strategy`, {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal,
+    });
+    if (!res.ok) throw new Error(`strategy: HTTP ${res.status} ${await res.text()}`);
+    return res.json();
+  },
+};
+export const fmtRace = (s: number) => {
+  const h = Math.floor(s / 3600), m = Math.floor((s - 3600 * h) / 60), sec = s - 3600 * h - 60 * m;
+  return `${h}:${String(m).padStart(2, "0")}:${sec.toFixed(1).padStart(4, "0")}`;
 };
 
 export const fmtDelta = (s: number, digits = 3) => `${s > 0 ? "+" : s < 0 ? "−" : ""}${Math.abs(s).toFixed(digits)}`;

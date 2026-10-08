@@ -26,6 +26,8 @@ from pipeline.physics import modifiers as M, segment_delta as D
 from pipeline.reconstruct import trace as T
 
 DISPLAY_STEP_M = 20.0
+SEGMENT_PHYSICS_COLS = ("segment_traction_share", "segment_brake_share", "segment_grip_share", "segment_power_share",
+                        "segment_grade_mean", "segment_climb_m", "segment_drs_share", "segment_sim_apex_kph")
 CLEAN_AIR_GAP_S = 10.0
 PUSH_EFFORT_INDEX = 0.75
 
@@ -56,6 +58,8 @@ class Engine:
             pass
         self.physics = physics_cfg or M.default_config()
         self._cache: dict[str, dict] = {}
+        self.tyres = self._load_tyres()
+        self._segphys: dict[str, dict[int, dict]] = {}
         self.qss = QssService(self.baselines_dir,
                               aero_u=float(self.physics.raw["aero"]["rear_wing"]["downforce_pct"].get("u", 0.3)),
                               grip_u=float(self.physics.raw["suspension"]["mech_grip_pct_full_range"].get("u", 0.5)))
@@ -151,7 +155,35 @@ class Engine:
         rows["driver"] = lap["driver"]
         rows["chassis"] = lap.get("chassis") or "?"
         rows["season"] = int(b.doc["season"])
+        # P10 features: the C-compound behind the label, and the circuit's physics per segment
+        rows["compound_hardness"] = self.tyres.get((int(b.doc["season"]), b.doc["event"], str(compound).upper()), np.nan)
+        sp = self._segment_physics(int(b.doc["season"]), b.doc["event"])
+        for c in SEGMENT_PHYSICS_COLS:
+            rows[c] = [sp.get(int(i), {}).get(c, np.nan) for i in rows["segment_index"]]
         return rows
+
+    @staticmethod
+    def _load_tyres() -> dict[tuple[int, str, str], float]:
+        """(season, event, SOFT|MEDIUM|HARD) -> C-number from configs/tyres.yaml (empty if absent)."""
+        p = Path(__file__).resolve().parents[2] / "configs" / "tyres.yaml"
+        if not p.exists():
+            return {}
+        import yaml
+        table = yaml.safe_load(p.read_text()).get("events", {})
+        out = {}
+        for key, row in table.items():
+            season, slug = key.split("/", 1)
+            for label in ("hard", "medium", "soft"):
+                out[(int(season), slug, label.upper())] = float(str(row[label]).lstrip("C"))
+        return out
+
+    def _segment_physics(self, season: int, event: str) -> dict[int, dict]:
+        key = f"{season}/{event}"
+        if key not in self._segphys:
+            p = self.baselines_dir / str(season) / event / "segment_physics.json"
+            rows = json.loads(p.read_text())["segments"] if p.exists() else []
+            self._segphys[key] = {int(r["segment_index"]): r for r in rows}
+        return self._segphys[key]
 
     def _ml_lap_halfwidth(self) -> float:
         """80% half-width of a predicted lap CHANGE, from the registered
@@ -194,6 +226,8 @@ class Engine:
             available_laps=b.driver["available"],
             tyre_envelope={k: S.TyreEnvelope(**v) for k, v in (b.doc.get("tyre_envelope") or {}).items()},
             strategies=[S.RaceStrategy(**x) for x in (b.doc.get("strategies") or [])],
+            compounds={lab: f"C{int(self.tyres[(int(b.doc['season']), b.doc['event'], lab)])}"
+                       for lab in ("SOFT", "MEDIUM", "HARD") if (int(b.doc["season"]), b.doc["event"], lab) in self.tyres},
             integration_note=(f"sampled trace integrates {r0.lap_time_baseline_s:.3f} s vs official "
                               f"{b.lap['lap_time_s']:.3f} s; time axis scaled by {r0.time_scale:.4f} "
                               f"(the two partial 240 ms intervals at the line)"))

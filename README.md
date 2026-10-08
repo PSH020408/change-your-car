@@ -137,8 +137,12 @@ _Done 2026-09-29: the quasi-steady-state point-mass engine (item 1 of the previo
 parameters fitted per lap, 552-lap calibration with six gates, used in differential
 form. The coefficient table and the warp reconstruction remain only as a fallback._
 
-1. **ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
-   allocation instead of soft/medium/hard labels.
+1. ~~**ML features:** low-speed-corner traction, compound × temperature, Pirelli C1–C5
+   allocation.~~ Tried 2026-10-08 (`v2026.10.08-1`): the physics-engine segment features
+   cut the per-segment error (0.062 → 0.059 s) but not the lap-level change the HUD
+   shows (0.474 → 0.478 s), and the compound table carried no signal; rejected on the
+   rule agreed beforehand, written up in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md). The
+   Pirelli table now labels the HUD's compound buttons (Soft C3, …).
 2. **A tyre-strategy mode** built only from strategies teams really used — the HUD
    already shows how each race was actually run; the mode would score those sequences,
    carrying the measured race-pace offset as its own labelled term.
@@ -155,7 +159,7 @@ form. The coefficient table and the warp reconstruction remain only as a fallbac
 | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) | The ML model: features, metrics, gates, limitations |
 | [`docs/BACKTEST.md`](docs/BACKTEST.md) | Whole-simulator back-test: qualifying lap → race lap, and the measured race-pace offset |
 | [`docs/PHYSICS_ENGINE.md`](docs/PHYSICS_ENGINE.md) | The point-mass engine: model, constants set by sweep, 552-lap calibration, the gates it failed, and why it runs in differential form |
-| [`docs/DEFECTS.md`](docs/DEFECTS.md) | 35 defects and lessons, in the order they were found |
+| [`docs/DEFECTS.md`](docs/DEFECTS.md) | 36 defects and lessons, in the order they were found |
 | [`docs/recon/DECISIONS.md`](docs/recon/DECISIONS.md) | The reconnaissance gate: nine data decisions and two revisions |
 
 ## Run it
@@ -209,7 +213,7 @@ front-page spike); no custom domain. None of these change the numbers the app sh
 | `backend/pipeline/reconstruct/` | Fallback: segment deltas → continuous telemetry by warping (used only where a circuit has no line) |
 | `backend/app/` | FastAPI: `/api/meta/*`, `/api/baseline`, `POST /api/simulate` |
 | `frontend/src/` | Next.js 15 HUD, no chart library |
-| `backend/configs/` | `scope.yaml` · `physics.yaml` · `model.yaml` · `circuits.yaml` · `chassis.yaml` |
+| `backend/configs/` | `scope.yaml` · `physics.yaml` · `model.yaml` · `circuits.yaml` · `chassis.yaml` · `tyres.yaml` (Pirelli nominations, 92 events) |
 | `data/artifacts/` | Baselines (184 sessions) and the registered model — committed for repo-based builds |
 
 ## About

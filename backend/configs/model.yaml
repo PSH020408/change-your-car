@@ -34,8 +34,17 @@ features:
   # (0.509 -> 0.523 s) and it split the fuel effect with lap_number (the
   # race-fuel probe fell from -0.35 to -0.09 s/10 laps). Removed: the same
   # accuracy with a cleaner fuel attribution wins.
+  # P10 (2026-10-08): compound_hardness = the C-compound Pirelli nominated that weekend
+  # (configs/tyres.yaml), because SOFT means C3 at Bahrain and C5 at Monaco. The
+  # segment_* physics features come from the calibrated point-mass solver on the
+  # circuit's line (pipeline/physics/segment_physics.py): shares of the segment spent
+  # traction-, brake-, grip- or power-limited, gradient, climb, DRS share and the
+  # simulated apex speed. Circuit properties, known before any lap: no leakage.
   numeric: [tyre_life, lap_number, track_temp_c, air_temp_c, lap_effort_index, gap_ahead_s,
-            segment_length_m, segment_min_radius_m, segment_reference_s]
+            segment_length_m, segment_min_radius_m, segment_reference_s,
+            compound_hardness,
+            segment_traction_share, segment_brake_share, segment_grip_share, segment_power_share,
+            segment_grade_mean, segment_climb_m, segment_drs_share, segment_sim_apex_kph]
   categorical: [segment_kind, session, compound, fresh_tyre, driver, chassis, season,
                 segment_sector, segment_is_kink]
 
@@ -80,5 +89,6 @@ acceptance:
   monotonic:
     tyre_life_up_slower: true            # +5 laps on the tyre -> delta up
     lap_number_up_faster_in_race: true   # +10 race laps (fuel burnt) -> delta down
+    soft_more_temp_sensitive: true       # P10: +10 C track hurts C4+ more than C1-C2
 
 registry: ../data/artifacts/models

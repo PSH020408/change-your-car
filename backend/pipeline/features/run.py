@@ -19,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import yaml
 
 from pipeline.ingest import paths
 from pipeline.features import driver_style, effort as effort_mod, segment_features, setup_proxy
@@ -169,6 +170,44 @@ def check_segment_times_sum_to_the_lap(df: pd.DataFrame) -> dict:
     }
 
 
+def join_segment_physics(feat: pd.DataFrame, silver: Path) -> pd.DataFrame:
+    """P10: per-segment physics-engine features (circuit properties, pre-lap) from silver."""
+    p = silver / "segment_physics.parquet"
+    if not p.exists():
+        print("segment physics: not built (make segment-physics) — physics features left NaN")
+        return feat
+    sp = pd.read_parquet(p)
+    before = len(feat)
+    out = feat.merge(sp, on=["season", "event_slug", "segment_index"], how="left")
+    assert len(out) == before, "segment physics join changed the row count"
+    cov = out["segment_traction_share"].notna().mean()
+    print(f"segment physics: joined {len(sp)} segment rows, coverage {cov:.1%} of feature rows")
+    return out
+
+
+def add_compound_hardness(feat: pd.DataFrame, tyres_yaml: Path) -> pd.DataFrame:
+    """P10: SOFT/MEDIUM/HARD label -> the C-compound Pirelli nominated that weekend (1 = hardest)."""
+    if not tyres_yaml.exists():
+        print("tyres.yaml missing — compound_hardness left NaN")
+        feat["compound_hardness"] = np.nan
+        return feat
+    table = yaml.safe_load(tyres_yaml.read_text())["events"]
+    lookup = {}
+    for key, row in table.items():
+        season, slug = key.split("/", 1)
+        for label in ("hard", "medium", "soft"):
+            lookup[(int(season), slug, label.upper())] = int(str(row[label]).lstrip("C"))
+    keys = list(zip(pd.to_numeric(feat["season"], errors="coerce").astype("Int64"),
+                    feat["event_slug"].astype(str), feat["compound"].astype(str).str.upper()))
+    feat["compound_hardness"] = [lookup.get((int(s), e, c)) if pd.notna(s) else None for s, e, c in keys]
+    feat["compound_hardness"] = pd.to_numeric(feat["compound_hardness"], errors="coerce")
+    slick = feat["compound"].astype(str).str.upper().isin(["SOFT", "MEDIUM", "HARD"])
+    miss = feat.loc[slick, "compound_hardness"].isna().mean()
+    print(f"compound hardness: {feat['compound_hardness'].notna().mean():.1%} of rows mapped "
+          f"({miss:.1%} of slick rows unmapped)")
+    return feat
+
+
 def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
     scope = paths.load_scope(scope_path)
     bronze = paths.bronze_dir(scope_path, scope)
@@ -222,6 +261,8 @@ def run(scope_path: Path, limit: int | None, verbose: bool) -> int:
         return 1
 
     feat = add_targets(pd.concat(frames, ignore_index=True))
+    feat = join_segment_physics(feat, silver)
+    feat = add_compound_hardness(feat, Path("configs/tyres.yaml"))
     bias = driver_style.driver_bias(feat)
 
     gold.mkdir(parents=True, exist_ok=True)

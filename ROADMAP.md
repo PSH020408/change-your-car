@@ -234,6 +234,17 @@ and lint clean; numbers verified against the smoke suite on screen.
 
 **Gate (written before the first run):** G1 speed RMS ≤ 8 km/h · G2 lap time ≤ 0.5 s median · G3 parameters in box and circuits ranked · G4 fuel effect within 25 % · G5 sign checks. **Outcome:** 3/6 after G1b (segment time ≤ 0.10 s) was added once the residual analysis showed G1 measures the driver's braking shape, which a point mass cannot have. Both the failures and the added gate are in the document.
 
+
+## P10 — ML features from the engine and the tyre table (2026-10-08, rejected)
+
+| ID | Task |
+|---|---|
+| P10-1 | `configs/tyres.yaml`: the C-compound behind SOFT/MEDIUM/HARD for all 92 events, from Pirelli press releases — **done**; also labels the HUD's compound buttons |
+| P10-2 | Per-segment physics features from the calibrated engine (traction/brake/grip/power shares, gradient, climb, DRS, simulated apex speed), shipped with the baseline store for inference — **done** |
+| P10-3 | Retrain and gate — **done, rejected**: segment MAE 0.062 → 0.059 and the unseen circuit 0.443 → 0.436 improved, but the pre-agreed rule (counterfactual lap < 0.474 s AND low-speed corner < 0.111 s) was not met (0.478 / 0.110); the compound × temperature sign gate failed with the opposite sign (defect #36). `v2026.09.17-1` stays registered. |
+
+**Gate:** adopt only if both the lap counterfactual and the low-speed corner improve. **Outcome:** neither did; experiment recorded in `docs/MODEL_CARD.md`.
+
 ---
 
 ## Budgets

@@ -82,6 +82,7 @@ export interface BaselineResponse {
   lap: LapMeta; trace: TelemetryTrace; segments: SegmentInfo[]; track: TrackMap;
   available_laps: AvailableLap[]; integration_note: string;
   tyre_envelope: Record<string, TyreEnvelope>; strategies: RaceStrategy[];
+  compounds?: Record<string, string>;
 }
 
 export interface PhysicsState {

@@ -93,4 +93,44 @@ and the 2024–25 chassis the HUD now serves.
   grade-C physics grip multiplier, not by the model.
 - **No setup in the data.** The ML part cannot know anything about wings, ride height
   or suspension; those are physics, graded separately.
-- **Low-speed corners** are the weakest kind; traction is the likely missing signal.
+- **Low-speed corners** are the weakest kind; traction was the suspected missing
+  signal — tested below, it is not enough.
+
+## Experiments that did not replace the model
+
+### v2026.10.08-1 — compound hardness and physics-engine segment features (rejected)
+
+Two additions, both legitimate pre-lap information:
+
+- `compound_hardness`: the C-compound Pirelli nominated for each label that weekend
+  (`configs/tyres.yaml`, 92 events from Pirelli press releases), because SOFT is a C3 at
+  Bahrain and a C5 at Monaco.
+- eight segment features from the calibrated point-mass engine (`docs/PHYSICS_ENGINE.md`):
+  the share of the segment spent traction-, brake-, grip- and power-limited, gradient,
+  climb, DRS share and the simulated apex speed.
+
+The acceptance rule was fixed before training: adopt only if the clean-air
+counterfactual lap MAE improves on 0.474 s **and** the low-speed-corner segment MAE
+improves on 0.111 s.
+
+| Metric | v2026.09.17-1 (kept) | v2026.10.08-1 |
+|---|---|---|
+| Segment MAE, q50 (CV) | 0.062 s | **0.059 s** |
+| Low-speed corner MAE | 0.111 s | 0.110 s |
+| Counterfactual lap MAE, clean-air push | 0.474 s | 0.478 s |
+| Skill | 28 % | 28 % |
+| Unseen circuit (Miami) counterfactual MAE | 0.443 s | **0.436 s** |
+| Coverage 80 %, calibrated | 0.80 | 0.80 |
+| Gates | 5/8 | 6/9 |
+
+The physics features ranked 5th–7th in permutation importance (power share, brake
+share, apex speed) and lowered the per-segment error; the lap-level change the HUD
+shows did not move, and the low-speed corner did not either. Compound hardness ranked
+outside the top ten. The new sign gate — "+10 °C track temperature should hurt C4+
+more than C1–C2" — **failed with the opposite sign** (soft +0.0001 s/segment, hard
++0.0021 s): in this data the hard end of the range is the temperature-sensitive one,
+which is consistent with hard compounds needing heat to work and graining when cold,
+and inconsistent with the assumption the gate encoded. The gate stays as written and
+the model was not registered. The features remain in gold and in `model.yaml` so the
+experiment reproduces with `make train`; the API serves them to whichever model is
+registered, and the registered model ignores them.

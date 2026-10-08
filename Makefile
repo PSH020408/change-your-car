@@ -53,7 +53,7 @@ warm-status:
 #   features  gold/features.parquet rebuilt   (~2.6 M rows expected)
 #   baselines data/artifacts/baselines/*      (HUD picks these up on restart)
 # Then `make train` separately, and read the gates before accepting.
-expand: ingest segment features baselines line
+expand: ingest segment line segment-physics features baselines
 	@echo "expand done -> restart 'make api' to serve the new baselines and lines, then 'make train' and 'make qss-calibrate'"
 
 ingest-force:
@@ -159,6 +159,10 @@ silver-clean:
 	rm -rf data/silver
 
 # --- P2-5..P2-7 Feature store ------------------------------------------------
+segment-physics:
+	@mkdir -p data/logs
+	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.physics.segment_physics --scope configs/scope.yaml --verbose 2>&1 | tee ../data/logs/segment-physics.log
+
 features:
 	@mkdir -p data/logs
 	cd backend && PYTHONUNBUFFERED=1 .venv/bin/python -m pipeline.features.run --scope configs/scope.yaml --verbose 2>&1 | tee ../data/logs/features.log

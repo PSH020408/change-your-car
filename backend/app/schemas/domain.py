@@ -184,6 +184,8 @@ class BaselineResponse(BaseModel):
     # data envelope for the conditions panel: the tyre-age slider stops where the data stops
     tyre_envelope: dict[str, TyreEnvelope] = Field(default_factory=dict)
     strategies: list[RaceStrategy] = Field(default_factory=list)
+    # which Pirelli compound each label was this weekend (configs/tyres.yaml), e.g. {"SOFT": "C3"}
+    compounds: dict[str, str] = Field(default_factory=dict)
 
 
 class PhysicsState(BaseModel):

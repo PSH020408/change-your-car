@@ -185,6 +185,12 @@ def run(cfg_path: Path, quick: bool = False, register: bool = True) -> dict:
     print("\nMONOTONICITY PROBES  (mean change of q50; + = slower)")
     probes = {}
     probes["tyre_life"] = E.monotonic_probe(final, X, "tyre_life", +5.0)
+    if "compound_hardness" in X.columns and X["compound_hardness"].notna().any():
+        # P10: the soft end of the range (C4+) should suffer more from +10 C track
+        # temperature than the hard end (C1-C2). Two probes, one sign check.
+        h = pd.to_numeric(X["compound_hardness"], errors="coerce")
+        probes["track_temp_soft"] = E.monotonic_probe(final, X, "track_temp_c", +10.0, subset=(h >= 4))
+        probes["track_temp_hard"] = E.monotonic_probe(final, X, "track_temp_c", +10.0, subset=(h <= 2))
     is_race = (train["session"] == "R")
     if is_race.any():
         probes["lap_number"] = E.monotonic_probe(final, X, "lap_number", +10.0, subset=is_race)

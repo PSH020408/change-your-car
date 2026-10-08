@@ -222,4 +222,7 @@ def gates(metrics: dict, cfg: dict) -> dict[str, bool]:
         out["tyre_life_up_slower"] = probes["tyre_life"]["mean_delta_s"] > 0
     if m.get("lap_number_up_faster_in_race") and "lap_number" in probes:
         out["lap_number_up_faster_in_race"] = probes["lap_number"]["mean_delta_s"] < 0
+    if m.get("soft_more_temp_sensitive") and "track_temp_soft" in probes and "track_temp_hard" in probes:
+        out["soft_more_temp_sensitive"] = (probes["track_temp_soft"]["mean_delta_s"]
+                                           > probes["track_temp_hard"]["mean_delta_s"])
     return out

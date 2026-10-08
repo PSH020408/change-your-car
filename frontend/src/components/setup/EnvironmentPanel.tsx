@@ -23,6 +23,8 @@ export function EnvironmentPanel({ baseline }: { baseline: BaselineResponse | un
   const envelope = baseline?.tyre_envelope ?? {};
   // only the compounds the field actually ran this weekend; all three if the store predates the envelope
   const compounds = DRY.filter((c) => envelope[c]);
+  // the Pirelli compound behind the label this weekend: Bahrain's Soft is a C3, Monaco's a C5
+  const cnum = (c: string) => (baseline?.compounds?.[c] ? ` ${baseline.compounds[c]}` : "");
   const options = compounds.length ? compounds : DRY;
   const track = env.track_temp_c ?? lap?.track_temp_c ?? 30;
   const air = env.air_temp_c ?? lap?.air_temp_c ?? 22;
@@ -49,7 +51,8 @@ export function EnvironmentPanel({ baseline }: { baseline: BaselineResponse | un
       </div>
       <div className="flex justify-between items-center">
         <span className="flex items-center gap-2 text-hud-soft">Compound <GradeChip grade="A" /></span>
-        <Choice<Compound> options={options} value={compound} onChange={pickCompound} labels={{ SOFT: "Soft", MEDIUM: "Med", HARD: "Hard" }}
+        <Choice<Compound> options={options} value={compound} onChange={pickCompound}
+          labels={{ SOFT: `Soft${cnum("SOFT")}`, MEDIUM: `Med${cnum("MEDIUM")}`, HARD: `Hard${cnum("HARD")}` }}
           dim={(c) => !!envelope[c] && envelope[c].max_by_session.R === undefined} />
       </div>
       <Slider env label="Tyre age" grade="A" value={tyre} min={1} max={maxLaps} step={1} display={`${tyre} laps`} hint={env.tyre_life === null ? "baseline" : undefined}

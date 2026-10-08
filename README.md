@@ -204,7 +204,7 @@ Rebuild the data and the model (FastF1 downloads are rate-limited; the cache is 
 make warm-bg        # download raw sessions in the background · make warm-status
 make expand         # ingest → segment → features → baselines for every cached Q/R session
 make train          # quantile GBMs + gates → data/artifacts/models/<version>
-make test           # 165 pytest: physics monotonicity · segmentation · model · reconstruction · API contract
+make test           # 190 pytest: physics monotonicity · segmentation · engine · model · strategy · API contract
 make api-smoke      # 8 end-to-end cases on 2024 Bahrain Q, VER
 make backtest       # qualifying → race back-test over the whole store (~70 s)
 make fe-check       # tsc + lint + next build

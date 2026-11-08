@@ -9,10 +9,12 @@
 
 > **Before you click:** the demo runs on Render's free tier, which puts the server to
 > sleep after 15 minutes without visitors. The first request after that takes
-> **30–60 seconds** while the container starts (you may see a blank page or a browser
-> timeout — reload once). After that a simulation takes ~0.3 s. The repository
+> **about a minute, sometimes longer** while the container starts. API requests have
+> a 90-second deadline; if the baseline cannot load, use **Retry baseline**. After
+> startup a simulation takes ~0.3 s. A stalled instance can require operator recovery.
+> The repository
 > also builds and runs locally with three commands (see *Run it*). A paid instance
-> would remove the delay; for a portfolio prototype the free tier was the deliberate
+> would remove idle spin-down; for a portfolio prototype the free tier was the deliberate
 > choice.
 
 ![The HUD on the live demo — 2024 Bahrain GP qualifying, VER, front wing +0.25, rear wing +0.40, ride height lowered into the bottoming zone: −0.260 s, corners green, straights orange](docs/img/hud-bahrain-2024-q-ver.png)
@@ -153,7 +155,7 @@ management on top — is in [`docs/BACKTEST.md`](docs/BACKTEST.md).
   push, the start and plan-dependent pace management are all ignored and listed as such
   on the HUD; 0.39 % on the race total is the size of the terms it does carry (fuel,
   tyre age, compound, pit loss), not a claim about the rest ([`docs/STRATEGY.md`](docs/STRATEGY.md)).
-- No front-end tests; COTA is under-segmented (esses merge); free hosting sleeps when idle.
+- Front-end transport tests cover deadlines and cancellation; automated UI coverage is still missing. COTA is under-segmented (esses merge); free hosting sleeps when idle.
 
 ## What's next
 
@@ -223,13 +225,23 @@ build ≈ 2 minutes).
 | Host | Render, free tier (`plan: free`, region Singapore) |
 | Live URL | https://change-your-car.onrender.com |
 | Health check | `GET /health` → `{"status":"ok","model_version":"v2026.09.17-1",…}` |
-| Cold start | 30–60 s after 15 min idle; ~300 ms per simulation when warm (0.1 shared CPU — ~15–45 ms on a laptop); the first simulation of a lap adds the engine's 3-parameter fit (~120 ms on a laptop, a few seconds on the free instance) |
+| Cold start | About a minute or longer after 15 min idle; ~300 ms per simulation when warm (0.1 shared CPU — ~15–45 ms on a laptop); the first simulation of a lap adds the engine's 3-parameter fit (~120 ms on a laptop, a few seconds on the free instance) |
 | Memory | 512 MB available, ~300 MB used |
-| Alternative | `make deploy` targets Google Cloud Run (same container, no sleep, 2-instance spend cap) |
+| Alternative | `make deploy` targets Google Cloud Run (same container, 2-instance spend cap); startup behavior depends on the configured minimum instances |
 
 Known limitations of the free tier, stated so nobody is surprised: the sleep/cold-start
 above; a single shared instance (fine for a handful of concurrent visitors, not for a
 front-page spike); no custom domain. None of these change the numbers the app shows.
+
+If the HUD stays unavailable, check `/health` and Render's recent application logs.
+On 2026-11-08, requests stalled without reaching the application logs after an idle
+period; redeploying the same commit restored service. The exact platform cause was
+not exposed, so the request deadline is a recovery aid, not a fix for platform wake-up.
+Operators can use **Manual Deploy → Deploy latest commit** if requests remain stuck;
+the dashboard's **Live** label alone does not confirm that public requests work.
+
+Run the transport regression checks with `cd frontend && npm run test:requests`.
+They cover response/body timeouts, cancellation, HTTP errors and startup HTML.
 
 ## Layout
 

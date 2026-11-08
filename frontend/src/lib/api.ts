@@ -1,11 +1,10 @@
 import type { BaselineRef, BaselineResponse, DriverInfo, EventInfo, SimulationRequest, SimulationResponse, StrategyRequest, StrategyResponse } from "./types";
+import { requestJson } from "./request";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) throw new Error(`${path}: HTTP ${res.status} ${await res.text()}`);
-  return res.json();
+  return requestJson<T>(`${BASE}${path}`);
 }
 
 export const api = {
@@ -16,18 +15,14 @@ export const api = {
   baseline: (ref: BaselineRef) =>
     get<BaselineResponse>(`/api/baseline?season=${ref.season}&event=${ref.event}&session=${ref.session}&driver=${ref.driver}&lap=${ref.lap}`),
   simulate: async (body: SimulationRequest, signal?: AbortSignal): Promise<SimulationResponse> => {
-    const res = await fetch(`${BASE}/api/simulate`, {
+    return requestJson<SimulationResponse>(`${BASE}/api/simulate`, {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal,
     });
-    if (!res.ok) throw new Error(`simulate: HTTP ${res.status} ${await res.text()}`);
-    return res.json();
   },
   strategy: async (body: StrategyRequest, signal?: AbortSignal): Promise<StrategyResponse> => {
-    const res = await fetch(`${BASE}/api/strategy`, {
+    return requestJson<StrategyResponse>(`${BASE}/api/strategy`, {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal,
     });
-    if (!res.ok) throw new Error(`strategy: HTTP ${res.status} ${await res.text()}`);
-    return res.json();
   },
 };
 export const fmtRace = (s: number) => {

@@ -68,7 +68,9 @@ export default function Page() {
   const abortRef = useRef<AbortController | null>(null);
   const [replay, setReplay] = useState({ playing: false, t: 0, speed: 1 });
 
-  const baseline = useSWR(["baseline", ref.season, ref.event, ref.session, ref.driver, ref.lap], () => api.baseline(ref), { keepPreviousData: true, revalidateOnFocus: false });
+  const baseline = useSWR(["baseline", ref.season, ref.event, ref.session, ref.driver, ref.lap], () => api.baseline(ref), {
+    keepPreviousData: true, revalidateOnFocus: false, shouldRetryOnError: false,
+  });
 
   // one POST per settled slider position; abort whatever is still in flight
   useEffect(() => {
@@ -127,9 +129,18 @@ export default function Page() {
             <div className="card p-4 max-w-[520px] text-status-loss">
               <div className="label mb-1">baseline not available</div>
               <div className="text-hud-soft whitespace-pre-wrap">{String((baseline.error as Error).message)}</div>
-              <div className="text-hud-dim mt-2">Is the API running? <span className="text-hud-soft">make api</span> → http://localhost:8000/health</div>
+              <div className="text-hud-dim mt-2">The free demo can take about a minute to start after inactivity. If it remains unavailable, please try again later.</div>
+              <button className="mt-3 px-3 py-2 rounded border border-hud-line2 text-hud-text hover:border-hud-muted disabled:opacity-40"
+                disabled={baseline.isValidating} onClick={() => { void baseline.mutate(); }}>
+                {baseline.isValidating ? "Retrying…" : "Retry baseline"}
+              </button>
             </div>
-          ) : "loading baseline…"}
+          ) : (
+            <div className="text-center p-4" role="status">
+              <div>Loading baseline…</div>
+              <div className="text-hud-dim mt-2">Starting the free demo may take about a minute after inactivity.</div>
+            </div>
+          )}
         </main>
       )}
 

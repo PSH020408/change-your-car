@@ -247,19 +247,19 @@ are documented in [Serving within a small instance](docs/SERVING.md).
 
 ### Quick recovery (Render)
 
-Render 관리 화면은 서비스 소유자의 로그인이 필요합니다.
+Dashboard actions require the service owner's Render login.
 
-1. **먼저 확인** → [데모 열기](https://change-your-car.onrender.com/) → 최대 90초 대기 → 오류가 뜨면 **Retry baseline** 클릭.
-2. **서버 상태 확인** → [Health 열기](https://change-your-car.onrender.com/health) → `"status":"ok"`가 보이면 데모 새로고침. 몇 분이 지나도 응답이 없으면 다음 단계.
-3. **재시작** → [Render 배포 관리](https://dashboard.render.com/web/srv-dalnp1e5vjqs738290j0/deploys) → **Manual Deploy → Restart service** → 완료 표시 **Live** 확인 → **Health → 데모** 순서로 다시 확인.
-4. **여전히 안 되면 재배포** → 같은 화면 → **Manual Deploy → Deploy latest commit** → 완료 표시 **Live** 확인 → **Health → 데모** 순서로 다시 확인.
-5. **그래도 안 되면** → [Render Logs](https://dashboard.render.com/web/srv-dalnp1e5vjqs738290j0/logs) → **Jump to most recent logs** 또는 시간 범위 **Last 4 hours** → 마지막 오류 확인. 배포가 실패했다면 해당 배포의 로그 확인.
+1. **Wait and retry** → [Open the demo](https://change-your-car.onrender.com/) → wait up to 90 seconds → if an error appears, click **Retry baseline**.
+2. **Check the server** → [Open Health](https://change-your-car.onrender.com/health) → if the response includes `"status":"ok"`, reload the demo. If it remains unresponsive for several minutes, continue below.
+3. **Restart** → [Open Render Deploys](https://dashboard.render.com/web/srv-dalnp1e5vjqs738290j0/deploys) → **Manual Deploy → Restart service** → wait for **Live** → check **Health → demo**.
+4. **Still unavailable? Redeploy** → on the same page, select **Manual Deploy → Deploy latest commit** → wait for **Live** → check **Health → demo**.
+5. **Still failing? Check logs** → [Open Render Logs](https://dashboard.render.com/web/srv-dalnp1e5vjqs738290j0/logs) → **Jump to most recent logs** or select **Last 4 hours** → inspect the latest error. If deployment failed, open that deployment's logs.
 
-**버튼 차이:** Restart service = 현재 배포 버전으로 새 인스턴스 시작. Deploy latest commit = GitHub `main`의 최신 코드로 빌드·배포하므로, 새 커밋이 있으면 버전도 바뀝니다. GitHub 연결이나 접근 권한을 다시 설정할 필요는 없습니다.
+**Button differences:** Restart service starts a new instance using the currently deployed version. Deploy latest commit builds and deploys the latest code on GitHub `main`, so a newer commit can change the running version. Reconnecting GitHub or changing access permissions is not required.
 
-**복구 완료 기준:** Live 표시와 함께 Health의 `"status":"ok"`, 데모의 baseline 표시 및 슬라이더 변경에 따른 계산 갱신까지 확인합니다. 재배포는 실행 상태를 초기화하는 복구 수단이며, 반복되는 코드 오류 자체를 고치지는 않습니다.
+**Recovery check:** Confirm **Live**, a Health response containing `"status":"ok"`, a visible baseline in the demo, and updated calculations after moving a slider. Redeployment resets runtime state; recurring code defects still require a code fix.
 
-[Render 공식 버튼 설명](https://render.com/docs/deploys#manual-deploys)
+[Render's manual deploy reference](https://render.com/docs/deploys#manual-deploys)
 
 ## Layout
 

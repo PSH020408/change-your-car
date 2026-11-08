@@ -29,6 +29,7 @@ from pathlib import Path
 import numpy as np
 
 from app.schemas import domain as S
+from app.core.cache import BoundedCache
 from pipeline.physics import modifiers as M
 
 FUEL_PROBE_KG = 10.0
@@ -48,7 +49,7 @@ class StrategyService:
     def __init__(self, engine):
         self.engine = engine
         self._race: dict[str, RaceInfo | None] = {}
-        self._ml_cache: dict[tuple, float] = {}
+        self._ml_cache: BoundedCache[tuple, float] = BoundedCache(512)
 
     # ------------------------------------------------------------ data
     def race_info(self, season: int, event: str) -> RaceInfo | None:
@@ -82,15 +83,14 @@ class StrategyService:
     def _ml_lap(self, b, segs, compound: str, tyre_life: int) -> float:
         """Sum of q50 over the segments for these tyre conditions (session temps)."""
         key = (b.lap["lap_uid"], compound, int(tyre_life))
-        if key in self._ml_cache:
-            return self._ml_cache[key]
+        return self._ml_cache.get_or_create(key, lambda: self._predict_lap(b, segs, compound, tyre_life))
+
+    def _predict_lap(self, b, segs, compound: str, tyre_life: int) -> float:
         if self.engine.predictor is None:
-            self._ml_cache[key] = 0.0
             return 0.0
         env = S.Environment(compound=S.Compound(compound), tyre_life=int(tyre_life))
         rows = self.engine._ml_rows(b, segs, env, new=True)
         v = float(self.engine.predictor.predict_segments(rows)["q50"].sum())
-        self._ml_cache[key] = v
         return v
 
     def _fuel_slope(self, b, total_laps: int) -> tuple[float, str]:

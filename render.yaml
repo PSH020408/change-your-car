@@ -1,5 +1,6 @@
 # Render Blueprint — free web service built from the repo's Dockerfile.
-# Free plan: sleeps after 15 min idle, ~30-50 s cold start, 512 MB RAM (we use ~300).
+# Free plan: sleeps after 15 min idle; startup can take a minute or longer.
+# Runtime caches and inference threads are bounded for the 512 MB instance.
 services:
   - type: web
     name: change-your-car

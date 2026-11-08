@@ -3,19 +3,38 @@
 P6. One Engine per process (baseline store + registered model + physics
 config), four routers, one contract: app/schemas/domain.py.
 """
+from contextlib import asynccontextmanager
+import logging
+import resource
+import sys
+import time
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 
 from app.config import get_settings
 from app.routers import baseline, engineer_log, meta, simulate, strategy
 
 settings = get_settings()
+logger = logging.getLogger("uvicorn.error")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.core.state import get_engine
+    started = time.monotonic()
+    engine = await run_in_threadpool(get_engine)
+    logger.info("Simulation engine ready in %.2fs; model=%s; inference_threads=1",
+                time.monotonic() - started, engine.model_version)
+    yield
 
 app = FastAPI(
     title="F1 Virtual Sim Engine API",
     version="0.6.0",
     description="Setup + environment -> ML delta inference -> telemetry stream",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -36,8 +55,11 @@ app.include_router(strategy.router)
 def health() -> dict:
     from app.core.state import get_engine
     e = get_engine()
+    peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    peak_mb = peak_rss / (2**20 if sys.platform == "darwin" else 1024)
     return {"status": "ok", "version": app.version, "model_version": e.model_version,
-            "seasons": e.seasons()}
+            "seasons": e.seasons(), "process_peak_memory_mb": round(peak_mb, 1),
+            "cached_sessions": len(e._cache)}
 
 
 # The built HUD, when present (production container). Mounted LAST so /api/* and

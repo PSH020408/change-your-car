@@ -226,7 +226,7 @@ build ≈ 2 minutes).
 | Live URL | https://change-your-car.onrender.com |
 | Health check | `GET /health` → `{"status":"ok","model_version":"v2026.09.17-1",…}` |
 | Cold start | About a minute or longer after 15 min idle; ~300 ms per simulation when warm (0.1 shared CPU — ~15–45 ms on a laptop); the first simulation of a lap adds the engine's 3-parameter fit (~120 ms on a laptop, a few seconds on the free instance) |
-| Memory | 512 MB available, ~300 MB used |
+| Memory | 512 MB instance; bounded caches and single-threaded inference (see [serving notes](docs/SERVING.md)); `/health` reports process peak memory |
 | Alternative | `make deploy` targets Google Cloud Run (same container, 2-instance spend cap); startup behavior depends on the configured minimum instances |
 
 Known limitations of the free tier, stated so nobody is surprised: the sleep/cold-start
@@ -242,6 +242,10 @@ the dashboard's **Live** label alone does not confirm that public requests work.
 
 Run the transport regression checks with `cd frontend && npm run test:requests`.
 They cover response/body timeouts, cancellation, HTTP errors and startup HTML.
+
+The serving runtime also bounds session/lap caches, serializes first initialization,
+and loads models before startup completes. Local memory and response-parity checks
+are documented in [Serving within a small instance](docs/SERVING.md).
 
 ## Layout
 

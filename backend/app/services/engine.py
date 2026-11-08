@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 
 from app.schemas import domain as S
+from app.core.cache import BoundedCache
 from app.services import engineer_log as LOG
 from app.services.qss_engine import QssService
 from app.services.strategy import StrategyService
@@ -55,10 +56,15 @@ class Engine:
         try:
             self.predictor = Predictor.load(Path(model_dir))
             self.model_version = str(self.predictor.metrics.get("version", "?"))
+            # Training can use every core; serving tiny segment batches on a
+            # shared CPU should not inherit the saved model's n_jobs=-1.
+            for model in self.predictor.level1.models.values():
+                if "n_jobs" in model.get_params():
+                    model.set_params(n_jobs=1)
         except FileNotFoundError:
             pass
         self.physics = physics_cfg or M.default_config()
-        self._cache: dict[str, dict] = {}
+        self._cache: BoundedCache[str, dict] = BoundedCache(4)
         self.tyres = self._load_tyres()
         self._segphys: dict[str, dict[int, dict]] = {}
         self.strategy = StrategyService(self)
@@ -93,12 +99,12 @@ class Engine:
     # ------------------------------------------------------------ baseline
     def _doc(self, season: int, event: str, session: str) -> dict:
         key = f"{season}/{event}/{session}"
-        if key not in self._cache:
+        def load() -> dict:
             p = self.baselines_dir / str(season) / event / f"{session}.json"
             if not p.exists():
                 raise NotFound(f"no baseline store for {key}")
-            self._cache[key] = json.loads(p.read_text())
-        return self._cache[key]
+            return json.loads(p.read_text())
+        return self._cache.get_or_create(key, load)
 
     def load_baseline(self, ref: S.BaselineRef) -> LoadedBaseline:
         doc = self._doc(ref.season, ref.event, ref.session)

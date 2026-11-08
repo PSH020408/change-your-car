@@ -27,6 +27,9 @@ COPY data/artifacts/models/ /app/data/artifacts/models/
 COPY --from=hud /fe/out /app/frontend/out
 
 ENV PYTHONUNBUFFERED=1 \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
     DATA_ROOT=/app/data \
     MODEL_REGISTRY_DIR=/app/data/artifacts \
     STATIC_DIR=/app/frontend/out \

@@ -25,6 +25,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy.optimize import brentq
+from app.core.cache import BoundedCache
 
 from pipeline.physics import qss as Q, qss_fit as F
 from pipeline.physics.modifiers import PhysicsState
@@ -64,8 +65,8 @@ class QssService:
     def __init__(self, baselines_dir: Path, aero_u: float = 0.30, grip_u: float = 0.50):
         self.baselines_dir = Path(baselines_dir)
         self.aero_u, self.grip_u = aero_u, grip_u
-        self._lines: dict[str, pd.DataFrame] = {}
-        self._laps: dict[str, QssLap] = {}
+        self._lines: BoundedCache[str, pd.DataFrame] = BoundedCache(4)
+        self._laps: BoundedCache[str, QssLap] = BoundedCache(8)
 
     # ------------------------------------------------------------ lines
     def line_path(self, season: int, event: str) -> Path:
@@ -76,16 +77,16 @@ class QssService:
 
     def line(self, season: int, event: str) -> pd.DataFrame:
         key = f"{season}/{event}"
-        if key not in self._lines:
-            self._lines[key] = F.load_store_line(self.line_path(season, event))
-        return self._lines[key]
+        return self._lines.get_or_create(key, lambda: F.load_store_line(self.line_path(season, event)))
 
     # ------------------------------------------------------------ laps
     def lap(self, season: int, event: str, lap: dict, trace: pd.DataFrame, fuel_kg: float,
             air_temp_c: float | None) -> QssLap:
         uid = str(lap["lap_uid"])
-        if uid in self._laps:
-            return self._laps[uid]
+        return self._laps.get_or_create(uid, lambda: self._fit_lap(season, event, lap, trace, fuel_kg, air_temp_c))
+
+    def _fit_lap(self, season: int, event: str, lap: dict, trace: pd.DataFrame, fuel_kg: float,
+                 air_temp_c: float | None) -> QssLap:
         line = self.line(season, event)
         v_real, drs, shift = F.lap_on_line(trace, line)
         base = F.default_car(mass_kg=798.0 + fuel_kg, rho=Q.air_density(air_temp_c))
@@ -94,7 +95,6 @@ class QssService:
                    g=line["grade"].to_numpy(float), drs=drs, v_real=v_real, shift_pts=shift,
                    car0=fit["car"], prof0=fit["profile"],
                    fit={k: v for k, v in fit.items() if k not in ("car", "profile")})
-        self._laps[uid] = q
         return q
 
     # ------------------------------------------------------------ simulate
